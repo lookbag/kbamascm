@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SCM Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg0:#080C12; --bg1:#0D1420; --bg2:#111927; --bgh:#162032; --bga:#1A2840;
+  --bd:#1E2E44; --bdl:#253548;
+  --cyan:#00D4FF; --cyand:#0099BB; --cyanglow:rgba(0,212,255,0.15);
+  --green:#00E5A0; --greend:rgba(0,229,160,0.15);
+  --amber:#FFB020; --amberd:rgba(255,176,32,0.15);
+  --red:#FF4560; --redd:rgba(255,69,96,0.15);
+  --t1:#E8EDF5; --t2:#7A92B0; --t3:#3D5470; --td:#A8C0DC;
+  --sw:220px; --hh:52px; --r:6px; --rl:10px;
+  --fu:'DM Sans',sans-serif; --fh:'Syne',sans-serif; --fm:'DM Mono',monospace;
+  --tr:150ms cubic-bezier(0.4,0,0.2,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:var(--fu);background:var(--bg0);color:var(--t1);font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased}
+
+/* LOGIN */
+#login-page{display:flex;align-items:center;justify-content:center;min-height:100vh;position:relative;overflow:hidden}
+#login-page::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(0,212,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,0.04) 1px,transparent 1px);background-size:40px 40px}
+#login-page::after{content:'';position:absolute;width:600px;height:600px;background:radial-gradient(circle,rgba(0,212,255,0.06) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none}
+.login-card{position:relative;z-index:1;width:400px;background:var(--bg1);border:1px solid var(--bd);border-radius:var(--rl);padding:48px 40px 40px;box-shadow:0 0 60px rgba(0,0,0,0.6),0 0 0 1px rgba(0,212,255,0.05);animation:fadeup 0.5s ease forwards}
+@keyframes fadeup{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.login-logo{display:flex;align-items:center;gap:10px;margin-bottom:32px}
+.logo-mark{width:36px;height:36px;background:linear-gradient(135deg,var(--cyan),var(--cyand));border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-weight:800;font-size:16px;color:var(--bg0);box-shadow:0 0 20px rgba(0,212,255,0.3)}
+.logo-text{font-family:var(--fh);font-weight:700;font-size:20px;letter-spacing:-0.02em}
+.logo-text span{color:var(--cyan)}
+.login-title{font-family:var(--fh);font-size:22px;font-weight:700;margin-bottom:6px;letter-spacing:-0.02em}
+.login-sub{color:var(--t2);font-size:12px;margin-bottom:32px}
+.form-group{margin-bottom:16px}
+.form-label{display:block;font-size:11px;font-weight:500;color:var(--t2);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px}
+.form-input{width:100%;background:var(--bg2);border:1px solid var(--bd);border-radius:var(--r);padding:10px 12px;color:var(--t1);font-family:var(--fu);font-size:13px;outline:none;transition:border-color var(--tr),box-shadow var(--tr)}
+.form-input:focus{border-color:var(--cyan);box-shadow:0 0 0 3px var(--cyanglow)}
+select.form-input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237A92B0' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:32px}
+.btn-login{width:100%;margin-top:24px;padding:12px;background:var(--cyan);color:var(--bg0);border:none;border-radius:var(--r);font-family:var(--fh);font-size:14px;font-weight:700;cursor:pointer;transition:all var(--tr);box-shadow:0 0 20px rgba(0,212,255,0.2)}
+.btn-login:hover{background:#33DDFF;box-shadow:0 0 30px rgba(0,212,255,0.35);transform:translateY(-1px)}
+.login-demo{margin-top:20px;padding-top:20px;border-top:1px solid var(--bd);font-size:11px;color:var(--t3);text-align:center}
+.login-demo span{color:var(--cyan);cursor:pointer}
+.login-demo span:hover{text-decoration:underline}
+
+/* APP SHELL */
+#app{display:none;height:100vh;overflow:hidden}
+
+/* HEADER */
+.app-header{position:fixed;top:0;left:0;right:0;height:var(--hh);background:var(--bg1);border-bottom:1px solid var(--bd);display:flex;align-items:center;padding:0 16px 0 0;z-index:100}
+.header-logo{width:var(--sw);display:flex;align-items:center;gap:8px;padding:0 16px;border-right:1px solid var(--bd);height:100%;flex-shrink:0}
+.h-logo-mark{width:28px;height:28px;background:linear-gradient(135deg,var(--cyan),var(--cyand));border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-weight:800;font-size:13px;color:var(--bg0)}
+.h-logo-text{font-family:var(--fh);font-weight:700;font-size:15px;letter-spacing:-0.02em}
+.h-logo-text span{color:var(--cyan)}
+.header-bc{flex:1;padding:0 20px;display:flex;align-items:center;gap:6px;font-size:12px;color:var(--t3)}
+.header-bc .cur{color:var(--t1);font-weight:500}
+.header-bc .sep{color:var(--bdl)}
+.header-acts{display:flex;align-items:center;gap:8px}
+.h-btn{position:relative;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:var(--r);cursor:pointer;color:var(--t2);transition:all var(--tr);border:1px solid transparent;font-size:15px}
+.h-btn:hover{background:var(--bgh);color:var(--t1);border-color:var(--bd)}
+.badge-dot{position:absolute;top:5px;right:5px;width:7px;height:7px;background:var(--red);border-radius:50%;border:1px solid var(--bg1);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+.h-div{width:1px;height:20px;background:var(--bd);margin:0 4px}
+.h-user{display:flex;align-items:center;gap:8px;padding:4px 8px;border-radius:var(--r);cursor:pointer;transition:background var(--tr);border:1px solid transparent}
+.h-user:hover{background:var(--bgh);border-color:var(--bd)}
+.avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#1A4A6A,#0099BB);display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-size:11px;font-weight:700;color:#fff}
+.u-name{font-size:12px;font-weight:500;line-height:1.2}
+.u-role{font-size:10px;color:var(--t3);line-height:1.2}
+
+/* SIDEBAR */
+.app-sidebar{position:fixed;top:var(--hh);left:0;width:var(--sw);height:calc(100vh - var(--hh));background:var(--bg1);border-right:1px solid var(--bd);overflow-y:auto;overflow-x:hidden;z-index:50;display:flex;flex-direction:column;padding:12px 0 20px}
+.app-sidebar::-webkit-scrollbar{width:3px}
+.app-sidebar::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px}
+.nav-sec-label{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:var(--t3);padding:8px 16px 4px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 16px;cursor:pointer;color:var(--t2);font-size:12.5px;transition:all var(--tr);border-left:2px solid transparent;white-space:nowrap}
+.nav-item:hover{background:var(--bgh);color:var(--t1)}
+.nav-item.active{background:var(--bga);color:var(--cyan);border-left-color:var(--cyan);font-weight:500}
+.nav-icon{width:16px;text-align:center;font-size:14px;flex-shrink:0;opacity:0.7}
+.nav-item.active .nav-icon{opacity:1}
+.nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:20px;min-width:18px;text-align:center}
+.nav-badge.a{background:var(--amber);color:var(--bg0)}
+.nav-badge.g{background:var(--green);color:var(--bg0)}
+.sb-footer{margin-top:auto;padding:12px 16px 0;border-top:1px solid var(--bd)}
+.theme-row{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--t3);cursor:pointer;padding:6px 0;transition:color var(--tr)}
+.theme-row:hover{color:var(--t2)}
+.tsw{width:32px;height:18px;background:var(--bd);border-radius:9px;position:relative;transition:background var(--tr)}
+.tsw.on{background:var(--cyand)}
+.tsw::after{content:'';position:absolute;width:12px;height:12px;background:#fff;border-radius:50%;top:3px;left:3px;transition:transform var(--tr)}
+.tsw.on::after{transform:translateX(14px)}
+.sb-logout{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--t3);cursor:pointer;padding:6px 0;transition:color var(--tr)}
+.sb-logout:hover{color:var(--red)}
+
+/* MAIN */
+.app-main{margin-left:var(--sw);margin-top:var(--hh);height:calc(100vh - var(--hh));overflow-y:auto;background:var(--bg0)}
+.app-main::-webkit-scrollbar{width:4px}
+.app-main::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px}
+.page{display:none;padding:24px;animation:pageIn 0.2s ease forwards}
+.page.active{display:block}
+@keyframes pageIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* PAGE HEADER */
+.ph{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;gap:16px}
+.ph-title{font-family:var(--fh);font-size:22px;font-weight:700;letter-spacing:-0.02em;line-height:1.2}
+.ph-sub{font-size:12px;color:var(--t2);margin-top:3px}
+.ph-acts{display:flex;gap:8px;flex-shrink:0}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:var(--r);font-family:var(--fu);font-size:12px;font-weight:500;cursor:pointer;transition:all var(--tr);border:1px solid transparent;white-space:nowrap}
+.btn-p{background:var(--cyan);color:var(--bg0);font-weight:600;box-shadow:0 0 16px rgba(0,212,255,0.15)}
+.btn-p:hover{background:#33DDFF;box-shadow:0 0 24px rgba(0,212,255,0.25);transform:translateY(-1px)}
+.btn-s{background:var(--bg2);color:var(--t1);border-color:var(--bd)}
+.btn-s:hover{background:var(--bgh);border-color:var(--bdl)}
+.btn-g{background:transparent;color:var(--t2);border-color:var(--bd)}
+.btn-g:hover{background:var(--bgh);color:var(--t1)}
+.btn-sm{padding:5px 10px;font-size:11px}
+.btn-ic{padding:7px}
+
+/* STAT CARDS */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+.sc{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--rl);padding:16px 18px;position:relative;overflow:hidden;transition:border-color var(--tr)}
+.sc:hover{border-color:var(--bdl)}
+.sc::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:var(--acc,var(--cyan))}
+.sc.g::before{--acc:var(--green)}.sc.a::before{--acc:var(--amber)}.sc.r::before{--acc:var(--red)}.sc.c::before{--acc:var(--cyan)}
+.sc-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--t3);margin-bottom:8px}
+.sc-val{font-family:var(--fh);font-size:26px;font-weight:700;letter-spacing:-0.02em;line-height:1;margin-bottom:4px}
+.sc.r .sc-val{color:var(--red)}.sc.a .sc-val{color:var(--amber)}.sc.g .sc-val{color:var(--green)}.sc.c .sc-val{color:var(--cyan)}
+.sc-delta{font-size:11px;color:var(--t3);display:flex;align-items:center;gap:3px}
+.sc-icon{position:absolute;top:16px;right:16px;font-size:20px;opacity:0.12}
+
+/* TABLES */
+.tbl-wrap{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--rl);overflow:hidden}
+.tbl-toolbar{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--bd)}
+.tbl-search{flex:1;max-width:280px;background:var(--bg1);border:1px solid var(--bd);border-radius:var(--r);padding:7px 10px 7px 30px;color:var(--t1);font-family:var(--fu);font-size:12px;outline:none;transition:border-color var(--tr);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='%233D5470' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='M21 21l-4.35-4.35'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:9px center}
+.tbl-search:focus{border-color:var(--cyan)}
+.tbl-filter{background:var(--bg1);border:1px solid var(--bd);border-radius:var(--r);padding:7px 24px 7px 10px;color:var(--t2);font-family:var(--fu);font-size:12px;outline:none;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%237A92B0' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center}
+.tbl-count{margin-left:auto;font-size:11px;color:var(--t3);font-family:var(--fm)}
+table{width:100%;border-collapse:collapse}
+thead th{background:var(--bg1);padding:10px 14px;text-align:left;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--t3);border-bottom:1px solid var(--bd);white-space:nowrap;cursor:pointer;user-select:none;transition:color var(--tr)}
+thead th:hover{color:var(--t2)}
+tbody tr{border-bottom:1px solid var(--bd);transition:background var(--tr);cursor:pointer}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--bgh)}
+tbody td{padding:10px 14px;font-size:12px;color:var(--td);font-family:var(--fm)}
+td.tx{font-family:var(--fu);color:var(--t1)}
+td.mu{color:var(--t3)}
+td.ri{text-align:right}
+.tbl-pg{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-top:1px solid var(--bd);font-size:11px;color:var(--t3)}
+.pg-btns{display:flex;gap:4px}
+.pg-btn{width:26px;height:26px;display:flex;align-items:center;justify-content:center;border-radius:4px;cursor:pointer;font-size:11px;font-family:var(--fm);border:1px solid var(--bd);background:transparent;color:var(--t2);transition:all var(--tr)}
+.pg-btn:hover{background:var(--bgh);color:var(--t1)}
+.pg-btn.on{background:var(--cyan);color:var(--bg0);border-color:var(--cyan);font-weight:700}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap}
+.badge::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor}
+.badge-g{background:var(--greend);color:var(--green)}
+.badge-a{background:var(--amberd);color:var(--amber)}
+.badge-r{background:var(--redd);color:var(--red)}
+.badge-c{background:var(--cyanglow);color:var(--cyan)}
+.badge-m{background:rgba(61,84,112,0.3);color:var(--t3)}
+
+/* CARD */
+.card{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--rl);overflow:hidden}
+.card-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--bd)}
+.card-title{font-family:var(--fh);font-size:13px;font-weight:600;letter-spacing:-0.01em}
+.card-body{padding:18px}
+
+/* ALERT ITEMS */
+.ai{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--bd)}
+.ai:last-child{border-bottom:none}
+.ai-icon{width:30px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.ai-icon.r{background:var(--redd)}.ai-icon.a{background:var(--amberd)}.ai-icon.g{background:var(--greend)}.ai-icon.c{background:var(--cyanglow)}
+.ai-title{font-size:12px;font-weight:500;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ai-detail{font-size:11px;color:var(--t3);margin-top:1px;font-family:var(--fm)}
+.ai-time{font-size:10px;color:var(--t3);white-space:nowrap;font-family:var(--fm)}
+
+/* LAYOUT GRIDS */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.dash-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.span2{grid-column:span 2}
+.span3{grid-column:1/-1}
+
+/* PROGRESS */
+.prog{height:4px;background:var(--bd);border-radius:2px;overflow:hidden;margin-top:6px}
+.prog-fill{height:100%;border-radius:2px;transition:width 0.6s ease}
+.prog-fill.g{background:var(--green)}.prog-fill.a{background:var(--amber)}.prog-fill.r{background:var(--red)}.prog-fill.c{background:var(--cyan)}
+
+/* TABS */
+.tabs{display:flex;border-bottom:1px solid var(--bd);margin-bottom:20px}
+.tab{padding:10px 16px;font-size:12px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all var(--tr);white-space:nowrap}
+.tab:hover{color:var(--t2)}
+.tab.on{color:var(--cyan);border-bottom-color:var(--cyan)}
+
+/* FORM */
+.f-panel{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--rl);padding:20px;margin-bottom:16px}
+.f-ptitle{font-family:var(--fh);font-size:11px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--bd)}
+.fg{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.fg2{grid-template-columns:repeat(2,1fr)}
+.fg4{grid-template-columns:repeat(4,1fr)}
+.field{display:flex;flex-direction:column;gap:5px}
+.f-lbl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--t3)}
+.f-lbl .req{color:var(--red);margin-left:2px}
+.f-inp{background:var(--bg1);border:1px solid var(--bd);border-radius:var(--r);padding:8px 10px;color:var(--t1);font-family:var(--fu);font-size:12px;outline:none;transition:border-color var(--tr),box-shadow var(--tr)}
+.f-inp:focus{border-color:var(--cyan);box-shadow:0 0 0 2px var(--cyanglow)}
+
+/* UTILS */
+.tc{color:var(--cyan)!important}.tg{color:var(--green)!important}.ta{color:var(--amber)!important}.tr2{color:var(--red)!important}.tm{color:var(--t3)!important}
+.fw{font-weight:600}.mono{font-family:var(--fm)}.np{color:var(--green);font-family:var(--fm)}.nn{color:var(--red);font-family:var(--fm)}.nw{color:var(--amber);font-family:var(--fm)}
+.divider{height:1px;background:var(--bd);margin:16px 0}
+.flex{display:flex}.fic{display:flex;align-items:center}.fib{display:flex;align-items:center;justify-content:space-between}
+.mt8{margin-top:8px}.mt16{margin-top:16px}.mb16{margin-bottom:16px}
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 24px;color:var(--t3);gap:10px}
+.empty-icon{font-size:32px;opacity:0.3}
+.empty-text{font-size:13px}
+
+/* WEEK TABLE */
+.wtw{overflow-x:auto}
+.wt{min-width:900px}
+.wt thead th{min-width:80px}
+.wt thead th.pc{min-width:160px}
+
+/* SHORTAGE */
+.sh-ind{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.sh-ok{background:var(--green)}.sh-w{background:var(--amber)}.sh-sh{background:var(--red);box-shadow:0 0 6px var(--red);animation:pulse 1.5s infinite}
+
+/* LIGHT THEME */
+body.light{
+  --bg0:#F0F4F8;--bg1:#FFFFFF;--bg2:#F8FAFC;--bgh:#EEF2F7;--bga:#E3ECF7;
+  --bd:#D8E2EE;--bdl:#C8D6E8;
+  --t1:#1A2840;--t2:#4A6480;--t3:#8AA0B8;--td:#2A4060;
+  --cyanglow:rgba(0,153,187,0.1)
+}
+body.light .btn-p{background:var(--cyand);color:#fff}
+body.light .bg-drop{background:#EEF2F7}
+
+/* MODAL */
+.modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.modal-ov.open{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--rl);width:560px;max-width:95vw;max-height:90vh;overflow-y:auto;animation:mIn 0.2s ease}
+@keyframes mIn{from{opacity:0;transform:scale(0.96) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.m-hdr{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--bd)}
+.m-title{font-family:var(--fh);font-size:15px;font-weight:700}
+.m-close{width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:4px;cursor:pointer;color:var(--t3);font-size:16px;transition:all var(--tr)}
+.m-close:hover{background:var(--bgh);color:var(--t1)}
+.m-body{padding:20px}
+.m-foot{display:flex;justify-content:flex-end;gap:8px;padding:14px 20px;border-top:1px solid var(--bd)}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-page">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="logo-mark">S</div>
+      <div class="logo-text">SCM<span>Pro</span></div>
+    </div>
+    <div class="login-title">Welcome back</div>
+    <div class="login-sub">Supply Chain Management System</div>
+    <div class="form-group">
+      <label class="form-label">Email</label>
+      <input class="form-input" type="email" id="li-email" value="admin@company.com">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <input class="form-input" type="password" id="li-pw" value="password">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Role</label>
+      <select class="form-input" id="li-role">
+        <option value="admin">Admin</option>
+        <option value="purchasing">Purchasing</option>
+        <option value="logistics">Logistics</option>
+        <option value="sales">Sales</option>
+        <option value="viewer">Viewer</option>
+      </select>
+    </div>
+    <button class="btn-login" onclick="doLogin()">Sign In →</button>
+    <div class="login-demo">Demo: <span onclick="setDemo('admin')">Admin</span> · <span onclick="setDemo('purchasing')">Purchasing</span> · <span onclick="setDemo('sales')">Sales</span></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <!-- HEADER -->
+  <header class="app-header">
+    <div class="header-logo">
+      <div class="h-logo-mark">S</div>
+      <div class="h-logo-text">SCM<span>Pro</span></div>
+    </div>
+    <div class="header-bc">
+      <span>Supply Chain</span><span class="sep">›</span><span class="cur" id="bc-cur">Dashboard</span>
+    </div>
+    <div class="header-acts">
+      <div class="h-btn" title="Alerts" onclick="nav('alerts')">🔔<div class="badge-dot"></div></div>
+      <div class="h-btn" title="Settings" onclick="nav('settings')">⚙️</div>
+      <div class="h-div"></div>
+      <div class="h-user" onclick="nav('settings')">
+        <div class="avatar" id="u-av">AD</div>
+        <div><div class="u-name" id="u-nm">Admin User</div><div class="u-role" id="u-rl">Administrator</div></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- SIDEBAR -->
+  <aside class="app-sidebar">
+    <div class="nav-sec-label">Overview</div>
+    <div class="nav-item active" onclick="nav('dashboard')"><span class="nav-icon">📊</span>Dashboard</div>
+
+    <div class="nav-sec-label" style="margin-top:8px">Master Data</div>
+    <div class="nav-item" onclick="nav('vendors')"><span class="nav-icon">🏭</span>Vendors</div>
+    <div class="nav-item" onclick="nav('parts')"><span class="nav-icon">🔩</span>Parts</div>
+    <div class="nav-item" onclick="nav('products')"><span class="nav-icon">📦</span>Products</div>
+    <div class="nav-item" onclick="nav('bom')"><span class="nav-icon">🗂️</span>BOM</div>
+
+    <div class="nav-sec-label" style="margin-top:8px">Demand Planning</div>
+    <div class="nav-item" onclick="nav('forecast')"><span class="nav-icon">📈</span>Forecast</div>
+    <div class="nav-item" onclick="nav('mrp')"><span class="nav-icon">⚡</span>MRP / Shortage<span class="nav-badge">5</span></div>
+
+    <div class="nav-sec-label" style="margin-top:8px">Procurement</div>
+    <div class="nav-item" onclick="nav('poplan')"><span class="nav-icon">🛒</span>PO Planning</div>
+    <div class="nav-item" onclick="nav('polist')"><span class="nav-icon">📋</span>PO List</div>
+    <div class="nav-item" onclick="nav('inventory')"><span class="nav-icon">🏪</span>Inventory</div>
+
+    <div class="nav-sec-label" style="margin-top:8px">HQ Trade</div>
+    <div class="nav-item" onclick="nav('hqtrade')"><span class="nav-icon">🚢</span>HQ Trade<span class="nav-badge a">2</span></div>
+    <div class="nav-item" onclick="nav('landedcost')"><span class="nav-icon">💰</span>Landed Cost</div>
+
+    <div class="nav-sec-label" style="margin-top:8px">Analytics</div>
+    <div class="nav-item" onclick="nav('kpi')"><span class="nav-icon">🎯</span>Vendor KPI</div>
+    <div class="nav-item" onclick="nav('alerts')"><span class="nav-icon">🚨</span>Alert Center<span class="nav-badge">3</span></div>
+
+    <div class="nav-sec-label" style="margin-top:8px">System</div>
+    <div class="nav-item" onclick="nav('import')"><span class="nav-icon">⬆️</span>Import Data</div>
+    <div class="nav-item" onclick="nav('settings')"><span class="nav-icon">⚙️</span>Settings</div>
+
+    <div class="sb-footer">
+      <div class="theme-row" onclick="toggleTheme()">
+        <div class="tsw" id="tsw"></div>
+        <span id="tlbl">Light mode</span>
+      </div>
+      <div class="sb-logout" onclick="doLogout()">⎋ Sign out</div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="app-main">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="pg-dashboard">
+      <div class="ph">
+        <div><div class="ph-title">Dashboard</div><div class="ph-sub">Last updated: Feb 19, 2026 · 09:42 AM</div></div>
+        <div class="ph-acts">
+          <button class="btn btn-g btn-sm">⬇ Export</button>
+          <button class="btn btn-p btn-sm" onclick="nav('mrp')">⚡ Run MRP</button>
+        </div>
+      </div>
+      <div class="stats-grid">
+        <div class="sc r"><div class="sc-label">Shortage Parts</div><div class="sc-val">5</div><div class="sc-delta tr2">⚠ Immediate action required</div><div class="sc-icon">⚠️</div></div>
+        <div class="sc a"><div class="sc-label">Impossible POs</div><div class="sc-val">2</div><div class="sc-delta ta">Lead time exceeded</div><div class="sc-icon">🚨</div></div>
+        <div class="sc c"><div class="sc-label">Open POs</div><div class="sc-val">18</div><div class="sc-delta">$284,500 total value</div><div class="sc-icon">📋</div></div>
+        <div class="sc g"><div class="sc-label">In Transit</div><div class="sc-val">6</div><div class="sc-delta tg">ETA within 14 days</div><div class="sc-icon">🚢</div></div>
+      </div>
+      <div class="dash-grid">
+        <!-- Shortage table -->
+        <div class="card span2">
+          <div class="card-hdr"><div class="card-title">🚨 Shortage &amp; Impossible PO Alerts</div><button class="btn btn-sm btn-s" onclick="nav('mrp')">View All</button></div>
+          <table>
+            <thead><tr><th>Part No</th><th>Part Name</th><th>Shortage</th><th>Required By</th><th>Lead Time</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr onclick="nav('mrp')"><td class="mono tc">BC524C2802</td><td class="tx">Noise Shim_INR</td><td class="nn ri">-32,000</td><td class="mono">Mar 10</td><td class="mono">90 days</td><td><span class="badge badge-r">Impossible PO</span></td></tr>
+              <tr onclick="nav('mrp')"><td class="mono tc">BC530C2800</td><td class="tx">Back Plate_INR</td><td class="nn ri">-18,000</td><td class="mono">Mar 17</td><td class="mono">80 days</td><td><span class="badge badge-r">Shortage</span></td></tr>
+              <tr onclick="nav('mrp')"><td class="mono tc">BC52004300</td><td class="tx">Sensor</td><td class="nw ri">-8,500</td><td class="mono">Mar 24</td><td class="mono">60 days</td><td><span class="badge badge-a">Warning</span></td></tr>
+              <tr onclick="nav('mrp')"><td class="mono tc">BC552C2800</td><td class="tx">Noise Shim_OTR</td><td class="nw ri">-5,000</td><td class="mono">Apr 07</td><td class="mono">90 days</td><td><span class="badge badge-a">Warning</span></td></tr>
+              <tr onclick="nav('mrp')"><td class="mono tc">BC531C2800</td><td class="tx">Back Plate_OTR</td><td class="nw ri">-2,400</td><td class="mono">Apr 14</td><td class="mono">80 days</td><td><span class="badge badge-a">Warning</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <!-- In Transit -->
+        <div class="card">
+          <div class="card-hdr"><div class="card-title">🚢 In Transit</div><button class="btn btn-sm btn-g" onclick="nav('hqtrade')">Details</button></div>
+          <div class="card-body" style="padding:0 18px">
+            <div class="ai"><div class="ai-icon g">🚢</div><div style="flex:1"><div class="ai-title">BC530C2800 · 30,000 pcs</div><div class="ai-detail">Finetro → KOR · ETA Mar 05</div></div><span class="badge badge-c">On Time</span></div>
+            <div class="ai"><div class="ai-icon a">🚢</div><div style="flex:1"><div class="ai-title">BC524C2802 · 16,000 pcs</div><div class="ai-detail">MENETA → USA · ETA Mar 12</div></div><span class="badge badge-a">Delayed</span></div>
+            <div class="ai"><div class="ai-icon g">✈️</div><div style="flex:1"><div class="ai-title">BC52004300 · 30,000 pcs</div><div class="ai-detail">GSENT → KOR · ETA Feb 28</div></div><span class="badge badge-g">Arriving</span></div>
+          </div>
+        </div>
+        <!-- Forecast table -->
+        <div class="card span3">
+          <div class="card-hdr">
+            <div class="card-title">📈 4-Month Forecast Summary (Weekly)</div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <select class="tbl-filter"><option>All Customers</option><option>MCA</option><option>MMX</option><option>ZF</option><option>Stellantis</option></select>
+              <button class="btn btn-sm btn-g" onclick="nav('forecast')">Full View</button>
+            </div>
+          </div>
+          <div class="wtw">
+            <table class="wt">
+              <thead><tr><th class="pc">Product</th><th>Customer</th><th>W08</th><th>W09</th><th>W10</th><th>W11</th><th>W12</th><th>W13</th><th>W14</th><th>W15</th><th>4M Total</th></tr></thead>
+              <tbody>
+                <tr><td class="tx">BQM58-118100</td><td class="tx mu">MMX</td><td class="mono ri">10,080</td><td class="mono ri">10,080</td><td class="mono ri">10,080</td><td class="mono ri">0</td><td class="mono ri">10,080</td><td class="mono ri">10,080</td><td class="mono ri">10,080</td><td class="mono ri">10,080</td><td class="np fw ri">70,560</td></tr>
+                <tr><td class="tx">BC510C2803</td><td class="tx mu">MCA</td><td class="mono ri">5,040</td><td class="mono ri">5,040</td><td class="mono ri">5,040</td><td class="mono ri">5,040</td><td class="mono ri">5,040</td><td class="mono ri">5,040</td><td class="mono ri">5,040</td><td class="mono ri">5,040</td><td class="np fw ri">40,320</td></tr>
+                <tr><td class="tx">A029H246</td><td class="tx mu">ZF</td><td class="mono ri">3,200</td><td class="mono ri">3,200</td><td class="mono ri">3,200</td><td class="mono ri">3,200</td><td class="mono ri">3,200</td><td class="mono ri">3,200</td><td class="mono ri">0</td><td class="mono ri">3,200</td><td class="np fw ri">22,400</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <!-- Vendor KPI -->
+        <div class="card">
+          <div class="card-hdr"><div class="card-title">🎯 Vendor OTD Q1 2026</div><button class="btn btn-sm btn-g" onclick="nav('kpi')">Details</button></div>
+          <div class="card-body">
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <div><div class="fib mb-4" style="margin-bottom:4px;font-size:12px"><span>Finetro</span><span class="np">94.2%</span></div><div class="prog"><div class="prog-fill g" style="width:94%"></div></div></div>
+              <div><div class="fib mb-4" style="margin-bottom:4px;font-size:12px"><span>MENETA</span><span class="nw">78.5%</span></div><div class="prog"><div class="prog-fill a" style="width:79%"></div></div></div>
+              <div><div class="fib mb-4" style="margin-bottom:4px;font-size:12px"><span>GSENT</span><span class="np">98.0%</span></div><div class="prog"><div class="prog-fill g" style="width:98%"></div></div></div>
+              <div><div class="fib mb-4" style="margin-bottom:4px;font-size:12px"><span>WAM</span><span class="nn">65.0%</span></div><div class="prog"><div class="prog-fill r" style="width:65%"></div></div></div>
+            </div>
+          </div>
+        </div>
+        <!-- Budget -->
+        <div class="card">
+          <div class="card-hdr"><div class="card-title">💰 Budget Utilization</div></div>
+          <div class="card-body">
+            <div style="text-align:center;margin-bottom:16px">
+              <div style="font-family:var(--fh);font-size:32px;font-weight:800;color:var(--cyan)">67%</div>
+              <div style="font-size:11px;color:var(--t3);margin-top:4px">$1.89M of $2.80M used</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:10px;font-size:11px">
+              <div class="fib"><span class="tm">Sub-materials</span><span class="mono">$1,120,000</span></div>
+              <div class="fib"><span class="tm">Raw materials</span><span class="mono">$520,000</span></div>
+              <div class="fib"><span class="tm">Logistics</span><span class="mono">$250,000</span></div>
+              <div class="divider"></div>
+              <div class="fib"><span class="tm">Remaining</span><span class="np fw">$910,000</span></div>
+            </div>
+          </div>
+        </div>
+        <!-- Activity -->
+        <div class="card">
+          <div class="card-hdr"><div class="card-title">🕐 Recent Activity</div></div>
+          <div class="card-body" style="padding:0 18px">
+            <div class="ai"><div class="ai-icon g">✅</div><div style="flex:1"><div class="ai-title">PO-2026-042 Received</div><div class="ai-detail">BC530C2800 · 30,000 pcs</div></div><div class="ai-time">2h ago</div></div>
+            <div class="ai"><div class="ai-icon a">📄</div><div style="flex:1"><div class="ai-title">BL Uploaded</div><div class="ai-detail">Trade #TRD-2026-008</div></div><div class="ai-time">5h ago</div></div>
+            <div class="ai"><div class="ai-icon c">📋</div><div style="flex:1"><div class="ai-title">PO-2026-043 Issued</div><div class="ai-detail">MENETA · $4,931</div></div><div class="ai-time">1d ago</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VENDORS -->
+    <div class="page" id="pg-vendors">
+      <div class="ph">
+        <div><div class="ph-title">Vendors</div><div class="ph-sub">Supplier master — 8 vendors registered</div></div>
+        <div class="ph-acts">
+          <button class="btn btn-g btn-sm">⬇ Export</button>
+          <button class="btn btn-s btn-sm" onclick="nav('import')">⬆ Import</button>
+          <button class="btn btn-p btn-sm" onclick="openM('m-vendor')">+ Add Vendor</button>
+        </div>
+      </div>
+      <div class="tbl-wrap">
+        <div class="tbl-toolbar">
+          <input class="tbl-search" type="text" placeholder="Search vendors...">
+          <select class="tbl-filter"><option>All Countries</option><option>KOR</option><option>USA</option><option>DEU</option></select>
+          <div class="tbl-count">8 vendors</div>
+        </div>
+        <table>
+          <thead><tr><th>Code</th><th>Name</th><th>Country</th><th>City</th><th>Contact</th><th>Lead Time (MP)</th><th>Currency</th><th>Payment</th><th>OTD %</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+            <tr><td class="mono tc">FINETRO</td><td class="tx fw">Finetro (화인트로)</td><td class="tx">KOR</td><td class="tx mu">Asan-si</td><td class="tx mu">Yong Jae Chun</td><td class="mono">80 days</td><td class="mono">KRW</td><td class="tx mu">FOB</td><td class="np">94.2%</td><td><span class="badge badge-g">Active</span></td><td><button class="btn btn-g btn-sm btn-ic">✏️</button></td></tr>
+            <tr><td class="mono tc">MENETA</td><td class="tx fw">Meneta North America LLC</td><td class="tx">USA</td><td class="tx mu">Rome, GA</td><td class="tx mu">Eric Denys</td><td class="mono">90 days</td><td class="mono">USD</td><td class="tx mu">EXW</td><td class="nw">78.5%</td><td><span class="badge badge-g">Active</span></td><td><button class="btn btn-g btn-sm btn-ic">✏️</button></td></tr>
+            <tr><td class="mono tc">GSENT</td><td class="tx fw">G-Sent</td><td class="tx">KOR</td><td class="tx mu">—</td><td class="tx mu">—</td><td class="mono">60 days</td><td class="mono">KRW</td><td class="tx mu">—</td><td class="np">98.0%</td><td><span class="badge badge-g">Active</span></td><td><button class="btn btn-g btn-sm btn-ic">✏️</button></td></tr>
+            <tr><td class="mono tc">WAM</td><td class="tx fw">WAM</td><td class="tx mu">—</td><td class="tx mu">—</td><td class="tx mu">—</td><td class="mono mu">—</td><td class="mono mu">—</td><td class="tx mu">—</td><td class="nn">65.0%</td><td><span class="badge badge-a">Incomplete</span></td><td><button class="btn btn-g btn-sm btn-ic">✏️</button></td></tr>
+          </tbody>
+        </table>
+        <div class="tbl-pg"><span>Showing 1–8 of 8</span><div class="pg-btns"><div class="pg-btn on">1</div></div></div>
+      </div>
+    </div>
+
+    <!-- PARTS -->
+    <div class="page" id="pg-parts">
+      <div class="ph">
+        <div><div class="ph-title">Parts Master</div><div class="ph-sub">Sub-material parts — 73 parts registered</div></div>
+        <div class="ph-acts">
+          <button class="btn btn-g btn-sm">⬇ Export</button>
+          <button class="btn btn-s btn-sm" onclick="nav('import')">⬆ Import</button>
+          <button class="btn btn-p btn-sm">+ Add Part</button>
+        </div>
+      </div>
+      <div class="tabs">
+        <div class="tab on">All (73)</div><div class="tab">Back Plate (22)</div><div class="tab">Noise Shim (18)</div><div class="tab">Cover Shim (12)</div><div class="tab">Sensor (8)</div><div class="tab">Other (13)</div>
+      </div>
+      <div class="tbl-wrap">
+        <div class="tbl-toolbar">
+          <input class="tbl-search" type="text" placeholder="Search part number or name...">
+          <select class="tbl-filter"><option>All Vendors</option><option>Finetro</option><option>MENETA</option><option>GSENT</option></select>
+          <select class="tbl-filter"><option>All Currencies</option><option>KRW</option><option>USD</option></select>
+          <div class="tbl-count">73 parts</div>
+        </div>
+        <table>
+          <thead><tr><th>Part No</th><th>Part Name</th><th>Category</th><th>In/Out</th><th>Vendor</th><th>Price</th><th>Currency</th><th>MOQ</th><th>Pack Size</th><th>Lead Time MP</th><th>Safety Stock</th><th></th></tr></thead>
+          <tbody>
+            <tr><td class="mono tc">BC530C2800</td><td class="tx">Back Plate_INR</td><td><span class="badge badge-m">Back Plate</span></td><td class="tx mu">in</td><td class="tx">Finetro</td><td class="mono ri">707</td><td class="mono">KRW</td><td class="mono ri">30,000</td><td class="mono ri">6,000</td><td class="mono">80 days</td><td class="mono ri">30,000</td><td><button class="btn btn-g btn-sm btn-ic">✏️</button></td></tr>
+            <tr><td class="mono tc">BC531C2800</td><td class="tx">Back Plate_OTR</td><td><span class="badge badge-m">Back Plate</span></td><td class="tx mu">out</td><td class="tx">Finetro</td><td class="mono ri">708</td><td class="mono">KRW</td><td class="mono ri">30,000</td><td class="mono ri">6,000</td><td class="mono">80 days</td><td class="mono ri">30,000</td><td><button class="btn btn-g btn-sm btn-ic">✏️</button></td></tr>
+            <tr><td class="mono tc">BC524C2802</td><td class="tx">Noise Shim_INR</td><td><span class="badge badge-m">Noise Shim</span></td><td class="tx mu">in</td><td class="tx">MENETA</td><td class="mono ri">0.31</td><td class="mono">USD</td><td class="mono ri">16,000</td><td class="mono ri">16,000</td><td class="mono">90 days</td><td class="mono ri">16,000</td><td><button class="btn btn-g btn-sm btn-ic">✏️</button></td></tr>
+            <tr><td class="mono tc">BC52004300</td><td class="tx">Sensor</td><td><span class="badge badge-m">Sensor</span></td><td class="tx mu">—</td><td class="tx">GSENT</td><td class="mono ri">0.03</td><td class="mono">USD</td><td class="mono ri">30,000</td><td class="mono ri">—</td><td class="mono">60 days</td><td class="mono ri">30,000</td><td><button class="btn btn-g btn-sm btn-ic">✏️</button></td></tr>
+          </tbody>
+        </table>
+        <div class="tbl-pg"><span>Showing 1–20 of 73</span><div class="pg-btns"><div class="pg-btn on">1</div><div class="pg-btn">2</div><div class="pg-btn">3</div><div class="pg-btn">4</div></div></div>
+      </div>
+    </div>
+
+    <!-- MRP / SHORTAGE -->
+    <div class="page" id="pg-mrp">
+      <div class="ph">
+        <div><div class="ph-title">MRP · Shortage Analysis</div><div class="ph-sub">Calculated: Feb 19, 2026 · 16-week forward</div></div>
+        <div class="ph-acts">
+          <button class="btn btn-g btn-sm">⬇ Export</button>
+          <button class="btn btn-p btn-sm">⚡ Recalculate</button>
+        </div>
+      </div>
+      <div class="stats-grid">
+        <div class="sc r"><div class="sc-label">Critical Shortage</div><div class="sc-val">2</div><div class="sc-delta tr2">Impossible PO</div></div>
+        <div class="sc a"><div class="sc-label">Warning</div><div class="sc-val">3</div><div class="sc-delta">Action needed soon</div></div>
+        <div class="sc g"><div class="sc-label">Sufficient</div><div class="sc-val">68</div><div class="sc-delta tg">Within safety stock</div></div>
+        <div class="sc c"><div class="sc-label">Total Parts</div><div class="sc-val">73</div><div class="sc-delta">Active</div></div>
+      </div>
+      <div class="tbl-wrap">
+        <div class="tbl-toolbar">
+          <input class="tbl-search" type="text" placeholder="Search part...">
+          <select class="tbl-filter"><option>All Status</option><option>Impossible PO</option><option>Shortage</option><option>Warning</option><option>OK</option></select>
+          <select class="tbl-filter"><option>All Vendors</option><option>Finetro</option><option>MENETA</option></select>
+        </div>
+        <table>
+          <thead><tr><th>Part No</th><th>Part Name</th><th>Vendor</th><th>On Hand</th><th>In Transit</th><th>Safety Stock</th><th>Requirement</th><th>Net Need</th><th>MOQ Order</th><th>Lead Time</th><th>Order By</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+            <tr><td class="mono tc">BC524C2802</td><td class="tx">Noise Shim_INR</td><td class="tx mu">MENETA</td><td class="mono ri">32,000</td><td class="mono ri">0</td><td class="mono ri">16,000</td><td class="nn ri fw">80,000</td><td class="nn ri fw">-32,000</td><td class="mono ri">48,000</td><td class="mono">90 days</td><td class="nn fw">Nov 20!</td><td><span class="badge badge-r">Impossible PO</span></td><td><button class="btn btn-p btn-sm">Issue PO</button></td></tr>
+            <tr><td class="mono tc">BC530C2800</td><td class="tx">Back Plate_INR</td><td class="tx mu">Finetro</td><td class="mono ri">45,000</td><td class="mono ri">30,000</td><td class="mono ri">30,000</td><td class="nn ri fw">93,000</td><td class="nn ri fw">-18,000</td><td class="mono ri">30,000</td><td class="mono">80 days</td><td class="nn fw">Nov 30!</td><td><span class="badge badge-r">Shortage</span></td><td><button class="btn btn-p btn-sm">Issue PO</button></td></tr>
+            <tr><td class="mono tc">BC52004300</td><td class="tx">Sensor</td><td class="tx mu">GSENT</td><td class="mono ri">28,000</td><td class="mono ri">30,000</td><td class="mono ri">30,000</td><td class="mono ri">80,000</td><td class="nw ri fw">-8,500</td><td class="mono ri">30,000</td><td class="mono">60 days</td><td class="nw">Dec 20</td><td><span class="badge badge-a">Warning</span></td><td><button class="btn btn-s btn-sm">Issue PO</button></td></tr>
+            <tr><td class="mono tc">BC531C2800</td><td class="tx">Back Plate_OTR</td><td class="tx mu">Finetro</td><td class="mono ri">60,000</td><td class="mono ri">30,000</td><td class="mono ri">30,000</td><td class="mono ri">112,000</td><td class="np ri">8,000</td><td class="mono ri">—</td><td class="mono">80 days</td><td class="np">OK</td><td><span class="badge badge-g">OK</span></td><td><button class="btn btn-g btn-sm">—</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- IMPORT -->
+    <div class="page" id="pg-import">
+      <div class="ph">
+        <div><div class="ph-title">Import Data</div><div class="ph-sub">Upload SCM Import Template to initialize or update master data</div></div>
+        <div class="ph-acts"><button class="btn btn-p btn-sm">⬇ Download Template v3</button></div>
+      </div>
+      <div class="g2 mb16">
+        <div class="card">
+          <div class="card-hdr"><div class="card-title">📥 Upload Template</div></div>
+          <div class="card-body">
+            <div style="border:2px dashed var(--bd);border-radius:var(--rl);padding:40px;text-align:center;cursor:pointer;transition:border-color var(--tr)" onmouseover="this.style.borderColor='var(--cyan)'" onmouseout="this.style.borderColor='var(--bd)'">
+              <div style="font-size:32px;margin-bottom:12px;opacity:0.4">📂</div>
+              <div style="font-size:13px;color:var(--t2);margin-bottom:8px">Drop <strong>SCM_Import_Template.xlsx</strong> here</div>
+              <div style="font-size:11px;color:var(--t3);margin-bottom:16px">or click to browse</div>
+              <button class="btn btn-s btn-sm">Browse File</button>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><div class="card-title">📋 Import Rules</div></div>
+          <div class="card-body">
+            <div style="display:flex;flex-direction:column;gap:10px;font-size:12px;color:var(--t2)">
+              <div>① Fill sheets in order: <strong style="color:var(--t1)">Vendors → Parts → Products → BOM → Inventory → Forecast</strong></div>
+              <div>② <strong style="color:var(--amber)">Yellow cells</strong> = Required. Blank = import error.</div>
+              <div>③ <strong>vendor_code</strong> in Parts must match Vendors exactly.</div>
+              <div>④ <strong>assy_part_no</strong> in BOM must match Products.</div>
+              <div>⑤ <strong>part_no</strong> in BOM must match Parts.</div>
+              <div>⑥ You may add columns to the right — imported as custom fields.</div>
+              <div>⑦ Dates: <strong>YYYY-MM-DD</strong> format only.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="tbl-wrap">
+        <div class="card-hdr"><div class="card-title">🕐 Import History</div></div>
+        <table>
+          <thead><tr><th>Date</th><th>File</th><th>Vendors</th><th>Parts</th><th>BOM</th><th>Products</th><th>Inventory</th><th>Forecast</th><th>Status</th><th>By</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">2026-02-19 09:15</td><td class="tx">SCM_Import_Template_v3.xlsx</td><td class="np ri">8 ✓</td><td class="np ri">73 ✓</td><td class="np ri">139 ✓</td><td class="np ri">39 ✓</td><td class="np ri">45 ✓</td><td class="np ri">45 ✓</td><td><span class="badge badge-g">Success</span></td><td class="tx mu">Admin</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- PLACEHOLDER PAGES -->
+    <div class="page" id="pg-products"><div class="ph"><div><div class="ph-title">Products</div><div class="ph-sub">Finished product (Assy) master — 39 products</div></div><div class="ph-acts"><button class="btn btn-p btn-sm">+ Add Product</button></div></div><div class="empty"><div class="empty-icon">📦</div><div class="empty-text">Products master — full UI coming in STEP 3</div><button class="btn btn-p mt8" onclick="nav('import')">⬆ Import from Template</button></div></div>
+    <div class="page" id="pg-bom"><div class="ph"><div><div class="ph-title">Bill of Materials</div><div class="ph-sub">139 BOM entries loaded</div></div></div><div class="empty"><div class="empty-icon">🗂️</div><div class="empty-text">BOM management — full UI coming in STEP 3</div></div></div>
+    <div class="page" id="pg-forecast"><div class="ph"><div><div class="ph-title">Forecast</div><div class="ph-sub">Weekly shipment forecast — 26 weeks forward</div></div><div class="ph-acts"><button class="btn btn-p btn-sm">+ Enter Forecast</button></div></div><div class="empty"><div class="empty-icon">📈</div><div class="empty-text">Weekly forecast entry — coming in STEP 4</div></div></div>
+    <div class="page" id="pg-poplan"><div class="ph"><div><div class="ph-title">PO Planning</div><div class="ph-sub">Review shortage → confirm quantities → issue PO</div></div><div class="ph-acts"><button class="btn btn-p btn-sm">Issue Selected POs</button></div></div><div class="empty"><div class="empty-icon">🛒</div><div class="empty-text">PO planning — coming in STEP 5</div></div></div>
+    <div class="page" id="pg-polist"><div class="ph"><div><div class="ph-title">PO List</div><div class="ph-sub">All purchase orders and status tracking</div></div></div><div class="empty"><div class="empty-icon">📋</div><div class="empty-text">PO list — coming in STEP 5</div></div></div>
+    <div class="page" id="pg-inventory"><div class="ph"><div><div class="ph-title">Inventory</div><div class="ph-sub">On Hand / VMI / In Transit</div></div></div><div class="empty"><div class="empty-icon">🏪</div><div class="empty-text">Inventory management — coming in STEP 5</div></div></div>
+    <div class="page" id="pg-hqtrade"><div class="ph"><div><div class="ph-title">HQ Trade</div><div class="ph-sub">Invoice → B/L → Entry Summary → POD</div></div><div class="ph-acts"><button class="btn btn-p btn-sm">+ New Trade</button></div></div><div class="empty"><div class="empty-icon">🚢</div><div class="empty-text">HQ Trade management — coming in STEP 6</div></div></div>
+    <div class="page" id="pg-landedcost"><div class="ph"><div><div class="ph-title">Landed Cost</div><div class="ph-sub">Purchase + Logistics + Customs + Duties</div></div></div><div class="empty"><div class="empty-icon">💰</div><div class="empty-text">Landed cost calculation — coming in STEP 6</div></div></div>
+    <div class="page" id="pg-kpi"><div class="ph"><div><div class="ph-title">Vendor KPI</div><div class="ph-sub">On-Time Delivery and quarterly evaluation</div></div></div><div class="empty"><div class="empty-icon">🎯</div><div class="empty-text">Vendor KPI tracking — coming in STEP 7</div></div></div>
+    <div class="page" id="pg-alerts"><div class="ph"><div><div class="ph-title">Alert Center</div><div class="ph-sub">3 active alerts</div></div></div><div class="empty"><div class="empty-icon">🚨</div><div class="empty-text">Alert center — coming in STEP 7</div></div></div>
+    <div class="page" id="pg-settings"><div class="ph"><div><div class="ph-title">Settings</div><div class="ph-sub">Users, roles, system config</div></div></div><div class="empty"><div class="empty-icon">⚙️</div><div class="empty-text">Settings panel — coming in STEP 7</div></div></div>
+  </main>
+</div>
+
+<!-- MODAL: Add Vendor -->
+<div class="modal-ov" id="m-vendor">
+  <div class="modal">
+    <div class="m-hdr"><div class="m-title">Add Vendor</div><div class="m-close" onclick="closeM('m-vendor')">✕</div></div>
+    <div class="m-body">
+      <div class="f-ptitle">Basic Info</div>
+      <div class="fg fg2" style="margin-bottom:16px">
+        <div class="field"><div class="f-lbl">Vendor Code<span class="req">*</span></div><input class="f-inp" placeholder="e.g. KBA"></div>
+        <div class="field"><div class="f-lbl">Vendor Name<span class="req">*</span></div><input class="f-inp" placeholder="Full company name"></div>
+        <div class="field"><div class="f-lbl">Country<span class="req">*</span></div><input class="f-inp" placeholder="KOR / USA / DEU"></div>
+        <div class="field"><div class="f-lbl">Default Currency</div><select class="f-inp"><option>USD</option><option>KRW</option><option>EUR</option></select></div>
+      </div>
+      <div class="f-ptitle">Address (for Invoice / PO)</div>
+      <div class="fg fg2" style="margin-bottom:16px">
+        <div class="field" style="grid-column:span 2"><div class="f-lbl">Address Line 1<span class="req">*</span></div><input class="f-inp" placeholder="Street address"></div>
+        <div class="field" style="grid-column:span 2"><div class="f-lbl">Address Line 2</div><input class="f-inp" placeholder="Apt, suite, building"></div>
+        <div class="field"><div class="f-lbl">City<span class="req">*</span></div><input class="f-inp"></div>
+        <div class="field"><div class="f-lbl">State / Province</div><input class="f-inp"></div>
+        <div class="field"><div class="f-lbl">Postal Code</div><input class="f-inp"></div>
+        <div class="field"><div class="f-lbl">Country Code</div><input class="f-inp" placeholder="KOR / USA / DEU"></div>
+      </div>
+      <div class="f-ptitle">Contact</div>
+      <div class="fg fg2" style="margin-bottom:16px">
+        <div class="field"><div class="f-lbl">Contact Name</div><input class="f-inp"></div>
+        <div class="field"><div class="f-lbl">Email</div><input class="f-inp" type="email"></div>
+        <div class="field"><div class="f-lbl">Phone</div><input class="f-inp"></div>
+        <div class="field"><div class="f-lbl">Payment Terms</div><input class="f-inp" placeholder="NET 30 / FOB / EXW"></div>
+      </div>
+      <div class="f-ptitle">Banking (for Payment)</div>
+      <div class="fg fg2">
+        <div class="field"><div class="f-lbl">Bank Name</div><input class="f-inp"></div>
+        <div class="field"><div class="f-lbl">Account Number</div><input class="f-inp"></div>
+        <div class="field"><div class="f-lbl">SWIFT Code</div><input class="f-inp"></div>
+        <div class="field"><div class="f-lbl">IBAN / Routing</div><input class="f-inp"></div>
+      </div>
+    </div>
+    <div class="m-foot">
+      <button class="btn btn-g" onclick="closeM('m-vendor')">Cancel</button>
+      <button class="btn btn-p">Save Vendor</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── STATE ──────────────────────────────────────────────
+const S = { page: 'dashboard', theme: 'dark' };
+
+const PAGE_LABELS = {
+  dashboard:'Dashboard', vendors:'Vendors', parts:'Parts Master',
+  products:'Products', bom:'BOM', forecast:'Forecast', mrp:'MRP · Shortage',
+  poplan:'PO Planning', polist:'PO List', inventory:'Inventory',
+  hqtrade:'HQ Trade', landedcost:'Landed Cost', kpi:'Vendor KPI',
+  alerts:'Alert Center', import:'Import Data', settings:'Settings'
+};
+
+const DEMO_USERS = {
+  admin:      {name:'Admin User',     role:'Administrator', av:'AD'},
+  purchasing: {name:'Kim Purchasing', role:'Purchasing',    av:'KP'},
+  logistics:  {name:'Park Logistics', role:'Logistics',     av:'PL'},
+  sales:      {name:'Lee Sales',      role:'Sales',         av:'LS'},
+  viewer:     {name:'Viewer Only',    role:'Viewer',        av:'VO'},
+};
+
+// ── AUTH ───────────────────────────────────────────────
+function setDemo(r) {
+  document.getElementById('li-role').value = r;
+  document.getElementById('li-email').value = r + '@company.com';
+}
+
+function doLogin() {
+  const r = document.getElementById('li-role').value;
+  const u = DEMO_USERS[r] || DEMO_USERS.admin;
+  document.getElementById('u-nm').textContent = u.name;
+  document.getElementById('u-rl').textContent = u.role;
+  document.getElementById('u-av').textContent = u.av;
+  document.getElementById('login-page').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  localStorage.setItem('scm_sess', JSON.stringify(u));
+  nav('dashboard');
+}
+
+function doLogout() {
+  localStorage.removeItem('scm_sess');
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-page').style.display = 'flex';
+}
+
+// Auto-login
+(function() {
+  const sess = localStorage.getItem('scm_sess');
+  if (sess) {
+    try {
+      const u = JSON.parse(sess);
+      document.getElementById('u-nm').textContent = u.name;
+      document.getElementById('u-rl').textContent = u.role;
+      document.getElementById('u-av').textContent = u.av;
+      document.getElementById('login-page').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+    } catch(e) {}
+  }
+})();
+
+// ── NAVIGATION ─────────────────────────────────────────
+function nav(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const pg = document.getElementById('pg-' + id);
+  if (pg) { pg.classList.add('active'); S.page = id; }
+  document.getElementById('bc-cur').textContent = PAGE_LABELS[id] || id;
+  document.querySelectorAll('.nav-item').forEach(item => {
+    if (item.getAttribute('onclick')?.includes(`'${id}'`)) item.classList.add('active');
+  });
+  document.querySelectorAll('.modal-ov').forEach(m => m.classList.remove('open'));
+}
+
+// ── THEME ──────────────────────────────────────────────
+function toggleTheme() {
+  S.theme = S.theme === 'dark' ? 'light' : 'dark';
+  document.body.classList.toggle('light', S.theme === 'light');
+  document.getElementById('tsw').classList.toggle('on', S.theme === 'light');
+  document.getElementById('tlbl').textContent = S.theme === 'light' ? 'Dark mode' : 'Light mode';
+  localStorage.setItem('scm_theme', S.theme);
+}
+const savedTheme = localStorage.getItem('scm_theme');
+if (savedTheme === 'light') {
+  document.body.classList.add('light');
+  S.theme = 'light';
+  document.getElementById('tsw').classList.add('on');
+  document.getElementById('tlbl').textContent = 'Dark mode';
+}
+
+// ── MODALS ─────────────────────────────────────────────
+function openM(id) { document.getElementById(id)?.classList.add('open'); }
+function closeM(id) { document.getElementById(id)?.classList.remove('open'); }
+document.querySelectorAll('.modal-ov').forEach(ov => {
+  ov.addEventListener('click', e => { if (e.target === ov) ov.classList.remove('open'); });
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.querySelectorAll('.modal-ov.open').forEach(m => m.classList.remove('open'));
+});
+
+// ── DB ABSTRACTION LAYER (Phase 1 = LocalStorage) ──────
+// To migrate to Supabase: replace only these function bodies
+const DB = {
+  async get(table)              { const r = localStorage.getItem(`scm_${table}`); return r ? JSON.parse(r) : []; },
+  async save(table, data)       { localStorage.setItem(`scm_${table}`, JSON.stringify(data)); return data; },
+  async upsert(table, rec, key='id') {
+    const data = await this.get(table);
+    const i = data.findIndex(r => r[key] === rec[key]);
+    if (i >= 0) data[i] = {...data[i], ...rec}; else data.push({...rec, id: rec.id || Date.now().toString()});
+    return this.save(table, data);
+  },
+  async delete(table, id, key='id') {
+    const data = await this.get(table);
+    return this.save(table, data.filter(r => r[key] !== id));
+  }
+};
+
+// ── UTILS ──────────────────────────────────────────────
+const fmt = (n, d=0) => n == null ? '—' : new Intl.NumberFormat('en-US',{minimumFractionDigits:d,maximumFractionDigits:d}).format(n);
+const fmtUSD = n => '$' + fmt(n, 2);
+
+console.log('%cSCM Pro initialized — Phase 1 (LocalStorage)', 'color:#00D4FF;font-weight:bold');
+console.log('DB.get("vendors"), DB.upsert("vendors", {...}), etc.');
+</script>
+</body>
+</html>
