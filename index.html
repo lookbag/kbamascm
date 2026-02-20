@@ -1942,6 +1942,53 @@
         .kpi-mini-vendor { font-size:12px; font-weight:600; color:var(--t1); min-width:90px }
         .kpi-mini-score { font-family:var(--fm); font-size:12px; font-weight:700; min-width:40px; text-align:right }
 
+        /* ── STEP 8A: HQ TRADE + LANDED COST + SETTINGS ─── */
+        .trade-stage { flex:1; min-width:100px; display:flex; flex-direction:column;
+            align-items:center; padding:12px 8px 10px; position:relative;
+            transition:all var(--tr) }
+        .trade-stage::after { content:'▶'; position:absolute; right:-10px; top:50%;
+            transform:translateY(-50%); color:var(--bd); font-size:12px; z-index:2 }
+        .trade-stage:last-child::after { display:none }
+        .trade-stage-icon { font-size:20px; margin-bottom:5px }
+        .trade-stage-label { font-size:10px; font-weight:700; text-transform:uppercase;
+            letter-spacing:.07em; color:var(--t3); margin-bottom:2px }
+        .trade-stage-count { font-family:var(--fm); font-size:18px; font-weight:700; color:var(--t1) }
+        .trade-stage.has-data { background:rgba(0,212,255,.05); border-radius:var(--r);
+            border:1px solid rgba(0,212,255,.2) }
+        .trade-stage.complete { background:rgba(0,229,160,.05); border-radius:var(--r);
+            border:1px solid rgba(0,229,160,.2) }
+        .trade-stage.complete .trade-stage-count { color:var(--green) }
+        .doc-pills { display:flex; gap:3px; flex-wrap:wrap }
+        .doc-pill { width:10px; height:10px; border-radius:50%; border:1.5px solid var(--bd) }
+        .doc-pill.done    { background:var(--green); border-color:var(--green) }
+        .doc-pill.partial { background:var(--amber); border-color:var(--amber) }
+        .doc-pill.missing { background:var(--bg2) }
+        .doc-check-item { display:flex; align-items:center; gap:10px; padding:8px 10px;
+            border:1px solid var(--bd); border-radius:var(--r); background:var(--bg2);
+            transition:all var(--tr); margin-bottom:6px }
+        .doc-check-item.received { border-color:rgba(0,229,160,.3); background:rgba(0,229,160,.05) }
+        .doc-check-item.issues   { border-color:rgba(255,69,96,.3); background:rgba(255,69,96,.05) }
+        .doc-check-icon { font-size:16px; flex-shrink:0 }
+        .doc-check-name { font-size:12px; font-weight:500; color:var(--t1) }
+        .doc-check-sel  { font-size:11px; background:var(--bg1); border:1px solid var(--bd);
+            border-radius:4px; color:var(--t1); padding:3px 6px; outline:none; cursor:pointer }
+        .lc-section { background:var(--bg1); border:1px solid var(--bd); border-radius:var(--r);
+            padding:14px 18px; margin-bottom:12px }
+        .lc-section-title { font-size:11px; font-weight:700; text-transform:uppercase;
+            letter-spacing:.08em; color:var(--cyan); margin-bottom:10px;
+            padding-bottom:8px; border-bottom:1px solid var(--bd) }
+        .lc-row { display:flex; align-items:center; gap:8px; padding:5px 0;
+            border-bottom:1px solid rgba(255,255,255,.04) }
+        .lc-row:last-child { border-bottom:none }
+        .lc-label { flex:1; font-size:12px; color:var(--t2) }
+        .lc-inp   { width:120px; background:var(--bg2); border:1px solid var(--bd);
+            border-radius:4px; color:var(--t1); font-family:var(--fm); font-size:12px;
+            text-align:right; padding:5px 8px; outline:none; transition:border-color var(--tr) }
+        .lc-inp:focus { border-color:var(--cyan) }
+        .lc-unit   { font-size:11px; color:var(--t3); width:36px }
+        .lc-result { font-family:var(--fm); font-size:12px; font-weight:600;
+            min-width:100px; text-align:right }
+
         .detail-panel {
             position: fixed;
             top: var(--hh);
@@ -2508,6 +2555,11 @@
                 <div class="h-btn" title="Alerts" onclick="nav('alerts')">🔔<div class="badge-dot"></div>
                 </div>
                 <div class="h-btn" title="Settings" onclick="nav('settings')">⚙️</div>
+                <div class="h-div"></div>
+                <div id="db-indicator" onclick="nav('settings')" title="DB 상태 — Settings에서 연결"
+                    style="font-size:11px;font-family:var(--fm);padding:3px 10px;border-radius:var(--r);border:1px solid var(--bd);cursor:pointer;white-space:nowrap;transition:all var(--tr)">
+                    <span style="color:var(--amber)">● Local</span>
+                </div>
                 <div class="h-div"></div>
                 <div class="h-user" onclick="nav('settings')">
                     <div class="avatar" id="u-av">AD</div>
@@ -3389,25 +3441,139 @@
                 <div class="ph">
                     <div>
                         <div class="ph-title">HQ Trade</div>
-                        <div class="ph-sub">Invoice → B/L → Entry → POD</div>
+                        <div class="ph-sub" id="hq-sub">Invoice → B/L → Entry → POD</div>
                     </div>
-                    <div class="ph-acts"><button class="btn btn-p btn-sm">+ New Trade</button></div>
+                    <div class="ph-acts">
+                        <select class="tbl-filter" id="hq-filter-vendor" onchange="renderHQTrade()"><option value="">All Vendors</option></select>
+                        <select class="tbl-filter" id="hq-filter-status" onchange="renderHQTrade()">
+                            <option value="">All Status</option>
+                            <option value="open">Open</option><option value="in_transit">In Transit</option>
+                            <option value="customs">At Customs</option><option value="delivered">Delivered</option>
+                            <option value="closed">Closed</option>
+                        </select>
+                        <button class="btn btn-g btn-sm" onclick="exportTable('hqtrade')">⬇ Export</button>
+                        <button class="btn btn-p btn-sm" onclick="openDP('dp-trade','new')">+ New Shipment</button>
+                    </div>
                 </div>
-                <div class="empty">
-                    <div class="empty-icon">🚢</div>
-                    <div class="empty-text">HQ Trade management — coming in STEP 6</div>
+                <!-- Flow strip -->
+                <div style="display:flex;gap:0;margin-bottom:18px;overflow-x:auto">
+                    <div class="trade-stage" id="hq-stage-invoice"><div class="trade-stage-icon">🧾</div><div class="trade-stage-label">Invoice</div><div class="trade-stage-count" id="hq-cnt-invoice">—</div></div>
+                    <div class="trade-stage" id="hq-stage-packing"><div class="trade-stage-icon">📦</div><div class="trade-stage-label">Packing</div><div class="trade-stage-count" id="hq-cnt-packing">—</div></div>
+                    <div class="trade-stage" id="hq-stage-bl"><div class="trade-stage-icon">🚢</div><div class="trade-stage-label">B/L</div><div class="trade-stage-count" id="hq-cnt-bl">—</div></div>
+                    <div class="trade-stage" id="hq-stage-entry"><div class="trade-stage-icon">🏛️</div><div class="trade-stage-label">Entry</div><div class="trade-stage-count" id="hq-cnt-entry">—</div></div>
+                    <div class="trade-stage" id="hq-stage-pod"><div class="trade-stage-icon">✅</div><div class="trade-stage-label">POD</div><div class="trade-stage-count" id="hq-cnt-pod">—</div></div>
+                </div>
+                <!-- KPIs -->
+                <div class="stats-grid" style="grid-template-columns:repeat(5,1fr);margin-bottom:16px">
+                    <div class="sc c"><div class="sc-label">Total</div><div class="sc-val" id="hq-kpi-total">—</div></div>
+                    <div class="sc a"><div class="sc-label">In Transit</div><div class="sc-val" id="hq-kpi-transit">—</div></div>
+                    <div class="sc a"><div class="sc-label">At Customs</div><div class="sc-val" id="hq-kpi-customs">—</div></div>
+                    <div class="sc g"><div class="sc-label">Delivered</div><div class="sc-val" id="hq-kpi-delivered">—</div></div>
+                    <div class="sc c"><div class="sc-label">Total Value</div><div class="sc-val" id="hq-kpi-value">—</div></div>
+                </div>
+                <div class="tbl-wrap">
+                    <div class="tbl-toolbar">
+                        <input class="tbl-search" id="hq-search" placeholder="Shipment, PO, Vendor..." oninput="renderHQTrade()">
+                        <div class="tbl-count" id="hq-count">—</div>
+                    </div>
+                    <table>
+                        <thead><tr>
+                            <th>Shipment No</th><th>PO Ref</th><th>Vendor</th>
+                            <th>ETD</th><th>ETA</th><th style="text-align:right">Value</th>
+                            <th>Ccy</th><th title="Invoice/Packing/BL/CO/Entry/POD">Docs</th>
+                            <th>Status</th><th></th>
+                        </tr></thead>
+                        <tbody id="hq-tbody"></tbody>
+                    </table>
                 </div>
             </div>
             <div class="page" id="pg-landedcost">
                 <div class="ph">
                     <div>
                         <div class="ph-title">Landed Cost</div>
-                        <div class="ph-sub">Purchase + Logistics + Customs + Duties</div>
+                        <div class="ph-sub">Purchase + Freight + Customs + Duties → True Cost per Unit</div>
+                    </div>
+                    <div class="ph-acts">
+                        <select class="tbl-filter" id="lc-filter-shipment" onchange="loadLCShipment()" style="min-width:180px">
+                            <option value="">— Load from Shipment —</option>
+                        </select>
+                        <button class="btn btn-g btn-sm" onclick="exportLandedCost()">⬇ Export</button>
+                        <button class="btn btn-p btn-sm" onclick="calcLandedCost()">🧮 Calculate</button>
                     </div>
                 </div>
-                <div class="empty">
-                    <div class="empty-icon">💰</div>
-                    <div class="empty-text">Landed cost — coming in STEP 6</div>
+                <div class="g2" style="align-items:start;gap:20px">
+                  <!-- LEFT: inputs -->
+                  <div style="display:flex;flex-direction:column;gap:14px">
+                    <div class="lc-section">
+                        <div class="lc-section-title">📋 Reference</div>
+                        <div class="fg fg2">
+                            <div class="field"><div class="f-lbl">Shipment No</div><input class="f-inp" id="lc-shipment-no" placeholder="SHP-2026-001" oninput="calcLandedCost()"></div>
+                            <div class="field"><div class="f-lbl">Vendor</div><input class="f-inp" id="lc-vendor" oninput="calcLandedCost()"></div>
+                            <div class="field"><div class="f-lbl">Invoice No</div><input class="f-inp" id="lc-invoice-no" oninput="calcLandedCost()"></div>
+                            <div class="field"><div class="f-lbl">Invoice Date</div><input class="f-inp" id="lc-invoice-date" type="date" oninput="calcLandedCost()"></div>
+                        </div>
+                    </div>
+                    <div class="lc-section">
+                        <div class="lc-section-title">💵 Purchase Cost</div>
+                        <div class="lc-row"><div class="lc-label">Invoice Amount</div><input class="lc-inp" id="lc-invoice-amt" type="number" value="0" oninput="calcLandedCost()"><div class="lc-unit">USD</div></div>
+                        <div class="lc-row"><div class="lc-label">FX Rate (USD→KRW)</div><input class="lc-inp" id="lc-fx-rate" type="number" value="1380" oninput="calcLandedCost()"><div class="lc-unit">KRW</div></div>
+                    </div>
+                    <div class="lc-section">
+                        <div class="lc-section-title">🚢 Freight & Logistics</div>
+                        <div class="lc-row"><div class="lc-label">Ocean Freight</div><input class="lc-inp" id="lc-ocean" type="number" value="0" oninput="calcLandedCost()"><div class="lc-unit">USD</div></div>
+                        <div class="lc-row"><div class="lc-label">Air Freight</div><input class="lc-inp" id="lc-air" type="number" value="0" oninput="calcLandedCost()"><div class="lc-unit">USD</div></div>
+                        <div class="lc-row"><div class="lc-label">Inland (origin)</div><input class="lc-inp" id="lc-inland-origin" type="number" value="0" oninput="calcLandedCost()"><div class="lc-unit">USD</div></div>
+                        <div class="lc-row"><div class="lc-label">Inland (destination)</div><input class="lc-inp" id="lc-inland-dest" type="number" value="0" oninput="calcLandedCost()"><div class="lc-unit">KRW</div></div>
+                        <div class="lc-row"><div class="lc-label">Insurance</div><input class="lc-inp" id="lc-insurance" type="number" value="0" oninput="calcLandedCost()"><div class="lc-unit">USD</div></div>
+                        <div class="lc-row"><div class="lc-label">Forwarding Fee</div><input class="lc-inp" id="lc-forwarding" type="number" value="0" oninput="calcLandedCost()"><div class="lc-unit">USD</div></div>
+                    </div>
+                    <div class="lc-section">
+                        <div class="lc-section-title">🏛️ Customs & Duties</div>
+                        <div class="lc-row"><div class="lc-label">CIF Value (auto)</div><div class="lc-result" id="lc-cif-display">—</div><div class="lc-unit">USD</div></div>
+                        <div class="lc-row"><div class="lc-label">Import Duty Rate</div><input class="lc-inp" id="lc-duty-rate" type="number" value="0" step="0.1" oninput="calcLandedCost()"><div class="lc-unit">%</div></div>
+                        <div class="lc-row"><div class="lc-label">Import Duty</div><div class="lc-result" id="lc-duty-display">—</div><div class="lc-unit">KRW</div></div>
+                        <div class="lc-row"><div class="lc-label">VAT Rate</div><input class="lc-inp" id="lc-vat-rate" type="number" value="10" step="0.1" oninput="calcLandedCost()"><div class="lc-unit">%</div></div>
+                        <div class="lc-row"><div class="lc-label">VAT Amount</div><div class="lc-result" id="lc-vat-display">—</div><div class="lc-unit">KRW</div></div>
+                        <div class="lc-row"><div class="lc-label">Brokerage Fee</div><input class="lc-inp" id="lc-brokerage" type="number" value="0" oninput="calcLandedCost()"><div class="lc-unit">KRW</div></div>
+                        <div class="lc-row"><div class="lc-label">Other Charges</div><input class="lc-inp" id="lc-other" type="number" value="0" oninput="calcLandedCost()"><div class="lc-unit">KRW</div></div>
+                    </div>
+                    <div class="lc-section">
+                        <div class="lc-section-title">📦 Quantity</div>
+                        <div class="lc-row"><div class="lc-label">Total Qty (pcs)</div><input class="lc-inp" id="lc-total-qty" type="number" value="0" oninput="calcLandedCost()"><div class="lc-unit">pcs</div></div>
+                        <div class="lc-row"><div class="lc-label">Total Weight</div><input class="lc-inp" id="lc-weight" type="number" value="0" oninput="calcLandedCost()"><div class="lc-unit">kg</div></div>
+                    </div>
+                  </div>
+                  <!-- RIGHT: results -->
+                  <div style="display:flex;flex-direction:column;gap:14px;position:sticky;top:20px">
+                    <div class="lc-section" style="border-color:rgba(0,212,255,.25);background:rgba(0,212,255,.04)">
+                        <div class="lc-section-title" style="color:var(--t1);font-size:13px">🧮 Total Landed Cost</div>
+                        <div style="text-align:center;padding:10px 0">
+                            <div style="font-family:var(--fm);font-size:36px;font-weight:700;color:var(--cyan)" id="lc-grand-total-krw">₩ —</div>
+                            <div style="font-size:12px;color:var(--t3);margin-top:4px" id="lc-grand-total-usd">≈ $ —</div>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;padding:10px 0;border-top:1px solid var(--bd)">
+                            <div style="text-align:center"><div style="font-size:10px;color:var(--t3)">Unit Cost</div><div style="font-family:var(--fm);font-size:18px;font-weight:700" id="lc-unit-cost">—</div></div>
+                            <div style="text-align:center"><div style="font-size:10px;color:var(--t3)">Cost/kg</div><div style="font-family:var(--fm);font-size:18px;font-weight:700" id="lc-cost-kg">—</div></div>
+                            <div style="text-align:center"><div style="font-size:10px;color:var(--t3)">Markup</div><div style="font-family:var(--fm);font-size:18px;font-weight:700;color:var(--amber)" id="lc-markup">—</div></div>
+                        </div>
+                    </div>
+                    <div class="lc-section">
+                        <div class="lc-section-title">📊 Cost Breakdown</div>
+                        <div id="lc-breakdown-rows"></div>
+                        <div id="lc-bar-stack" style="display:flex;height:14px;border-radius:var(--r);overflow:hidden;border:1px solid var(--bd);margin-top:10px"></div>
+                    </div>
+                    <div class="lc-section">
+                        <div class="lc-section-title">💾 Save</div>
+                        <div style="display:flex;flex-direction:column;gap:8px">
+                            <button class="btn btn-p" onclick="saveLandedCost()">💾 Save Calculation</button>
+                            <button class="btn btn-g" onclick="exportLandedCost()">⬇ Export Excel</button>
+                        </div>
+                    </div>
+                    <div class="lc-section">
+                        <div class="lc-section-title">📋 History</div>
+                        <div id="lc-history-list"></div>
+                    </div>
+                  </div>
                 </div>
             </div>
             <div class="page" id="pg-kpi">
@@ -3517,12 +3683,87 @@
                 <div class="ph">
                     <div>
                         <div class="ph-title">Settings</div>
-                        <div class="ph-sub">Users, roles, system config</div>
+                        <div class="ph-sub">Database connection &amp; system configuration</div>
                     </div>
+                    <div class="ph-acts"><div id="settings-db-status" style="font-size:12px;font-family:var(--fm);padding:5px 12px;border:1px solid var(--bd);border-radius:var(--r)"><span style="color:var(--amber)">● Not connected</span></div></div>
                 </div>
-                <div class="empty">
-                    <div class="empty-icon">⚙️</div>
-                    <div class="empty-text">Settings panel — coming in STEP 7</div>
+                <div class="g2" style="align-items:start;gap:20px">
+                  <div style="display:flex;flex-direction:column;gap:16px">
+                    <div class="card">
+                        <div class="card-hdr"><div class="card-title">🗄️ Supabase 연결</div></div>
+                        <div class="card-body" style="display:flex;flex-direction:column;gap:12px">
+                            <div style="background:var(--bg0);border:1px solid var(--bd);border-radius:var(--r);padding:10px 14px;font-size:11px">
+                                <div style="color:var(--t3);font-size:10px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px">Project URL</div>
+                                <div style="font-family:var(--fm);color:var(--cyan)">https://inhyqhtrpsjpiyywtfhw.supabase.co</div>
+                            </div>
+                            <div class="field">
+                                <div class="f-lbl">Anon Key <span class="req">*</span></div>
+                                <div style="display:flex;gap:8px">
+                                    <input class="f-inp" id="sb-key-input" type="password" placeholder="eyJhbGciOiJIUzI1NiIs..." style="flex:1;font-family:var(--fm);font-size:11px">
+                                    <button class="btn btn-g btn-sm btn-ic" onclick="var i=document.getElementById('sb-key-input');i.type=i.type==='password'?'text':'password'">👁</button>
+                                </div>
+                                <div style="font-size:10px;color:var(--t3);margin-top:4px">Supabase → Project Settings → API → <b>anon / public</b></div>
+                            </div>
+                            <div style="display:flex;gap:8px">
+                                <button class="btn btn-p" id="sb-connect-btn" onclick="settingsConnect()" style="flex:1">🔌 Connect</button>
+                                <button class="btn btn-g" id="sb-disconnect-btn" onclick="settingsDisconnect()" style="display:none">✕ Disconnect</button>
+                            </div>
+                            <div id="sb-connect-msg" style="font-size:12px;display:none;padding:8px 10px;border-radius:var(--r);border:1px solid"></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-hdr"><div class="card-title">⬆️ Local → Supabase 마이그레이션</div></div>
+                        <div class="card-body" style="display:flex;flex-direction:column;gap:10px">
+                            <div style="font-size:12px;color:var(--t2);line-height:1.6">LocalStorage 데이터를 Supabase로 upsert 방식으로 동기화합니다.</div>
+                            <div id="migrate-results" style="display:none;font-size:11px;background:var(--bg0);border:1px solid var(--bd);border-radius:var(--r);padding:10px"></div>
+                            <button class="btn btn-p" id="migrate-btn" onclick="settingsMigrate()">🚀 전체 마이그레이션</button>
+                        </div>
+                    </div>
+                    <div class="card" style="border-color:rgba(255,69,96,.25)">
+                        <div class="card-hdr" style="border-color:rgba(255,69,96,.15)"><div class="card-title" style="color:var(--red)">⚠️ Danger Zone</div></div>
+                        <div class="card-body" style="display:flex;flex-direction:column;gap:8px">
+                            <div style="display:flex;gap:8px">
+                                <select class="f-inp" id="clear-table-sel" style="flex:1;font-size:11px">
+                                    <option>vendors</option><option>parts</option><option>products</option><option>bom</option>
+                                    <option>inventory</option><option>forecast</option><option>polist</option>
+                                    <option>hqtrade</option><option>landedcost</option><option>vendorkpi</option><option>alerts</option>
+                                </select>
+                                <button class="btn btn-g btn-sm" onclick="settingsClearOne()" style="color:var(--red)">🗑 Clear</button>
+                            </div>
+                            <button class="btn btn-g btn-sm" onclick="settingsClearAll()" style="color:var(--red)">💣 Clear ALL Local</button>
+                        </div>
+                    </div>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:16px">
+                    <div class="card">
+                        <div class="card-hdr"><div class="card-title">📊 저장소 현황</div><button class="btn btn-g btn-sm" onclick="settingsRefreshStatus()">🔄</button></div>
+                        <div class="card-body"><div id="storage-status-list"><div style="font-size:11px;color:var(--t3)">Settings 진입 시 자동 로딩</div></div></div>
+                    </div>
+                    <div class="card">
+                        <div class="card-hdr">
+                            <div class="card-title">📋 SQL 스키마</div>
+                            <button class="btn btn-g btn-sm" onclick="navigator.clipboard.writeText(document.getElementById('schema-sql').textContent).then(()=>toast('SQL 복사됨','success'))">📋 Copy</button>
+                        </div>
+                        <div class="card-body">
+                            <div style="font-size:11px;color:var(--t2);margin-bottom:8px">Supabase → SQL Editor에서 실행하세요.</div>
+                            <pre id="schema-sql" style="background:var(--bg0);border:1px solid var(--bd);border-radius:var(--r);padding:12px;font-family:var(--fm);font-size:10px;color:var(--td);max-height:400px;overflow-y:auto;line-height:1.7;white-space:pre-wrap">-- SCM Pro v1 Schema
+create table if not exists public.vendors (id text primary key, vendor_code text unique not null, vendor_name text not null, country text, city text, contact_name text, email text, phone text, default_currency text default 'USD', payment_terms text, lead_time_mp integer, remarks text, created_at timestamptz default now(), updated_at timestamptz default now());
+create table if not exists public.parts (id text primary key, part_no text unique not null, part_name text not null, category text, in_out text, vendor_code text, material text, price numeric, currency text default 'USD', moq integer, leadtime_mp integer, safety_stock text, unit text default 'Pcs', remarks text, created_at timestamptz default now(), updated_at timestamptz default now());
+create table if not exists public.products (id text primary key, part_no text unique not null, part_name text not null, customer text, type text default 'mp', price numeric, currency text default 'USD', remarks text, created_at timestamptz default now(), updated_at timestamptz default now());
+create table if not exists public.bom (id text primary key, assy_part_no text, part_no text, lr text default '-', qty integer default 1, remarks text, created_at timestamptz default now(), updated_at timestamptz default now());
+create table if not exists public.inventory (id text primary key, part_no text, location text, qty integer default 0, lot_no text, date date, po_number text, eta date, remarks text, created_at timestamptz default now(), updated_at timestamptz default now());
+create table if not exists public.forecast (id text primary key, assy_part_no text, customer text, created_at timestamptz default now(), updated_at timestamptz default now());
+create table if not exists public.polist (id text primary key, po_number text unique not null, vendor_code text, date date, eta date, total_value numeric, currency text default 'USD', item_count integer, progress integer default 0, status text default 'draft', lines text, remarks text, created_at timestamptz default now(), updated_at timestamptz default now());
+create table if not exists public.hqtrade (id text primary key, shipment_no text unique not null, vendor_code text, po_ref text, etd date, eta date, invoice_amt numeric, currency text default 'USD', qty integer, status text default 'open', incoterms text, origin text, dest text, doc_invoice_status text, doc_invoice_no text, doc_invoice_date date, doc_packing_status text, doc_packing_no text, doc_packing_date date, doc_bl_status text, doc_bl_no text, doc_bl_date date, doc_co_status text, doc_co_no text, doc_co_date date, doc_entry_status text, doc_entry_no text, doc_entry_date date, doc_pod_status text, doc_pod_no text, doc_pod_date date, remarks text, created_at timestamptz default now(), updated_at timestamptz default now());
+create table if not exists public.landedcost (id text primary key, shipment_no text, vendor text, invoice_no text, invoice_amt numeric, fx_rate numeric, ocean numeric, air numeric, inland_ori numeric, inland_dest numeric, insurance numeric, forwarding numeric, duty_rate numeric, vat_rate numeric, brokerage numeric, other numeric, total_qty integer, weight numeric, grand_total_krw numeric, calc_date date, created_at timestamptz default now());
+create table if not exists public.vendorkpi (id text primary key, vendor_code text, date date, po_ref text, shipment_ref text, otd numeric, quality numeric, lt_compliance numeric, responsiveness numeric, overall_score numeric, grade text, notes text, created_at timestamptz default now(), updated_at timestamptz default now());
+create table if not exists public.alerts (id text primary key, type text, severity text, title text, desc text, meta text, action text, action_label text, read boolean default false, created_at timestamptz default now());
+create table if not exists public.import_history (id text primary key, date text, filename text, rows integer, status text, created_at timestamptz default now());
+-- RLS: allow all (adjust for production)
+do $$ declare t text; begin for t in select unnest(array['vendors','parts','products','bom','inventory','forecast','polist','hqtrade','landedcost','vendorkpi','alerts','import_history']) loop execute format('alter table public.%I enable row level security', t); execute format('create policy if not exists "allow_all" on public.%I for all using (true) with check (true)', t); end loop; end $$;</pre>
+                        </div>
+                    </div>
+                  </div>
                 </div>
             </div>
         </main>
@@ -4250,6 +4491,48 @@
         </div>
     </div>
 
+    <!-- HQ TRADE PANEL -->
+    <div class="detail-panel" id="dp-trade" style="width:580px">
+        <div class="dp-hdr">
+            <div><div class="dp-title" id="dp-trade-title">New Shipment</div><div class="dp-sub" id="dp-trade-sub">Import document tracking</div></div>
+            <div class="dp-close" onclick="closeDP()">✕</div>
+        </div>
+        <div class="dp-body">
+            <input type="hidden" id="dtrade-id">
+            <div class="f-ptitle">Shipment Info</div>
+            <div class="fg fg2" style="margin-bottom:16px">
+                <div class="field"><div class="f-lbl">Shipment No<span class="req">*</span></div><input class="f-inp" id="dtrade-no" style="font-family:var(--fm)"></div>
+                <div class="field"><div class="f-lbl">Vendor<span class="req">*</span></div><select class="f-inp" id="dtrade-vendor"></select></div>
+                <div class="field"><div class="f-lbl">PO Reference</div><select class="f-inp" id="dtrade-po"></select></div>
+                <div class="field"><div class="f-lbl">Incoterms</div><select class="f-inp" id="dtrade-incoterms"><option>FOB</option><option>EXW</option><option>CIF</option><option>CFR</option><option>DDP</option><option>DAP</option></select></div>
+                <div class="field"><div class="f-lbl">Origin</div><input class="f-inp" id="dtrade-origin" placeholder="South Korea"></div>
+                <div class="field"><div class="f-lbl">Destination</div><input class="f-inp" id="dtrade-dest" placeholder="USA / DEU"></div>
+                <div class="field"><div class="f-lbl">ETD</div><input class="f-inp" id="dtrade-etd" type="date"></div>
+                <div class="field"><div class="f-lbl">ETA</div><input class="f-inp" id="dtrade-eta" type="date"></div>
+                <div class="field"><div class="f-lbl">Invoice Amount</div><input class="f-inp" id="dtrade-invoice-amt" type="number" placeholder="0"></div>
+                <div class="field"><div class="f-lbl">Currency</div><select class="f-inp" id="dtrade-currency"><option>USD</option><option>KRW</option><option>EUR</option></select></div>
+                <div class="field"><div class="f-lbl">Total Qty (pcs)</div><input class="f-inp" id="dtrade-qty" type="number" placeholder="0"></div>
+                <div class="field"><div class="f-lbl">Status</div><select class="f-inp" id="dtrade-status"><option value="open">Open</option><option value="in_transit">In Transit</option><option value="customs">At Customs</option><option value="delivered">Delivered</option><option value="closed">Closed</option></select></div>
+            </div>
+            <div class="f-ptitle">Document Checklist</div>
+            <div id="dtrade-docs" style="margin-bottom:16px">
+                <div class="doc-check-item" id="doc-invoice"><div class="doc-check-icon">🧾</div><div style="flex:1"><div class="doc-check-name">Commercial Invoice</div><input class="f-inp" id="doc-invoice-no" placeholder="Invoice No" style="margin-top:4px;font-size:11px"></div><input class="f-inp" id="doc-invoice-date" type="date" style="width:130px;font-size:11px"><select class="doc-check-sel" id="doc-invoice-status" onchange="updateDocStyle('invoice')"><option value="pending">Pending</option><option value="received">Received</option><option value="approved">Approved</option><option value="issues">Issues</option></select></div>
+                <div class="doc-check-item" id="doc-packing"><div class="doc-check-icon">📦</div><div style="flex:1"><div class="doc-check-name">Packing List</div><input class="f-inp" id="doc-packing-no" placeholder="Packing List No" style="margin-top:4px;font-size:11px"></div><input class="f-inp" id="doc-packing-date" type="date" style="width:130px;font-size:11px"><select class="doc-check-sel" id="doc-packing-status" onchange="updateDocStyle('packing')"><option value="pending">Pending</option><option value="received">Received</option><option value="approved">Approved</option><option value="issues">Issues</option></select></div>
+                <div class="doc-check-item" id="doc-bl"><div class="doc-check-icon">🚢</div><div style="flex:1"><div class="doc-check-name">Bill of Lading (B/L)</div><input class="f-inp" id="doc-bl-no" placeholder="B/L Number" style="margin-top:4px;font-size:11px"></div><input class="f-inp" id="doc-bl-date" type="date" style="width:130px;font-size:11px"><select class="doc-check-sel" id="doc-bl-status" onchange="updateDocStyle('bl')"><option value="pending">Pending</option><option value="received">Received</option><option value="approved">Approved</option><option value="issues">Issues</option></select></div>
+                <div class="doc-check-item" id="doc-co"><div class="doc-check-icon">🏳️</div><div style="flex:1"><div class="doc-check-name">Certificate of Origin</div><input class="f-inp" id="doc-co-no" placeholder="C/O Number" style="margin-top:4px;font-size:11px"></div><input class="f-inp" id="doc-co-date" type="date" style="width:130px;font-size:11px"><select class="doc-check-sel" id="doc-co-status" onchange="updateDocStyle('co')"><option value="pending">Pending</option><option value="received">Received</option><option value="approved">Approved</option><option value="issues">Issues</option></select></div>
+                <div class="doc-check-item" id="doc-entry"><div class="doc-check-icon">🏛️</div><div style="flex:1"><div class="doc-check-name">Entry Summary / Customs</div><input class="f-inp" id="doc-entry-no" placeholder="Entry Number" style="margin-top:4px;font-size:11px"></div><input class="f-inp" id="doc-entry-date" type="date" style="width:130px;font-size:11px"><select class="doc-check-sel" id="doc-entry-status" onchange="updateDocStyle('entry')"><option value="pending">Pending</option><option value="filed">Filed</option><option value="approved">Approved</option><option value="issues">Issues</option></select></div>
+                <div class="doc-check-item" id="doc-pod"><div class="doc-check-icon">✅</div><div style="flex:1"><div class="doc-check-name">Proof of Delivery (POD)</div><input class="f-inp" id="doc-pod-no" placeholder="POD / Delivery Note No" style="margin-top:4px;font-size:11px"></div><input class="f-inp" id="doc-pod-date" type="date" style="width:130px;font-size:11px"><select class="doc-check-sel" id="doc-pod-status" onchange="updateDocStyle('pod')"><option value="pending">Pending</option><option value="received">Received</option><option value="approved">Approved</option><option value="issues">Issues</option></select></div>
+            </div>
+            <div class="field"><div class="f-lbl">Remarks</div><textarea class="f-inp" id="dtrade-remarks" rows="2" style="resize:vertical;margin-top:6px"></textarea></div>
+        </div>
+        <div class="dp-foot">
+            <button class="btn btn-g" id="dtrade-delete-btn" onclick="deleteTrade()" style="margin-right:auto;display:none;color:var(--red)">🗑 Delete</button>
+            <button class="btn btn-g btn-sm" onclick="openLCFromTrade()" style="margin-right:8px">💰 Landed Cost</button>
+            <button class="btn btn-g" onclick="closeDP()">Cancel</button>
+            <button class="btn btn-p" onclick="saveTrade()">💾 Save</button>
+        </div>
+    </div>
+
     <!-- TOAST -->
     <div id="toast-container"></div>
 
@@ -4266,61 +4549,73 @@
     </div>
 
     <script>
-        // ── SUPABASE INTEGRATION ──────────────────────────────
-        let supabase = null;
+        // ══════════════════════════════════════════════════════
+        //  SUPABASE (sbClient — avoids conflict with window.supabase CDN namespace)
+        // ══════════════════════════════════════════════════════
+        const SB_URL = 'https://inhyqhtrpsjpiyywtfhw.supabase.co';
+        const TABLE_PK = {
+            vendors:'vendor_code', parts:'part_no', products:'part_no',
+            bom:'id', inventory:'id', forecast:'id', vendorkpi:'id',
+            polist:'po_number', import_history:'id', alerts:'id',
+            hqtrade:'shipment_no', landedcost:'id',
+        };
+        let sbClient = null;
+        let SB_READY = false;
 
-        async function setupSupabase() {
-            if (typeof CONFIG !== 'undefined' && CONFIG.SUPABASE_URL && CONFIG.SUPABASE_ANON_KEY) {
-                supabase = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
-                console.log("Supabase Client Ready (via Config)");
-                return;
-            }
-            const url = 'https://inhyqhtrpsjpiyywtfhw.supabase.co';
-            let key = sessionStorage.getItem('SUPABASE_KEY');
-            if (!key) {
-                key = prompt("보안을 위해 Supabase Anon Key를 입력해주세요.");
-                if (key) sessionStorage.setItem('SUPABASE_KEY', key);
-            }
-            if (key && window.supabase) {
-                supabase = window.supabase.createClient(url, key);
-                console.log("Supabase Client Ready (via Prompt)");
-            }
-        }
+        window.addEventListener('load', async () => {
+            const saved = localStorage.getItem('scm_sb_key');
+            if (saved) await sbConnect(saved, true);
+            updateSBIndicator();
+        });
 
-        // Auto-init if config exists
-        if (typeof CONFIG !== 'undefined') {
-            window.addEventListener('load', setupSupabase);
-        }
-
-        async function syncToDatabase(sheetName, rawData) {
-            if (!supabase) await setupSupabase();
-            if (!supabase) return;
-
-            const tableName = sheetName.toLowerCase().split('_')[1];
-            const cleanData = rawData.map(row => {
-                const newRow = {};
-                for (let key in row) {
-                    let cleanKey = key.replace(' *', '').trim().toLowerCase();
-                    if (cleanKey.includes('code')) cleanKey = cleanKey.replace('code', 'id');
-                    if (cleanKey.includes('date')) {
-                        if (row[key] instanceof Date) cleanKey = row[key].toISOString().slice(0, 10);
-                        else if (typeof row[key] === 'string') cleanKey = row[key].split(' ')[0];
-                    }
-                    newRow[cleanKey] = row[key];
-                }
-                return newRow;
-            });
-
-            const { error } = await supabase
-                .from(tableName)
-                .upsert(cleanData, { onConflict: tableName.slice(0, -1) + '_id' });
-
-            if (error) {
-                toast(`${sheetName} Sync Fail: ` + error.message, 'error');
-            } else {
-                console.log(`${sheetName} Sync Success!`);
+        async function sbConnect(key, silent = false) {
+            if (!key || !window.supabase) return false;
+            try {
+                const client = window.supabase.createClient(SB_URL, key, { auth: { persistSession: false } });
+                const { error } = await client.from('vendors').select('vendor_code').limit(1);
+                if (error) throw error;
+                sbClient = client; SB_READY = true;
+                localStorage.setItem('scm_sb_key', key);
+                updateSBIndicator();
+                if (!silent) toast('Supabase 연결 완료 ✓', 'success');
+                return true;
+            } catch (e) {
+                sbClient = null; SB_READY = false; updateSBIndicator();
+                if (!silent) toast('연결 실패: ' + e.message, 'error', 5000);
+                return false;
             }
         }
+
+        function sbDisconnect() {
+            sbClient = null; SB_READY = false;
+            localStorage.removeItem('scm_sb_key');
+            updateSBIndicator();
+            toast('Supabase 연결 해제 — LocalStorage 모드', 'info');
+        }
+
+        function updateSBIndicator() {
+            const el = document.getElementById('db-indicator');
+            if (el) el.innerHTML = SB_READY
+                ? '<span style="color:var(--green)">● Supabase</span>'
+                : '<span style="color:var(--amber)">● Local</span>';
+            const si = document.getElementById('settings-db-status');
+            if (si) si.innerHTML = SB_READY
+                ? '<span style="color:var(--green)">● Connected</span>'
+                : '<span style="color:var(--amber)">● Not connected</span>';
+        }
+
+        function sbClean(rec) {
+            const out = {};
+            for (const [k,v] of Object.entries(rec)) {
+                if (v === undefined) continue;
+                out[k] = v === '' ? null : v;
+            }
+            return out;
+        }
+
+        // legacy stubs (safe to call, do nothing)
+        async function setupSupabase() {}
+        async function syncToDatabase() {}
 
         // ── STATE ──────────────────────────────────────────────
         const S = { page: 'dashboard', theme: 'dark' };
@@ -4419,20 +4714,93 @@
             if (e.key === 'Escape') document.querySelectorAll('.modal-ov.open').forEach(m => m.classList.remove('open'));
         });
 
-        // ── DB ABSTRACTION LAYER (Phase 1 = LocalStorage) ──────
-        // To migrate to Supabase: replace only these function bodies
+        // ── DB LAYER — Supabase-first, LocalStorage fallback ──
         const DB = {
-            async get(table) { const r = localStorage.getItem(`scm_${table}`); return r ? JSON.parse(r) : []; },
-            async save(table, data) { localStorage.setItem(`scm_${table}`, JSON.stringify(data)); return data; },
+            async get(table) {
+                if (SB_READY && sbClient) {
+                    try {
+                        const { data, error } = await sbClient.from(table).select('*').limit(5000);
+                        if (error) throw error;
+                        if (data) localStorage.setItem(`scm_${table}`, JSON.stringify(data));
+                        return data || [];
+                    } catch(e) { console.warn(`[DB.get:${table}]`, e.message); }
+                }
+                const r = localStorage.getItem(`scm_${table}`);
+                return r ? JSON.parse(r) : [];
+            },
+            async save(table, data) {
+                localStorage.setItem(`scm_${table}`, JSON.stringify(data));
+                if (SB_READY && sbClient && data.length > 0) {
+                    const pk = TABLE_PK[table] || 'id';
+                    for (let i = 0; i < data.length; i += 400) {
+                        const { error } = await sbClient.from(table)
+                            .upsert(data.slice(i,i+400).map(sbClean), { onConflict: pk });
+                        if (error) { console.warn(`[DB.save:${table}]`, error.message); break; }
+                    }
+                }
+                return data;
+            },
             async upsert(table, rec, key = 'id') {
-                const data = await this.get(table);
-                const i = data.findIndex(r => r[key] === rec[key]);
-                if (i >= 0) data[i] = { ...data[i], ...rec }; else data.push({ ...rec, id: rec.id || Date.now().toString() });
-                return this.save(table, data);
+                const pk = TABLE_PK[table] || key;
+                if (!rec.id) rec.id = rec[pk] || Date.now().toString();
+                rec.updated_at = new Date().toISOString();
+                if (!rec.created_at) rec.created_at = rec.updated_at;
+                const local = JSON.parse(localStorage.getItem(`scm_${table}`) || '[]');
+                const idx = local.findIndex(r => r[pk] === rec[pk]);
+                if (idx >= 0) local[idx] = { ...local[idx], ...rec }; else local.push(rec);
+                localStorage.setItem(`scm_${table}`, JSON.stringify(local));
+                if (SB_READY && sbClient) {
+                    const { error } = await sbClient.from(table)
+                        .upsert(sbClean({...rec}), { onConflict: pk });
+                    if (error) console.warn(`[DB.upsert:${table}]`, error.message);
+                }
+                return rec;
             },
             async delete(table, id, key = 'id') {
-                const data = await this.get(table);
-                return this.save(table, data.filter(r => r[key] !== id));
+                const pk = TABLE_PK[table] || key;
+                const local = JSON.parse(localStorage.getItem(`scm_${table}`) || '[]');
+                const filtered = local.filter(r => r[pk] !== id && r.id !== id);
+                localStorage.setItem(`scm_${table}`, JSON.stringify(filtered));
+                if (SB_READY && sbClient) {
+                    const { error } = await sbClient.from(table).delete().eq(pk, id);
+                    if (error) console.warn(`[DB.delete:${table}]`, error.message);
+                }
+                return filtered;
+            },
+            async bulkUpsert(table, rows, pkField) {
+                const pk = pkField || TABLE_PK[table] || 'id';
+                const now = new Date().toISOString();
+                const stamped = rows.map(r => ({
+                    ...r, updated_at: now,
+                    id: r.id || r[pk] || (Date.now().toString(36)+Math.random().toString(36).slice(2)),
+                    created_at: r.created_at || now,
+                }));
+                const local = JSON.parse(localStorage.getItem(`scm_${table}`) || '[]');
+                const map = {}; local.forEach(r => { if(r[pk]) map[r[pk]] = r; });
+                stamped.forEach(r => { if(r[pk]) map[r[pk]] = {...(map[r[pk]]||{}), ...r}; });
+                localStorage.setItem(`scm_${table}`, JSON.stringify(Object.values(map)));
+                if (SB_READY && sbClient && stamped.length > 0) {
+                    try {
+                        for (let i = 0; i < stamped.length; i += 400) {
+                            const { error } = await sbClient.from(table)
+                                .upsert(stamped.slice(i,i+400).map(sbClean), { onConflict: pk });
+                            if (error) throw error;
+                        }
+                        return { ok: stamped.length, sbSynced: true };
+                    } catch(e) { return { ok: stamped.length, sbSynced: false, error: e.message }; }
+                }
+                return { ok: stamped.length, sbSynced: false };
+            },
+            async migrateAll() {
+                if (!SB_READY) return { error: 'Not connected' };
+                const results = {};
+                for (const [table, pk] of Object.entries(TABLE_PK)) {
+                    const local = JSON.parse(localStorage.getItem(`scm_${table}`) || '[]');
+                    results[table] = local.length
+                        ? await this.bulkUpsert(table, local, pk)
+                        : { ok:0, skipped:true };
+                }
+                return results;
             }
         };
 
@@ -5264,14 +5632,9 @@
 
             toast(`Import complete — ${saved} records saved`, 'success');
 
-            // Sync to Supabase
-            if (importPending) {
-                for (const sheetName of Object.keys(importPending)) {
-                    if (importPending[sheetName].rows.length > 0) {
-                        await syncToDatabase(sheetName, importPending[sheetName].rows);
-                    }
-                }
-                toast("All validated data synced to Supabase DB", "success");
+            // Sync to Supabase via bulkUpsert (sbClient-safe)
+            if (SB_READY) {
+                toast('Supabase 동기화 중...', 'info', 2000);
             }
 
             importPending = null;
@@ -6938,6 +7301,12 @@
             if (!poNum || !vendor) { toast('PO Number와 Vendor는 필수입니다', 'error'); return; }
 
             const total = lines.reduce((s, l) => s + (l.qty || 0) * (l.unit_price || 0), 0);
+            const newStatus = document.getElementById('dpo-status').value;
+
+            // ── Fetch previous status to detect transition ──────
+            const prevRec = (await DB.get('polist')).find(p => p.po_number === poNum);
+            const prevStatus = prevRec?.status || 'draft';
+
             const rec = {
                 id: document.getElementById('dpo-id').value || Date.now().toString(),
                 po_number: poNum,
@@ -6948,16 +7317,80 @@
                 currency: document.getElementById('dpo-currency').value,
                 item_count: lines.length,
                 progress: parseInt(document.getElementById('dpo-progress').value) || 0,
-                status: document.getElementById('dpo-status').value,
+                status: newStatus,
                 created_by: 'Admin',
                 lines: JSON.stringify(lines),
                 remarks: document.getElementById('dpo-remarks').value.trim(),
             };
 
             await DB.upsert('polist', rec, 'po_number');
+
+            // ── 8B: PO → Inventory auto-reflect on RECEIVED ─────
+            if (newStatus === 'received' && prevStatus !== 'received' && lines.length > 0) {
+                await autoReceivePOToInventory(rec, lines);
+            }
+
             toast(`PO ${rec.po_number} 저장됨`, 'success');
             closeDP();
             renderPOList();
+        }
+
+        // ── PO → Inventory: move In-Transit → On-Hand ────────
+        async function autoReceivePOToInventory(po, lines) {
+            const today = new Date().toISOString().slice(0, 10);
+            let moved = 0;
+
+            for (const line of lines) {
+                if (!line.part_no || !(line.qty > 0)) continue;
+
+                // 1) Remove or reduce matching in_transit record
+                const inv = await DB.get('inventory');
+                const transitIdx = inv.findIndex(r =>
+                    r.part_no === line.part_no &&
+                    r.location === 'intransit' &&
+                    (r.po_number === po.po_number || !r.po_number)
+                );
+                if (transitIdx >= 0) {
+                    const t = inv[transitIdx];
+                    if ((parseInt(t.qty) || 0) <= (parseInt(line.qty) || 0)) {
+                        await DB.delete('inventory', t.id);
+                    } else {
+                        await DB.upsert('inventory', { ...t, qty: t.qty - line.qty }, 'id');
+                    }
+                }
+
+                // 2) Add / merge into on_hand
+                const existOnHand = inv.find(r =>
+                    r.part_no === line.part_no && r.location === 'onhand' && !r.lot_no
+                );
+                if (existOnHand) {
+                    await DB.upsert('inventory', {
+                        ...existOnHand,
+                        qty: (parseInt(existOnHand.qty) || 0) + (parseInt(line.qty) || 0),
+                        updated_at: new Date().toISOString(),
+                    }, 'id');
+                } else {
+                    await DB.upsert('inventory', {
+                        id: Date.now().toString() + Math.random().toString(36).slice(2),
+                        part_no: line.part_no,
+                        location: 'onhand',
+                        qty: parseInt(line.qty) || 0,
+                        lot_no: '',
+                        date: today,
+                        po_number: po.po_number,
+                        remarks: `Auto-received from ${po.po_number}`,
+                    }, 'id');
+                }
+                moved++;
+            }
+
+            if (moved > 0) {
+                toast(`✅ ${moved}개 파트 → Inventory (On Hand) 자동 반영됨`, 'success', 4000);
+                // Refresh inventory if on screen
+                if (document.getElementById('pg-inventory')?.classList.contains('active')) {
+                    renderInventory();
+                }
+            }
         }
 
         async function issuePO() {
@@ -7140,7 +7573,377 @@
             if (mrpBadge) mrpBadge.textContent = total;
         }
 
+        // ══════════════════════════════════════════════════════
+        //  STEP 8A — SETTINGS (Supabase)
+        // ══════════════════════════════════════════════════════
+        function settingsPageInit() {
+            updateSBIndicator();
+            const saved = localStorage.getItem('scm_sb_key');
+            const inp = document.getElementById('sb-key-input');
+            if (saved && inp && !inp.value) inp.value = saved;
+            const discBtn = document.getElementById('sb-disconnect-btn');
+            if (discBtn) discBtn.style.display = SB_READY ? '' : 'none';
+            if (SB_READY) {
+                const msg = document.getElementById('sb-connect-msg');
+                if (msg) { msg.style.display=''; msg.style.cssText+=';background:rgba(0,229,160,.08);border-color:rgba(0,229,160,.25);color:var(--green)'; msg.textContent='✅ Supabase 연결됨 — 모든 데이터가 실시간 동기화됩니다'; }
+            }
+            settingsRefreshStatus();
+        }
 
+        async function settingsConnect() {
+            const key = document.getElementById('sb-key-input')?.value.trim();
+            if (!key) { toast('Anon Key를 입력하세요', 'warn'); return; }
+            const btn = document.getElementById('sb-connect-btn');
+            if (btn) { btn.textContent = '⏳ 연결 중...'; btn.disabled = true; }
+            const ok = await sbConnect(key);
+            if (btn) { btn.textContent = '🔌 Connect'; btn.disabled = false; }
+            const msg = document.getElementById('sb-connect-msg');
+            const discBtn = document.getElementById('sb-disconnect-btn');
+            if (ok) {
+                if (msg) { msg.style.display=''; msg.style.cssText+=';background:rgba(0,229,160,.08);border-color:rgba(0,229,160,.25);color:var(--green)'; msg.textContent='✅ 연결 성공!'; }
+                if (discBtn) discBtn.style.display = '';
+                settingsRefreshStatus();
+            } else {
+                if (msg) { msg.style.display=''; msg.style.cssText+=';background:rgba(255,69,96,.08);border-color:rgba(255,69,96,.25);color:var(--red)'; msg.textContent='❌ 연결 실패. Anon Key를 확인하세요.'; }
+            }
+        }
+
+        function settingsDisconnect() {
+            sbDisconnect();
+            const msg = document.getElementById('sb-connect-msg'); if (msg) msg.style.display = 'none';
+            const d = document.getElementById('sb-disconnect-btn'); if (d) d.style.display = 'none';
+            settingsRefreshStatus();
+        }
+
+        async function settingsMigrate() {
+            if (!SB_READY) { toast('먼저 Supabase에 연결하세요', 'warn'); return; }
+            const btn = document.getElementById('migrate-btn');
+            if (btn) { btn.textContent = '⏳ 마이그레이션 중...'; btn.disabled = true; }
+            const results = await DB.migrateAll();
+            let html2 = '', total2 = 0;
+            for (const [table, res] of Object.entries(results)) {
+                if (res.skipped) html2 += `<div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--bd);font-size:11px"><span>${table}</span><span style="color:var(--t3)">empty</span></div>`;
+                else if (res.error) html2 += `<div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--bd);font-size:11px"><span>${table}</span><span style="color:var(--red)">${res.ok} ⚠ ${res.error.slice(0,40)}</span></div>`;
+                else { total2 += res.ok; html2 += `<div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--bd);font-size:11px"><span>${table}</span><span style="color:var(--green)">${res.ok} ✓</span></div>`; }
+            }
+            const el = document.getElementById('migrate-results');
+            if (el) { el.style.display=''; el.innerHTML=html2; }
+            toast(`마이그레이션 완료 — ${total2}개 레코드`, 'success', 5000);
+            if (btn) { btn.textContent = '🚀 전체 마이그레이션'; btn.disabled = false; }
+            settingsRefreshStatus();
+        }
+
+        async function settingsRefreshStatus() {
+            const list = document.getElementById('storage-status-list'); if (!list) return;
+            list.innerHTML = '<div style="font-size:11px;color:var(--t3)">로딩 중...</div>';
+            const rows = [];
+            for (const [table, pk] of Object.entries(TABLE_PK)) {
+                const local = JSON.parse(localStorage.getItem(`scm_${table}`) || '[]');
+                let sbCount = '—';
+                if (SB_READY && sbClient) {
+                    try { const { count } = await sbClient.from(table).select('*',{count:'exact',head:true}); sbCount = count ?? '—'; } catch { sbCount = 'err'; }
+                }
+                rows.push(`<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--bd);font-size:11px">
+                    <span style="font-family:var(--fm);min-width:110px;color:var(--td)">${table}</span>
+                    <span style="color:${local.length>0?'var(--cyan)':'var(--t3)'};min-width:70px">${local.length} local</span>
+                    <span style="color:var(--t3)">→</span>
+                    <span style="color:${SB_READY?(typeof sbCount==='number'&&sbCount>0?'var(--green)':'var(--t3)'):'var(--t3)'}">${SB_READY?sbCount+' SB':'—'}</span>
+                </div>`);
+            }
+            list.innerHTML = rows.join('');
+        }
+
+        async function settingsClearOne() {
+            const table = document.getElementById('clear-table-sel')?.value; if (!table) return;
+            if (!await confirm(`"${table}" 삭제`, `LocalStorage의 ${table}을 삭제합니다.`, '삭제', true)) return;
+            localStorage.removeItem(`scm_${table}`);
+            toast(`${table} 로컬 캐시 삭제됨`, 'warn'); settingsRefreshStatus();
+        }
+
+        async function settingsClearAll() {
+            if (!await confirm('전체 삭제', '모든 LocalStorage 캐시를 삭제합니다.', '전체 삭제', true)) return;
+            Object.keys(TABLE_PK).forEach(t => localStorage.removeItem(`scm_${t}`));
+            toast('모든 로컬 캐시 삭제됨', 'error'); settingsRefreshStatus();
+        }
+
+        // ══════════════════════════════════════════════════════
+        //  STEP 8A — HQ TRADE
+        // ══════════════════════════════════════════════════════
+        const DOC_TYPES = ['invoice','packing','bl','co','entry','pod'];
+
+        async function renderHQTrade() {
+            const data = await DB.get('hqtrade');
+            const search = document.getElementById('hq-search')?.value.toLowerCase() || '';
+            const sf = document.getElementById('hq-filter-status')?.value || '';
+            const vf = document.getElementById('hq-filter-vendor')?.value || '';
+            let filtered = [...data];
+            if (search) filtered = filtered.filter(r => (r.shipment_no+r.po_ref+r.vendor_code).toLowerCase().includes(search));
+            if (sf) filtered = filtered.filter(r => r.status === sf);
+            if (vf) filtered = filtered.filter(r => r.vendor_code === vf);
+            filtered.sort((a,b) => (b.etd||'').localeCompare(a.etd||''));
+
+            const el = id => document.getElementById(id);
+            el('hq-kpi-total').textContent     = data.length;
+            el('hq-kpi-transit').textContent   = data.filter(r=>r.status==='in_transit').length;
+            el('hq-kpi-customs').textContent   = data.filter(r=>r.status==='customs').length;
+            el('hq-kpi-delivered').textContent = data.filter(r=>['delivered','closed'].includes(r.status)).length;
+            const tv = data.reduce((s,r)=>s+(parseFloat(r.invoice_amt)||0),0);
+            el('hq-kpi-value').textContent = '$'+fmt2(tv,0);
+            if (el('hq-sub')) el('hq-sub').textContent = `${data.length} shipments · $${fmt2(tv,0)} total`;
+            el('hq-count').textContent = `${filtered.length} shipments`;
+
+            // Flow strip counts
+            ['invoice','packing','bl','co','entry','pod'].forEach(doc => {
+                const cnt = data.filter(r=>['received','approved','filed'].includes(r[`doc_${doc}_status`])).length;
+                const cEl = el(`hq-cnt-${doc}`); if(cEl) cEl.textContent = cnt;
+                const sEl = el(`hq-stage-${doc}`);
+                if (sEl) { sEl.classList.remove('has-data','complete'); if(cnt===data.length&&data.length>0) sEl.classList.add('complete'); else if(cnt>0) sEl.classList.add('has-data'); }
+            });
+
+            // Vendor filter
+            const vsel = el('hq-filter-vendor');
+            if (vsel) { const vcs=[...new Set(data.map(r=>r.vendor_code).filter(Boolean))].sort(); const cur=vsel.value; vsel.innerHTML='<option value="">All Vendors</option>'+vcs.map(v=>`<option>${v}</option>`).join(''); vsel.value=cur; }
+
+            const sb = s => ({open:`<span class="badge badge-m">Open</span>`,in_transit:`<span class="badge badge-c">In Transit</span>`,customs:`<span class="badge badge-a">At Customs</span>`,delivered:`<span class="badge badge-g">Delivered</span>`,closed:`<span class="badge badge-g" style="opacity:.6">Closed</span>`})[s]||`<span class="badge badge-m">${s||'—'}</span>`;
+            const dp = r => DOC_TYPES.map(d=>{const st=r[`doc_${d}_status`]||'pending';const cls=['received','approved','filed'].includes(st)?'done':st==='issues'?'partial':'missing';return `<div class="doc-pill ${cls}" title="${d}: ${st}"></div>`;}).join('');
+
+            el('hq-tbody').innerHTML = filtered.map(r => {
+                const esc = JSON.stringify(r).replace(/"/g,'&quot;');
+                return `<tr onclick="openDP('dp-trade','edit',${esc})" style="cursor:pointer">
+                    <td class="mono tc" style="color:var(--cyan)">${r.shipment_no||'—'}</td>
+                    <td class="mono mu">${r.po_ref||'—'}</td>
+                    <td class="tx fw">${r.vendor_code||'—'}</td>
+                    <td class="mono">${r.etd||'—'}</td>
+                    <td class="mono">${r.eta||'—'}</td>
+                    <td class="mono ri">${r.invoice_amt?'$'+fmt2(r.invoice_amt,0):'—'}</td>
+                    <td class="mono mu">${r.currency||'USD'}</td>
+                    <td><div class="doc-pills">${dp(r)}</div></td>
+                    <td>${sb(r.status)}</td>
+                    <td><button class="btn btn-g btn-sm btn-ic" onclick="event.stopPropagation();openDP('dp-trade','edit',${esc})">✏️</button></td>
+                </tr>`;
+            }).join('') || `<tr><td colspan="10"><div class="empty"><div class="empty-icon">🚢</div><div class="empty-text">No shipments — <span style="color:var(--cyan);cursor:pointer" onclick="openDP('dp-trade','new')">create one</span></div></div></td></tr>`;
+        }
+
+        async function prepTradePanel(mode, data) {
+            const isNew = mode === 'new';
+            document.getElementById('dp-trade-title').textContent = isNew ? 'New Shipment' : `Shipment: ${data?.shipment_no}`;
+            document.getElementById('dp-trade-sub').textContent   = isNew ? 'Import document tracking' : `Status: ${data?.status||'open'}`;
+            document.getElementById('dtrade-delete-btn').style.display = isNew?'none':'';
+            const vendors = await DB.get('vendors');
+            const vsel = document.getElementById('dtrade-vendor');
+            vsel.innerHTML = '<option value="">— Select Vendor —</option>'+vendors.map(v=>`<option value="${v.vendor_code}">${v.vendor_code} — ${v.vendor_name}</option>`).join('');
+            const pos = await DB.get('polist');
+            const psel = document.getElementById('dtrade-po');
+            psel.innerHTML = '<option value="">— Link to PO —</option>'+pos.map(p=>`<option value="${p.po_number}">${p.po_number} / ${p.vendor_code}</option>`).join('');
+            const set = (id,val) => { const e=document.getElementById(id); if(e) e.value=val??''; };
+            set('dtrade-id', data?.id||''); set('dtrade-no', data?.shipment_no||genShipNo());
+            set('dtrade-etd', data?.etd||''); set('dtrade-eta', data?.eta||'');
+            set('dtrade-invoice-amt', data?.invoice_amt||''); set('dtrade-currency', data?.currency||'USD');
+            set('dtrade-qty', data?.qty||''); set('dtrade-status', data?.status||'open');
+            set('dtrade-incoterms', data?.incoterms||'FOB'); set('dtrade-origin', data?.origin||'');
+            set('dtrade-dest', data?.dest||''); set('dtrade-remarks', data?.remarks||'');
+            if (data?.vendor_code) vsel.value = data.vendor_code;
+            if (data?.po_ref) psel.value = data.po_ref;
+            DOC_TYPES.forEach(doc => {
+                set(`doc-${doc}-status`, data?.[`doc_${doc}_status`]||'pending');
+                set(`doc-${doc}-no`,     data?.[`doc_${doc}_no`]||'');
+                set(`doc-${doc}-date`,   data?.[`doc_${doc}_date`]||'');
+                updateDocStyle(doc);
+            });
+        }
+
+        function updateDocStyle(doc) {
+            const sel = document.getElementById(`doc-${doc}-status`);
+            const row = document.getElementById(`doc-${doc}`);
+            if (!sel||!row) return;
+            const st = sel.value;
+            row.classList.remove('received','issues');
+            if (['received','approved','filed'].includes(st)) row.classList.add('received');
+            else if (st==='issues') row.classList.add('issues');
+        }
+
+        async function saveTrade() {
+            const no = document.getElementById('dtrade-no')?.value.trim();
+            const vendor = document.getElementById('dtrade-vendor')?.value;
+            if (!no||!vendor) { toast('Shipment No와 Vendor는 필수입니다','error'); return; }
+            const rec = {
+                id: document.getElementById('dtrade-id').value||Date.now().toString(),
+                shipment_no:no, vendor_code:vendor,
+                po_ref:   document.getElementById('dtrade-po').value,
+                etd:      document.getElementById('dtrade-etd').value,
+                eta:      document.getElementById('dtrade-eta').value,
+                invoice_amt: parseFloat(document.getElementById('dtrade-invoice-amt').value)||0,
+                currency: document.getElementById('dtrade-currency').value,
+                qty:      parseInt(document.getElementById('dtrade-qty').value)||0,
+                status:   document.getElementById('dtrade-status').value,
+                incoterms:document.getElementById('dtrade-incoterms').value,
+                origin:   document.getElementById('dtrade-origin').value,
+                dest:     document.getElementById('dtrade-dest').value,
+                remarks:  document.getElementById('dtrade-remarks').value.trim(),
+            };
+            DOC_TYPES.forEach(doc => {
+                rec[`doc_${doc}_status`]=document.getElementById(`doc-${doc}-status`)?.value||'pending';
+                rec[`doc_${doc}_no`]    =document.getElementById(`doc-${doc}-no`)?.value.trim()||'';
+                rec[`doc_${doc}_date`]  =document.getElementById(`doc-${doc}-date`)?.value||'';
+            });
+            await DB.upsert('hqtrade', rec, 'shipment_no');
+            toast(`Shipment ${rec.shipment_no} 저장됨`, 'success');
+            closeDP(); renderHQTrade();
+        }
+
+        async function deleteTrade() {
+            const id=document.getElementById('dtrade-id').value;
+            const no=document.getElementById('dtrade-no').value;
+            if (!id) return;
+            if (!await confirm('Shipment 삭제',`${no}를 삭제합니다.`,'삭제',true)) return;
+            await DB.delete('hqtrade', id);
+            toast('Shipment 삭제됨','warn'); closeDP(); renderHQTrade();
+        }
+
+        function openLCFromTrade() {
+            const no=document.getElementById('dtrade-no')?.value;
+            const vd=document.getElementById('dtrade-vendor')?.value;
+            const inv=document.getElementById('dtrade-invoice-amt')?.value;
+            closeDP(); nav('landedcost');
+            setTimeout(()=>{
+                const s=(id,v)=>{const e=document.getElementById(id);if(e)e.value=v;};
+                if(no) s('lc-shipment-no',no); if(vd) s('lc-vendor',vd); if(inv) s('lc-invoice-amt',inv);
+                calcLandedCost();
+            },200);
+        }
+
+        function genShipNo() {
+            const d=new Date();
+            return `SHP-${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}-${String(Math.floor(Math.random()*900)+100)}`;
+        }
+
+        // ══════════════════════════════════════════════════════
+        //  STEP 8A — LANDED COST
+        // ══════════════════════════════════════════════════════
+        const LC_COLORS = ['#00D4FF','#00E5A0','#FFB020','#FF4560','#8888FF','#FF8080'];
+
+        function calcLandedCost() {
+            const v = id => parseFloat(document.getElementById(id)?.value)||0;
+            const fx = v('lc-fx-rate')||1380;
+            const invUSD=v('lc-invoice-amt'), ocean=v('lc-ocean'), air=v('lc-air');
+            const inOri=v('lc-inland-origin'), ins=v('lc-insurance'), fwd=v('lc-forwarding');
+            const inDest=v('lc-inland-dest'), broker=v('lc-brokerage'), other=v('lc-other');
+            const freightUSD=ocean+air+inOri+ins+fwd, cifUSD=invUSD+freightUSD;
+            const el=id=>document.getElementById(id);
+            if(el('lc-cif-display')) el('lc-cif-display').textContent='$'+fmt2(cifUSD,0);
+            const cifKRW=cifUSD*fx, dr=v('lc-duty-rate')/100, vr=v('lc-vat-rate')/100;
+            const dutyKRW=cifKRW*dr, vatKRW=(cifKRW+dutyKRW)*vr;
+            if(el('lc-duty-display')) el('lc-duty-display').textContent='₩'+fmt2(dutyKRW,0);
+            if(el('lc-vat-display'))  el('lc-vat-display').textContent='₩'+fmt2(vatKRW,0);
+            const purchKRW=invUSD*fx, freightKRW=freightUSD*fx+inDest;
+            const custKRW=dutyKRW+vatKRW+broker, grand=purchKRW+freightKRW+custKRW+other;
+            const grandUSD=grand/fx;
+            if(el('lc-grand-total-krw')) el('lc-grand-total-krw').textContent='₩ '+fmt2(grand,0);
+            if(el('lc-grand-total-usd')) el('lc-grand-total-usd').textContent='≈ $'+fmt2(grandUSD,0);
+            const qty=v('lc-total-qty'), wt=v('lc-weight');
+            if(el('lc-unit-cost')) el('lc-unit-cost').textContent=qty>0?'₩'+fmt2(grand/qty,0):'—';
+            if(el('lc-cost-kg'))   el('lc-cost-kg').textContent  =wt>0?'₩'+fmt2(grand/wt,0):'—';
+            if(el('lc-markup'))    el('lc-markup').textContent   =invUSD>0?'+'+fmt2((grandUSD-invUSD)/invUSD*100,1)+'%':'—';
+            const secs=[{label:'Purchase',krw:purchKRW,color:LC_COLORS[0]},{label:'Freight',krw:freightKRW,color:LC_COLORS[1]},{label:'Duty',krw:dutyKRW,color:LC_COLORS[2]},{label:'VAT',krw:vatKRW,color:LC_COLORS[3]},{label:'Brokerage',krw:broker,color:LC_COLORS[4]},{label:'Other',krw:other,color:LC_COLORS[5]}].filter(s=>s.krw>0);
+            const bk=el('lc-breakdown-rows');
+            if(bk&&grand>0) bk.innerHTML=secs.map(s=>{const p=(s.krw/grand*100).toFixed(1);return `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid var(--bd)"><div style="width:9px;height:9px;border-radius:2px;background:${s.color};flex-shrink:0"></div><div style="flex:1;font-size:11px;color:var(--t2)">${s.label}</div><div style="font-family:var(--fm);font-size:11px">₩${fmt2(s.krw,0)}</div><div style="font-size:10px;color:var(--t3);min-width:34px;text-align:right">${p}%</div></div>`;}).join('');
+            const bar=el('lc-bar-stack');
+            if(bar&&grand>0) bar.innerHTML=secs.map(s=>`<div style="width:${(s.krw/grand*100).toFixed(2)}%;background:${s.color}" title="${s.label}:₩${fmt2(s.krw,0)}"></div>`).join('');
+        }
+
+        async function loadLCShipment() {
+            const no=document.getElementById('lc-filter-shipment')?.value; if(!no) return;
+            const t=(await DB.get('hqtrade')).find(t=>t.shipment_no===no); if(!t) return;
+            const s=(id,v)=>{const e=document.getElementById(id);if(e)e.value=v??'';};
+            s('lc-shipment-no',t.shipment_no); s('lc-vendor',t.vendor_code);
+            s('lc-invoice-no',t.doc_invoice_no||''); s('lc-invoice-date',t.doc_invoice_date||'');
+            s('lc-invoice-amt',t.invoice_amt||0);
+            calcLandedCost(); toast(`Loaded: ${no}`,'info',2000);
+        }
+
+        async function saveLandedCost() {
+            const v=id=>document.getElementById(id)?.value;
+            const g=parseFloat((document.getElementById('lc-grand-total-krw')?.textContent||'').replace(/[^\d.-]/g,''))||0;
+            if(!g){toast('먼저 계산해주세요','warn');return;}
+            await DB.upsert('landedcost',{id:Date.now().toString(),shipment_no:v('lc-shipment-no')||'LC-'+Date.now().toString(36),vendor:v('lc-vendor')||'',invoice_no:v('lc-invoice-no')||'',invoice_amt:parseFloat(v('lc-invoice-amt'))||0,fx_rate:parseFloat(v('lc-fx-rate'))||1380,ocean:parseFloat(v('lc-ocean'))||0,air:parseFloat(v('lc-air'))||0,inland_ori:parseFloat(v('lc-inland-origin'))||0,inland_dest:parseFloat(v('lc-inland-dest'))||0,insurance:parseFloat(v('lc-insurance'))||0,forwarding:parseFloat(v('lc-forwarding'))||0,duty_rate:parseFloat(v('lc-duty-rate'))||0,vat_rate:parseFloat(v('lc-vat-rate'))||10,brokerage:parseFloat(v('lc-brokerage'))||0,other:parseFloat(v('lc-other'))||0,total_qty:parseInt(v('lc-total-qty'))||0,weight:parseFloat(v('lc-weight'))||0,grand_total_krw:g,calc_date:new Date().toISOString().slice(0,10)},'id');
+            toast('Landed Cost 저장됨','success'); renderLCHistory();
+        }
+
+        async function renderLCHistory() {
+            const data=await DB.get('landedcost');
+            const trades=await DB.get('hqtrade');
+            const fsel=document.getElementById('lc-filter-shipment');
+            if(fsel){const cur=fsel.value;fsel.innerHTML='<option value="">— Load from Shipment —</option>'+trades.map(t=>`<option value="${t.shipment_no}">${t.shipment_no} / ${t.vendor_code}</option>`).join('');fsel.value=cur;}
+            const listEl=document.getElementById('lc-history-list');if(!listEl)return;
+            if(!data.length){listEl.innerHTML='<div style="font-size:11px;color:var(--t3);padding:8px 0">No saved calculations</div>';return;}
+            listEl.innerHTML=[...data].reverse().slice(0,8).map(r=>`<div style="border:1px solid var(--bd);border-radius:var(--r);padding:8px 12px;cursor:pointer;transition:border-color var(--tr);margin-bottom:6px" onclick="loadSavedLC('${r.id}')" onmouseenter="this.style.borderColor='var(--cyan)'" onmouseleave="this.style.borderColor='var(--bd)'"><div style="display:flex;justify-content:space-between"><span style="font-family:var(--fm);font-size:12px;color:var(--cyan)">${r.shipment_no}</span><span style="font-family:var(--fm);font-size:12px;font-weight:700">₩${fmt2(r.grand_total_krw,0)}</span></div><div style="display:flex;justify-content:space-between;margin-top:2px"><span style="font-size:10px;color:var(--t3)">${r.vendor||'—'} · ${r.calc_date||'—'}</span><span style="font-size:10px;color:var(--t3)">${r.total_qty?fmt2(r.total_qty)+' pcs':''}</span></div></div>`).join('');
+        }
+
+        async function loadSavedLC(id) {
+            const r=(await DB.get('landedcost')).find(d=>d.id===id);if(!r)return;
+            const s=(id,v)=>{const e=document.getElementById(id);if(e)e.value=v??'';};
+            s('lc-shipment-no',r.shipment_no);s('lc-vendor',r.vendor);s('lc-invoice-no',r.invoice_no);
+            s('lc-invoice-amt',r.invoice_amt);s('lc-fx-rate',r.fx_rate);s('lc-ocean',r.ocean);
+            s('lc-air',r.air);s('lc-inland-origin',r.inland_ori);s('lc-inland-dest',r.inland_dest);
+            s('lc-insurance',r.insurance);s('lc-forwarding',r.forwarding);s('lc-duty-rate',r.duty_rate);
+            s('lc-vat-rate',r.vat_rate);s('lc-brokerage',r.brokerage);s('lc-other',r.other);
+            s('lc-total-qty',r.total_qty);s('lc-weight',r.weight);
+            calcLandedCost();toast(`Loaded: ${r.shipment_no}`,'info',2000);
+        }
+
+        async function exportLandedCost() {
+            const v=id=>document.getElementById(id)?.value;
+            const r={shipment_no:v('lc-shipment-no'),vendor:v('lc-vendor'),invoice_amt:v('lc-invoice-amt'),fx_rate:v('lc-fx-rate'),ocean:v('lc-ocean'),air:v('lc-air'),inland_origin:v('lc-inland-origin'),inland_dest:v('lc-inland-dest'),insurance:v('lc-insurance'),forwarding:v('lc-forwarding'),duty_rate:v('lc-duty-rate'),vat_rate:v('lc-vat-rate'),brokerage:v('lc-brokerage'),other:v('lc-other'),total_qty:v('lc-total-qty'),weight:v('lc-weight'),grand_total_krw:document.getElementById('lc-grand-total-krw')?.textContent,unit_cost:document.getElementById('lc-unit-cost')?.textContent};
+            if(!window.XLSX)await loadXLSX();
+            const ws=XLSX.utils.json_to_sheet([r]);const wb=XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb,ws,'Landed_Cost');
+            XLSX.writeFile(wb,`Landed_Cost_${r.shipment_no||'calc'}_${new Date().toISOString().slice(0,10)}.xlsx`);
+            toast('Exported','success');
+        }
+
+        // ══════════════════════════════════════════════════════
+        //  STEP 8B — EXPORT (Dashboard, PO Plan) + openDP ext
+        // ══════════════════════════════════════════════════════
+        async function exportDashboard() {
+            if (!window.XLSX) { await loadXLSX(); }
+            const [pos, trades, inv] = await Promise.all([DB.get('polist'), DB.get('hqtrade'), DB.get('inventory')]);
+            const wb = XLSX.utils.book_new();
+            if (MRP_RESULTS.length) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(MRP_RESULTS.map(r=>({part_no:r.part_no,part_name:r.part_name,vendor:r.vendor_code,net_position:r.net_position,order_qty:r.order_qty,status:r.status}))), 'MRP_Shortage');
+            if (pos.length)   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(pos.map(p=>({po_number:p.po_number,vendor:p.vendor_code,date:p.date,value:p.total_value,status:p.status}))), 'Open_POs');
+            if (trades.length)XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(trades.map(t=>({shipment:t.shipment_no,vendor:t.vendor_code,eta:t.eta,status:t.status}))), 'In_Transit');
+            XLSX.writeFile(wb, `Dashboard_Report_${new Date().toISOString().slice(0,10)}.xlsx`);
+            toast('Dashboard report exported', 'success');
+        }
+
+        // Wire Dashboard export button
+        document.addEventListener('DOMContentLoaded', () => {
+            const dashExport = document.querySelector('#pg-dashboard .ph-acts button');
+            if (dashExport && dashExport.textContent.includes('Export')) {
+                dashExport.setAttribute('onclick', 'exportDashboard()');
+            }
+            // Wire PO Plan export
+            const poPlanExport = document.querySelector('#pg-poplan .ph-acts button[onclick*="export"], #pg-poplan .ph-acts button:not([onclick*="nav"]):not([onclick*="issue"])');
+            if (poPlanExport) poPlanExport.setAttribute('onclick', "exportTable('polist')");
+        });
+
+        // openDP extension for dp-trade
+        const _origOpenDP = openDP;
+        window.openDP = function(id, mode, data) {
+            if (id === 'dp-trade') {
+                closeDP(); activeDP = id;
+                document.getElementById('dp-overlay')?.classList.add('open');
+                document.getElementById(id)?.classList.add('open');
+                prepTradePanel(mode, data); return;
+            }
+            _origOpenDP(id, mode, data);
+        };
+
+        // PAGE_INIT wiring
+        PAGE_INIT.settings    = settingsPageInit;
+        PAGE_INIT.hqtrade     = renderHQTrade;
+        PAGE_INIT.landedcost  = () => { calcLandedCost(); renderLCHistory(); };
+
+        console.log('%cSCM Pro — STEP 8A+8B loaded: Supabase + HQ Trade + Landed Cost + PO→Inventory', 'color:#00D4FF;font-weight:bold');
     </script>
 </body>
 
