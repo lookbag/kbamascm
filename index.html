@@ -3858,6 +3858,13 @@
                             <button class="btn btn-g btn-sm" onclick="settingsClearAll()" style="color:var(--red)">💣 Clear ALL Local</button>
                         </div>
                     </div>
+                    <div class="card" style="border-color:rgba(0,229,160,.25)">
+                        <div class="card-hdr" style="border-color:rgba(0,229,160,.15)"><div class="card-title" style="color:var(--green)">🌱 Sample Data</div></div>
+                        <div class="card-body" style="display:flex;flex-direction:column;gap:8px">
+                            <div style="font-size:12px;color:var(--t2);line-height:1.6">데이터가 없을 때 샘플 데이터를 로드합니다.<br>이미 데이터가 있으면 덮어쓰기 합니다.</div>
+                            <button class="btn btn-g btn-sm" onclick="seedSampleData(true).then(()=>{renderVendors();renderParts();nav('dashboard');})" style="color:var(--green);border-color:rgba(0,229,160,.4)">🌱 Load Sample Data</button>
+                        </div>
+                    </div>
                   </div>
                   <div style="display:flex;flex-direction:column;gap:16px">
                     <div class="card">
@@ -5975,6 +5982,130 @@ do $$ declare t text; begin for t in select unnest(array['vendors','parts','prod
                 el.classList.toggle('active', el.dataset.page === id));
         };
 
+        // ── SAMPLE DATA SEED ───────────────────────────────────
+        async function seedSampleData(force = false) {
+            const existing = await DB.get('vendors');
+            if (existing.length > 0 && !force) return; // 이미 데이터 있으면 skip
+
+            const today = new Date();
+            const fmt = d => d.toISOString().slice(0,10);
+            const daysFrom = n => { const d = new Date(today); d.setDate(d.getDate()+n); return fmt(d); };
+
+            // Vendors
+            const vendors = [
+                { id:'v1', vendor_code:'KOR-001', vendor_name:'Korean Auto Parts Co.', country:'KR', default_currency:'KRW', payment_terms:'NET30', incoterms:'FOB', contact_name:'Kim Minjun', email:'kim@korauto.kr', phone:'+82-2-1234-5678', created_at:fmt(today), updated_at:fmt(today) },
+                { id:'v2', vendor_code:'CHN-001', vendor_name:'Shenzhen Components Ltd.', country:'CN', default_currency:'USD', payment_terms:'NET45', incoterms:'CIF', contact_name:'Wang Lei', email:'wang@shzcomp.cn', phone:'+86-755-8888-9999', created_at:fmt(today), updated_at:fmt(today) },
+                { id:'v3', vendor_code:'JPN-001', vendor_name:'Osaka Precision Mfg.', country:'JP', default_currency:'JPY', payment_terms:'NET30', incoterms:'EXW', contact_name:'Tanaka Hiroshi', email:'tanaka@osakamfg.jp', phone:'+81-6-4321-8765', created_at:fmt(today), updated_at:fmt(today) },
+                { id:'v4', vendor_code:'DEU-001', vendor_name:'Bayern Automotive GmbH', country:'DE', default_currency:'EUR', payment_terms:'NET60', incoterms:'DAP', contact_name:'Hans Mueller', email:'mueller@bayernauto.de', phone:'+49-89-555-1234', created_at:fmt(today), updated_at:fmt(today) },
+                { id:'v5', vendor_code:'USA-001', vendor_name:'Detroit Supply Corp.', country:'US', default_currency:'USD', payment_terms:'NET30', incoterms:'FCA', contact_name:'John Smith', email:'jsmith@detroitsupply.com', phone:'+1-313-555-0100', created_at:fmt(today), updated_at:fmt(today) },
+            ];
+
+            // Parts
+            const parts = [
+                { id:'p1', part_no:'P-10001', part_name:'Front Bumper Bracket', vendor_code:'KOR-001', leadtime_mp:14, leadtime_dev:30, moq:100, unit_price:12.50, currency:'KRW', safety_stock:200, created_at:fmt(today), updated_at:fmt(today) },
+                { id:'p2', part_no:'P-10002', part_name:'Engine Mount Rubber', vendor_code:'CHN-001', leadtime_mp:21, leadtime_dev:45, moq:500, unit_price:3.80, currency:'USD', safety_stock:1000, created_at:fmt(today), updated_at:fmt(today) },
+                { id:'p3', part_no:'P-10003', part_name:'Steering Column Shaft', vendor_code:'JPN-001', leadtime_mp:35, leadtime_dev:60, moq:50, unit_price:87.00, currency:'JPY', safety_stock:100, created_at:fmt(today), updated_at:fmt(today) },
+                { id:'p4', part_no:'P-10004', part_name:'Door Hinge Assembly', vendor_code:'DEU-001', leadtime_mp:28, leadtime_dev:56, moq:200, unit_price:24.00, currency:'EUR', safety_stock:400, created_at:fmt(today), updated_at:fmt(today) },
+                { id:'p5', part_no:'P-10005', part_name:'Brake Disc Rotor', vendor_code:'KOR-001', leadtime_mp:14, leadtime_dev:30, moq:100, unit_price:45.00, currency:'KRW', safety_stock:300, created_at:fmt(today), updated_at:fmt(today) },
+                { id:'p6', part_no:'P-10006', part_name:'Headlight Housing', vendor_code:'CHN-001', leadtime_mp:21, leadtime_dev:45, moq:50, unit_price:32.00, currency:'USD', safety_stock:150, created_at:fmt(today), updated_at:fmt(today) },
+                { id:'p7', part_no:'P-10007', part_name:'Wiring Harness Main', vendor_code:'USA-001', leadtime_mp:18, leadtime_dev:40, moq:30, unit_price:156.00, currency:'USD', safety_stock:60, created_at:fmt(today), updated_at:fmt(today) },
+                { id:'p8', part_no:'P-10008', part_name:'Rear Axle Bearing', vendor_code:'JPN-001', leadtime_mp:35, leadtime_dev:60, moq:100, unit_price:62.00, currency:'JPY', safety_stock:200, created_at:fmt(today), updated_at:fmt(today) },
+            ];
+
+            // Products
+            const products = [
+                { id:'pr1', part_no:'A-20001', car_code:'KBM-E300', part_name:'E-Class Front Module Assy', customer:'Mercedes-Benz', kb_part_no:'KB-A20001', price:1250.00, currency:'USD', incoterms:'DAP', type:'mp', created_at:fmt(today), updated_at:fmt(today) },
+                { id:'pr2', part_no:'A-20002', car_code:'KBH-K5', part_name:'K5 Door Module Assy', customer:'Kia Motors', kb_part_no:'KB-A20002', price:480.00, currency:'KRW', incoterms:'FOB', type:'mp', created_at:fmt(today), updated_at:fmt(today) },
+                { id:'pr3', part_no:'A-20003', car_code:'KBH-G80', part_name:'G80 Steering Assy', customer:'Genesis', kb_part_no:'KB-A20003', price:2100.00, currency:'USD', incoterms:'CIF', type:'mp', created_at:fmt(today), updated_at:fmt(today) },
+                { id:'pr4', part_no:'A-20004', car_code:'KBM-C200', part_name:'C-Class Brake Module', customer:'Mercedes-Benz', kb_part_no:'KB-A20004', price:890.00, currency:'EUR', incoterms:'DAP', type:'dev', created_at:fmt(today), updated_at:fmt(today) },
+            ];
+
+            // BOM
+            const bom = [
+                { id:'b1', assy_part_no:'A-20001', assy_name:'E-Class Front Module Assy', sub_part_no:'P-10001', sub_part_name:'Front Bumper Bracket', qty:2, unit:'ea', created_at:fmt(today), updated_at:fmt(today) },
+                { id:'b2', assy_part_no:'A-20001', assy_name:'E-Class Front Module Assy', sub_part_no:'P-10006', sub_part_name:'Headlight Housing', qty:1, unit:'ea', created_at:fmt(today), updated_at:fmt(today) },
+                { id:'b3', assy_part_no:'A-20002', assy_name:'K5 Door Module Assy', sub_part_no:'P-10004', sub_part_name:'Door Hinge Assembly', qty:4, unit:'ea', created_at:fmt(today), updated_at:fmt(today) },
+                { id:'b4', assy_part_no:'A-20002', assy_name:'K5 Door Module Assy', sub_part_no:'P-10002', sub_part_name:'Engine Mount Rubber', qty:2, unit:'ea', created_at:fmt(today), updated_at:fmt(today) },
+                { id:'b5', assy_part_no:'A-20003', assy_name:'G80 Steering Assy', sub_part_no:'P-10003', sub_part_name:'Steering Column Shaft', qty:1, unit:'ea', created_at:fmt(today), updated_at:fmt(today) },
+                { id:'b6', assy_part_no:'A-20003', assy_name:'G80 Steering Assy', sub_part_no:'P-10007', sub_part_name:'Wiring Harness Main', qty:1, unit:'ea', created_at:fmt(today), updated_at:fmt(today) },
+                { id:'b7', assy_part_no:'A-20004', assy_name:'C-Class Brake Module', sub_part_no:'P-10005', sub_part_name:'Brake Disc Rotor', qty:2, unit:'ea', created_at:fmt(today), updated_at:fmt(today) },
+                { id:'b8', assy_part_no:'A-20004', assy_name:'C-Class Brake Module', sub_part_no:'P-10008', sub_part_name:'Rear Axle Bearing', qty:4, unit:'ea', created_at:fmt(today), updated_at:fmt(today) },
+            ];
+
+            // Inventory
+            const inventory = [
+                { id:'i1', part_no:'P-10001', part_name:'Front Bumper Bracket', location:'WH-A', qty:180, onhand:180, intransit:50, vmi:0, unit:'ea', last_updated:fmt(today), created_at:fmt(today), updated_at:fmt(today) },
+                { id:'i2', part_no:'P-10002', part_name:'Engine Mount Rubber', location:'WH-A', qty:1200, onhand:1200, intransit:0, vmi:0, unit:'ea', last_updated:fmt(today), created_at:fmt(today), updated_at:fmt(today) },
+                { id:'i3', part_no:'P-10003', part_name:'Steering Column Shaft', location:'WH-B', qty:45, onhand:45, intransit:100, vmi:0, unit:'ea', last_updated:fmt(today), created_at:fmt(today), updated_at:fmt(today) },
+                { id:'i4', part_no:'P-10004', part_name:'Door Hinge Assembly', location:'WH-A', qty:380, onhand:380, intransit:200, vmi:0, unit:'ea', last_updated:fmt(today), created_at:fmt(today), updated_at:fmt(today) },
+                { id:'i5', part_no:'P-10005', part_name:'Brake Disc Rotor', location:'WH-B', qty:80, onhand:80, intransit:0, vmi:0, unit:'ea', last_updated:fmt(today), created_at:fmt(today), updated_at:fmt(today) },
+                { id:'i6', part_no:'P-10006', part_name:'Headlight Housing', location:'WH-A', qty:200, onhand:200, intransit:0, vmi:0, unit:'ea', last_updated:fmt(today), created_at:fmt(today), updated_at:fmt(today) },
+                { id:'i7', part_no:'P-10007', part_name:'Wiring Harness Main', location:'WH-C', qty:20, onhand:20, intransit:30, vmi:0, unit:'ea', last_updated:fmt(today), created_at:fmt(today), updated_at:fmt(today) },
+                { id:'i8', part_no:'P-10008', part_name:'Rear Axle Bearing', location:'WH-B', qty:150, onhand:150, intransit:0, vmi:0, unit:'ea', last_updated:fmt(today), created_at:fmt(today), updated_at:fmt(today) },
+            ];
+
+            // Forecast
+            const forecast = [];
+            const customers = ['Mercedes-Benz','Kia Motors','Genesis'];
+            const prodList = ['A-20001','A-20002','A-20003','A-20004'];
+            let fid = 1;
+            for (let w = 0; w < 8; w++) {
+                const wDate = new Date(today); wDate.setDate(wDate.getDate() + w*7);
+                const [yr, wk] = getISOWeek ? getISOWeek(wDate) : [wDate.getFullYear(), Math.ceil(wDate.getDate()/7)];
+                const wKey = `${yr}W${String(wk).padStart(2,'0')}`;
+                prodList.forEach((pno, pi) => {
+                    const base = [120,80,60,40][pi];
+                    const qty = base + Math.floor(Math.random()*30);
+                    forecast.push({ id:`f${fid++}`, week:wKey, part_no:pno, customer:customers[pi%3], qty, created_at:fmt(today), updated_at:fmt(today) });
+                });
+            }
+
+            // PO List
+            const polist = [
+                { id:'po1', po_number:'PO-2026-001', vendor_code:'KOR-001', vendor_name:'Korean Auto Parts Co.', part_no:'P-10001', part_name:'Front Bumper Bracket', qty:500, unit_price:12.50, currency:'KRW', total_value:6250, eta:daysFrom(7), status:'issued', incoterms:'FOB', created_by:'Admin', created_at:fmt(today), updated_at:fmt(today) },
+                { id:'po2', po_number:'PO-2026-002', vendor_code:'CHN-001', vendor_name:'Shenzhen Components Ltd.', part_no:'P-10002', part_name:'Engine Mount Rubber', qty:2000, unit_price:3.80, currency:'USD', total_value:7600, eta:daysFrom(14), status:'issued', incoterms:'CIF', created_by:'Admin', created_at:fmt(today), updated_at:fmt(today) },
+                { id:'po3', po_number:'PO-2026-003', vendor_code:'JPN-001', vendor_name:'Osaka Precision Mfg.', part_no:'P-10003', part_name:'Steering Column Shaft', qty:100, unit_price:87.00, currency:'JPY', total_value:8700, eta:daysFrom(-3), status:'partial', incoterms:'EXW', created_by:'Kim Purchasing', created_at:fmt(today), updated_at:fmt(today) },
+                { id:'po4', po_number:'PO-2026-004', vendor_code:'DEU-001', vendor_name:'Bayern Automotive GmbH', part_no:'P-10004', part_name:'Door Hinge Assembly', qty:400, unit_price:24.00, currency:'EUR', total_value:9600, eta:daysFrom(21), status:'draft', incoterms:'DAP', created_by:'Admin', created_at:fmt(today), updated_at:fmt(today) },
+                { id:'po5', po_number:'PO-2026-005', vendor_code:'USA-001', vendor_name:'Detroit Supply Corp.', part_no:'P-10007', part_name:'Wiring Harness Main', qty:60, unit_price:156.00, currency:'USD', total_value:9360, eta:daysFrom(-8), status:'issued', incoterms:'FCA', created_by:'Kim Purchasing', created_at:fmt(today), updated_at:fmt(today) },
+                { id:'po6', po_number:'PO-2026-006', vendor_code:'KOR-001', vendor_name:'Korean Auto Parts Co.', part_no:'P-10005', part_name:'Brake Disc Rotor', qty:300, unit_price:45.00, currency:'KRW', total_value:13500, eta:daysFrom(10), status:'issued', incoterms:'FOB', created_by:'Admin', created_at:fmt(today), updated_at:fmt(today) },
+            ];
+
+            // HQ Trade
+            const hqtrade = [
+                { id:'t1', shipment_no:'SHP-2026-001', vendor_code:'CHN-001', vendor_name:'Shenzhen Components Ltd.', po_number:'PO-2026-002', part_no:'P-10002', description:'Engine Mount Rubber', qty:2000, unit_price:3.80, currency:'USD', total_value:7600, eta:daysFrom(14), etd:daysFrom(5), status:'in_transit', incoterms:'CIF', hs_code:'8708.99', origin:'CN', destination:'KR', created_at:fmt(today), updated_at:fmt(today) },
+                { id:'t2', shipment_no:'SHP-2026-002', vendor_code:'JPN-001', vendor_name:'Osaka Precision Mfg.', po_number:'PO-2026-003', part_no:'P-10003', description:'Steering Column Shaft', qty:100, unit_price:87.00, currency:'JPY', total_value:8700, eta:daysFrom(-3), etd:daysFrom(-18), status:'customs', incoterms:'EXW', hs_code:'8708.94', origin:'JP', destination:'KR', created_at:fmt(today), updated_at:fmt(today) },
+                { id:'t3', shipment_no:'SHP-2026-003', vendor_code:'DEU-001', vendor_name:'Bayern Automotive GmbH', po_number:'PO-2026-004', part_no:'P-10004', description:'Door Hinge Assembly', qty:400, unit_price:24.00, currency:'EUR', total_value:9600, eta:daysFrom(21), etd:daysFrom(10), status:'booking', incoterms:'DAP', hs_code:'8302.10', origin:'DE', destination:'KR', created_at:fmt(today), updated_at:fmt(today) },
+                { id:'t4', shipment_no:'SHP-2026-004', vendor_code:'USA-001', vendor_name:'Detroit Supply Corp.', po_number:'PO-2026-005', part_no:'P-10007', description:'Wiring Harness Main', qty:60, unit_price:156.00, currency:'USD', total_value:9360, eta:daysFrom(-8), etd:daysFrom(-22), status:'in_transit', incoterms:'FCA', hs_code:'8544.30', origin:'US', destination:'KR', created_at:fmt(today), updated_at:fmt(today) },
+            ];
+
+            // Vendor KPI
+            const vendorkpi = [
+                { id:'k1', vendor_code:'KOR-001', period:'2026-Q1', otd:95, quality:98, lt_compliance:92, responsiveness:90, overall_score:94, remarks:'Excellent overall', created_at:fmt(today), updated_at:fmt(today) },
+                { id:'k2', vendor_code:'CHN-001', period:'2026-Q1', otd:78, quality:85, lt_compliance:80, responsiveness:75, overall_score:80, remarks:'Quality improvement needed', created_at:fmt(today), updated_at:fmt(today) },
+                { id:'k3', vendor_code:'JPN-001', period:'2026-Q1', otd:99, quality:99, lt_compliance:98, responsiveness:95, overall_score:98, remarks:'Top performer', created_at:fmt(today), updated_at:fmt(today) },
+                { id:'k4', vendor_code:'DEU-001', period:'2026-Q1', otd:88, quality:96, lt_compliance:85, responsiveness:82, overall_score:88, remarks:'Lead time needs improvement', created_at:fmt(today), updated_at:fmt(today) },
+                { id:'k5', vendor_code:'USA-001', period:'2026-Q1', otd:65, quality:80, lt_compliance:60, responsiveness:70, overall_score:69, remarks:'At risk - action plan required', created_at:fmt(today), updated_at:fmt(today) },
+                { id:'k6', vendor_code:'KOR-001', period:'2025-Q4', otd:92, quality:97, lt_compliance:90, responsiveness:88, overall_score:92, remarks:'Good', created_at:fmt(today), updated_at:fmt(today) },
+                { id:'k7', vendor_code:'CHN-001', period:'2025-Q4', otd:72, quality:82, lt_compliance:75, responsiveness:70, overall_score:75, remarks:'Declined from Q3', created_at:fmt(today), updated_at:fmt(today) },
+            ];
+
+            // Save all
+            await Promise.all([
+                DB.save('vendors', vendors),
+                DB.save('parts', parts),
+                DB.save('products', products),
+                DB.save('bom', bom),
+                DB.save('inventory', inventory),
+                DB.save('forecast', forecast),
+                DB.save('polist', polist),
+                DB.save('hqtrade', hqtrade),
+                DB.save('vendorkpi', vendorkpi),
+            ]);
+
+            toast('✅ 샘플 데이터 로드 완료! (5 vendors, 8 parts, 4 products ...)', 'success', 4000);
+            return true;
+        }
+
         // ── Vendors page search wiring (ids need adding) ───────
         // Add missing ids to vendors page elements at runtime
         document.addEventListener('DOMContentLoaded', () => {
@@ -6010,9 +6141,11 @@ do $$ declare t text; begin for t in select unnest(array['vendors','parts','prod
             const pFilterVendor = document.querySelectorAll('#pg-parts .tbl-filter')[0];
             if (pFilterVendor && !pFilterVendor.id) { pFilterVendor.id = 'parts-filter-vendor'; pFilterVendor.setAttribute('onchange', "filterTable('parts')"); }
 
-            // Initial page render
-            renderVendors();
-            renderParts();
+            // Initial page render — seed sample data if DB is empty
+            seedSampleData().then(() => {
+                renderVendors();
+                renderParts();
+            });
         });
 
         console.log('%cSCM Pro — STEP 4 loaded: Forecast + MRP Engine', 'color:#FFB020;font-weight:bold');
