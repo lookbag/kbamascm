@@ -3,8 +3,15 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>SCM Pro</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#080C12">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="SCM Pro">
+    <meta name="description" content="Supply Chain Management — MRP, PO, HQ Trade, Vendor KPI">
     <link
         href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap"
         rel="stylesheet">
@@ -2501,6 +2508,120 @@
             padding: 14px 20px;
             border-top: 1px solid var(--bd)
         }
+
+        /* ══════════════════════════════════════════════════════
+           STEP 8C — RESPONSIVE / MOBILE / PWA
+        ════════════════════════════════════════════════════════ */
+        .nav-toggle {
+            display: none; flex-direction: column; justify-content: center;
+            align-items: center; width: 36px; height: 36px; gap: 5px;
+            cursor: pointer; border-radius: var(--r); transition: background var(--tr); flex-shrink: 0;
+        }
+        .nav-toggle:hover { background: var(--bgh) }
+        .nav-toggle span {
+            display: block; width: 20px; height: 2px; background: var(--t1);
+            border-radius: 2px; transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
+        }
+        .nav-toggle.open span:nth-child(1) { transform: translateY(7px) rotate(45deg) }
+        .nav-toggle.open span:nth-child(2) { opacity: 0; transform: scaleX(0) }
+        .nav-toggle.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg) }
+        .sidebar-backdrop {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,.55); z-index: 45; backdrop-filter: blur(2px);
+        }
+        .sidebar-backdrop.open { display: block }
+        .pwa-banner {
+            display: none; position: fixed; bottom: 20px; left: 50%;
+            transform: translateX(-50%); background: var(--bg1);
+            border: 1px solid var(--cyan); border-radius: var(--r);
+            padding: 12px 18px; z-index: 200;
+            box-shadow: 0 8px 32px rgba(0,0,0,.4);
+            max-width: 340px; width: calc(100vw - 32px);
+            animation: slide-up .3s cubic-bezier(0.4,0,0.2,1);
+        }
+        @keyframes slide-up {
+            from { opacity:0; transform:translateX(-50%) translateY(20px) }
+            to   { opacity:1; transform:translateX(-50%) translateY(0) }
+        }
+        .pwa-banner.show { display: flex; align-items: center; gap: 14px }
+        .pwa-banner-icon { font-size: 28px; flex-shrink: 0 }
+        .pwa-banner-text { flex: 1 }
+        .pwa-banner-title { font-size: 13px; font-weight: 700; color: var(--t1) }
+        .pwa-banner-sub   { font-size: 11px; color: var(--t3); margin-top: 2px }
+        .pwa-banner-btns  { display: flex; flex-direction: column; gap: 5px; flex-shrink: 0 }
+        @supports (padding: env(safe-area-inset-bottom)) {
+            .app-sidebar { padding-bottom: calc(20px + env(safe-area-inset-bottom)) }
+            .dp-foot      { padding-bottom: calc(16px + env(safe-area-inset-bottom)) }
+            .mobile-bottom-nav { padding-bottom: env(safe-area-inset-bottom, 0) }
+        }
+        .mobile-bottom-nav { display: none }
+
+        @media (max-width: 1024px) {
+            :root { --sw: 200px }
+            .dash-grid { grid-template-columns: 1fr 1fr }
+            .span3 { grid-column: 1 / -1 }
+            .span2 { grid-column: 1 / -1 }
+            .g3 { grid-template-columns: 1fr 1fr }
+        }
+        @media (max-width: 768px) {
+            :root { --sw: 260px; --hh: 56px }
+            .nav-toggle { display: flex }
+            .header-bc { display: none }
+            .header-logo { width: auto; padding-left: 4px }
+            .app-header { padding: 0 12px 0 8px; gap: 8px }
+            #db-indicator { font-size: 10px; padding: 3px 7px }
+            .app-sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
+                z-index: 50; box-shadow: 4px 0 24px rgba(0,0,0,.5);
+            }
+            .app-sidebar.open { transform: translateX(0) }
+            .app-main { margin-left: 0 }
+            .page { padding: 14px 14px 80px }
+            .stats-grid { grid-template-columns: 1fr 1fr !important; gap: 8px }
+            .sc { padding: 12px 14px }
+            .sc-val { font-size: 28px }
+            .dash-grid { grid-template-columns: 1fr; gap: 12px }
+            .span2, .span3 { grid-column: 1 }
+            .g2, .g3 { grid-template-columns: 1fr; gap: 12px }
+            .fg2 { grid-template-columns: 1fr 1fr }
+            .tbl-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch }
+            table { min-width: 600px }
+            .detail-panel { width: 100% !important; border-left: none; border-top: 1px solid var(--bd) }
+            .ph { flex-direction: column; align-items: flex-start; gap: 10px }
+            .ph-acts { flex-wrap: wrap; gap: 6px }
+            .wtw { overflow-x: auto }
+            .wt { min-width: 700px }
+            #kpi-cards-grid { grid-template-columns: 1fr !important }
+            .mobile-bottom-nav {
+                display: flex !important; position: fixed; bottom: 0; left: 0; right: 0;
+                height: 56px; background: var(--bg1); border-top: 1px solid var(--bd); z-index: 40;
+            }
+            .mbn-item {
+                flex: 1; display: flex; flex-direction: column; align-items: center;
+                justify-content: center; gap: 2px; cursor: pointer; color: var(--t3);
+                font-size: 9px; font-weight: 600; text-transform: uppercase;
+                letter-spacing: .05em; transition: color var(--tr); padding: 6px 0;
+            }
+            .mbn-item.active { color: var(--cyan) }
+            .mbn-item:hover  { color: var(--t1) }
+            .mbn-icon { font-size: 20px; line-height: 1 }
+        }
+        @media (max-width: 480px) {
+            :root { --hh: 52px }
+            .page { padding: 12px 10px 80px }
+            .stats-grid { grid-template-columns: 1fr 1fr !important; gap: 6px }
+            .sc-val { font-size: 24px }
+            .sc-label { font-size: 10px }
+            .ph-title { font-size: 18px }
+            .fg2 { grid-template-columns: 1fr }
+            .card-hdr { padding: 12px 14px }
+            .card-body { padding: 10px 14px }
+            .tbl-toolbar { flex-wrap: wrap; gap: 6px }
+            .tbl-search { width: 100% }
+            .btn-sm { padding: 5px 10px; font-size: 11px }
+        }
+
     </style>
 </head>
 
@@ -2544,6 +2665,9 @@
     <div id="app">
         <!-- HEADER -->
         <header class="app-header">
+            <button class="nav-toggle" id="nav-toggle" onclick="toggleSidebar()" aria-label="Menu">
+                <span></span><span></span><span></span>
+            </button>
             <div class="header-logo">
                 <div class="h-logo-mark">S</div>
                 <div class="h-logo-text">SCM<span>Pro</span></div>
@@ -3767,6 +3891,41 @@ do $$ declare t text; begin for t in select unnest(array['vendors','parts','prod
                 </div>
             </div>
         </main>
+    </div>
+
+    <!-- Sidebar backdrop -->
+    <div class="sidebar-backdrop" id="sidebar-backdrop" onclick="closeSidebar()"></div>
+
+    <!-- Mobile bottom nav -->
+    <nav class="mobile-bottom-nav" id="mobile-bottom-nav">
+        <div class="mbn-item active" data-page="dashboard" onclick="navMobile('dashboard')">
+            <div class="mbn-icon">📊</div><span>Dashboard</span>
+        </div>
+        <div class="mbn-item" data-page="mrp" onclick="navMobile('mrp')">
+            <div class="mbn-icon">⚡</div><span>MRP</span>
+        </div>
+        <div class="mbn-item" data-page="polist" onclick="navMobile('polist')">
+            <div class="mbn-icon">📋</div><span>PO</span>
+        </div>
+        <div class="mbn-item" data-page="hqtrade" onclick="navMobile('hqtrade')">
+            <div class="mbn-icon">🚢</div><span>Trade</span>
+        </div>
+        <div class="mbn-item" data-page="alerts" onclick="navMobile('alerts')">
+            <div class="mbn-icon">🚨</div><span>Alerts</span>
+        </div>
+    </nav>
+
+    <!-- PWA install banner -->
+    <div class="pwa-banner" id="pwa-banner">
+        <div class="pwa-banner-icon">📦</div>
+        <div class="pwa-banner-text">
+            <div class="pwa-banner-title">SCM Pro 앱 설치</div>
+            <div class="pwa-banner-sub">홈화면에 추가하여 오프라인에서도 사용</div>
+        </div>
+        <div class="pwa-banner-btns">
+            <button class="btn btn-p btn-sm" onclick="pwaInstall()" style="white-space:nowrap">설치</button>
+            <button class="btn btn-g btn-sm" onclick="pwaDismiss()" style="font-size:10px">나중에</button>
+        </div>
     </div>
 
     <!-- DETAIL PANELS -->
@@ -7943,7 +8102,115 @@ do $$ declare t text; begin for t in select unnest(array['vendors','parts','prod
         PAGE_INIT.hqtrade     = renderHQTrade;
         PAGE_INIT.landedcost  = () => { calcLandedCost(); renderLCHistory(); };
 
-        console.log('%cSCM Pro — STEP 8A+8B loaded: Supabase + HQ Trade + Landed Cost + PO→Inventory', 'color:#00D4FF;font-weight:bold');
+        // ══════════════════════════════════════════════════════
+        //  STEP 8C — MOBILE + PWA
+        // ══════════════════════════════════════════════════════
+
+        function toggleSidebar() {
+            const sidebar  = document.querySelector('.app-sidebar');
+            const backdrop = document.getElementById('sidebar-backdrop');
+            const toggle   = document.getElementById('nav-toggle');
+            const isOpen   = sidebar.classList.contains('open');
+            sidebar.classList.toggle('open', !isOpen);
+            backdrop.classList.toggle('open', !isOpen);
+            toggle.classList.toggle('open', !isOpen);
+        }
+
+        function closeSidebar() {
+            document.querySelector('.app-sidebar')?.classList.remove('open');
+            document.getElementById('sidebar-backdrop')?.classList.remove('open');
+            document.getElementById('nav-toggle')?.classList.remove('open');
+        }
+
+        function navMobile(page) {
+            nav(page);
+            closeSidebar();
+            document.querySelectorAll('.mbn-item').forEach(el =>
+                el.classList.toggle('active', el.dataset.page === page));
+        }
+
+        // Wrap nav() to sync bottom nav + close sidebar
+        const _origNav8c = nav;
+        window.nav = function(id) {
+            _origNav8c(id);
+            if (window.innerWidth <= 768) closeSidebar();
+            document.querySelectorAll('.mbn-item').forEach(el =>
+                el.classList.toggle('active', el.dataset.page === id));
+        };
+
+        // Close sidebar on nav-item click (mobile)
+        document.querySelectorAll('.nav-item').forEach(item =>
+            item.addEventListener('click', () => { if (window.innerWidth <= 768) closeSidebar(); })
+        );
+
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSidebar(); });
+
+        // Swipe gesture: edge-right to open, left to close
+        (function() {
+            let startX = 0, startY = 0, tracking = false;
+            const THRESHOLD = 60, EDGE = 30;
+            document.addEventListener('touchstart', e => {
+                startX = e.touches[0].clientX;
+                startY = e.touches[0].clientY;
+                const isOpen = document.querySelector('.app-sidebar')?.classList.contains('open');
+                tracking = startX < EDGE || isOpen;
+            }, { passive: true });
+            document.addEventListener('touchend', e => {
+                if (!tracking) return;
+                const dx = e.changedTouches[0].clientX - startX;
+                const dy = Math.abs(e.changedTouches[0].clientY - startY);
+                if (dy > 70) { tracking = false; return; }
+                const isOpen = document.querySelector('.app-sidebar')?.classList.contains('open');
+                if (dx >  THRESHOLD && !isOpen) toggleSidebar();
+                if (dx < -THRESHOLD &&  isOpen) closeSidebar();
+                tracking = false;
+            }, { passive: true });
+        })();
+
+        // PWA
+        let deferredPrompt = null;
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => {
+                        console.log('%c[PWA] SW registered ✓', 'color:#00E5A0');
+                        reg.addEventListener('updatefound', () => {
+                            const sw = reg.installing;
+                            sw?.addEventListener('statechange', () => {
+                                if (sw.state === 'installed' && navigator.serviceWorker.controller)
+                                    setTimeout(() => toast('🔄 새 버전 사용 가능 — 새로고침', 'info', 8000), 2000);
+                            });
+                        });
+                    })
+                    .catch(e => console.warn('[PWA] SW failed:', e));
+            });
+        }
+        window.addEventListener('beforeinstallprompt', e => {
+            e.preventDefault();
+            deferredPrompt = e;
+            if (!localStorage.getItem('pwa_dismissed'))
+                setTimeout(() => document.getElementById('pwa-banner')?.classList.add('show'), 3000);
+        });
+        window.addEventListener('appinstalled', () => {
+            document.getElementById('pwa-banner')?.classList.remove('show');
+            deferredPrompt = null;
+            toast('✅ SCM Pro 설치 완료!', 'success', 4000);
+        });
+
+        function pwaInstall() {
+            if (!deferredPrompt) { toast('Safari → 공유 → 홈 화면에 추가', 'info', 6000); return; }
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then(c => {
+                deferredPrompt = null;
+                document.getElementById('pwa-banner')?.classList.remove('show');
+            });
+        }
+        function pwaDismiss() {
+            document.getElementById('pwa-banner')?.classList.remove('show');
+            localStorage.setItem('pwa_dismissed', '1');
+        }
+
+        console.log('%cSCM Pro — STEP 8C: Mobile Responsive + PWA ✓', 'color:#00E5A0;font-weight:bold');
     </script>
 </body>
 
