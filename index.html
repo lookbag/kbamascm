@@ -2192,6 +2192,11 @@
                 <span>Supply Chain</span><span class="sep">›</span><span class="cur" id="bc-cur">Dashboard</span>
             </div>
             <div class="header-acts">
+                <div id="db-status" title="DB Connection Status" onclick="nav('settings')"
+                    style="font-size:10px;color:var(--t3);cursor:pointer;padding:4px 8px;border-radius:4px;border:1px solid var(--bd);font-family:var(--fm);transition:all var(--tr)"
+                    onmouseover="this.style.background='var(--bgh)'" onmouseout="this.style.background=''">
+                    🔵 Connecting...
+                </div>
                 <div class="h-btn" title="Alerts" onclick="nav('alerts')">🔔<div class="badge-dot"></div>
                 </div>
                 <div class="h-btn" title="Settings" onclick="nav('settings')">⚙️</div>
@@ -3167,14 +3172,76 @@
                 <div class="ph">
                     <div>
                         <div class="ph-title">Settings</div>
-                        <div class="ph-sub">Users, roles, system config</div>
+                        <div class="ph-sub">Database connection, sync, and system configuration</div>
                     </div>
                 </div>
-                <div class="empty">
-                    <div class="empty-icon">⚙️</div>
-                    <div class="empty-text">Settings panel — coming in STEP 7</div>
+
+                <!-- DB 연결 상태 카드 -->
+                <div class="g2 mb16" style="margin-bottom:20px">
+                    <div class="card" style="background:var(--bg1);border:1px solid var(--bd);border-radius:var(--rl);padding:24px">
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+                            <div style="font-family:var(--fh);font-size:14px;font-weight:700">🗄️ Database Connection</div>
+                            <div id="settings-db-mode" style="font-size:12px;color:var(--t2)">Checking...</div>
+                        </div>
+
+                        <div class="f-ptitle" style="margin-bottom:8px">Supabase Project</div>
+                        <div style="font-family:var(--fm);font-size:11px;color:var(--t2);margin-bottom:12px;padding:8px 10px;background:var(--bg2);border-radius:4px;border:1px solid var(--bd)">
+                            https://inhyqhtrpsjpiyywtfhw.supabase.co
+                        </div>
+
+                        <div class="field" style="margin-bottom:12px">
+                            <div class="f-lbl">Supabase Anon Key</div>
+                            <div style="display:flex;gap:8px;margin-top:6px">
+                                <input class="f-inp" id="settings-sb-key" type="password"
+                                    placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                                    style="flex:1;font-family:var(--fm);font-size:11px"
+                                    oninput="this.type='text'" onblur="this.type='password'">
+                                <button class="btn btn-p btn-sm" onclick="reconnectSupabase()" style="white-space:nowrap">🔌 Connect</button>
+                            </div>
+                            <div style="font-size:10px;color:var(--t3);margin-top:4px">
+                                Supabase Dashboard → Settings → API → anon public key
+                            </div>
+                        </div>
+
+                        <div style="display:flex;gap:8px;flex-wrap:wrap">
+                            <button class="btn btn-s btn-sm" onclick="pushAllToSupabase()">⬆ Push All to Supabase</button>
+                            <button class="btn btn-s btn-sm" onclick="pullAllFromSupabase()">⬇ Pull All from Supabase</button>
+                            <button class="btn btn-g btn-sm" onclick="testConnection()">🔍 Test Connection</button>
+                        </div>
+                    </div>
+
+                    <!-- SQL Setup 가이드 -->
+                    <div class="card" style="background:var(--bg1);border:1px solid var(--bd);border-radius:var(--rl);padding:24px">
+                        <div style="font-family:var(--fh);font-size:14px;font-weight:700;margin-bottom:16px">📋 Supabase Table Setup</div>
+                        <div style="font-size:11px;color:var(--t2);line-height:1.8;margin-bottom:12px">
+                            Supabase SQL Editor에서 아래 버튼으로 테이블을 생성하세요.
+                        </div>
+                        <button class="btn btn-g btn-sm" onclick="showSqlSetup()" style="margin-bottom:12px">📄 SQL 보기 / 복사</button>
+                        <div id="sql-setup-box" style="display:none">
+                            <textarea id="sql-setup-text" readonly
+                                style="width:100%;height:280px;font-family:var(--fm);font-size:10px;background:var(--bg0);border:1px solid var(--bd);color:var(--green);border-radius:4px;padding:10px;resize:vertical;line-height:1.6"></textarea>
+                            <button class="btn btn-p btn-sm" style="margin-top:6px" onclick="copySql()">📋 Copy SQL</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 로컬 데이터 관리 -->
+                <div class="card" style="background:var(--bg1);border:1px solid var(--bd);border-radius:var(--rl);padding:24px;margin-bottom:20px">
+                    <div style="font-family:var(--fh);font-size:14px;font-weight:700;margin-bottom:16px">💾 Local Data Management</div>
+                    <div id="local-data-summary" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px"></div>
+                    <div style="display:flex;gap:8px">
+                        <button class="btn btn-g btn-sm" onclick="refreshLocalSummary()">🔄 Refresh</button>
+                        <button class="btn btn-g btn-sm" onclick="exportAllLocal()">⬇ Export All (ZIP)</button>
+                        <button class="btn btn-p btn-sm" style="background:var(--red);margin-left:auto" onclick="clearAllLocal()">🗑 Clear Local Data</button>
+                    </div>
+                </div>
+
+                <!-- 앱 정보 -->
+                <div style="font-size:11px;color:var(--t3);padding:0 4px">
+                    SCM Pro · STEP 5 · DB: <span id="db-status">Initializing...</span>
                 </div>
             </div>
+
         </main>
     </div>
 
@@ -3618,60 +3685,285 @@
     </div>
 
     <script>
-        // ── SUPABASE INTEGRATION ──────────────────────────────
-        let supabase = null;
+        // ════════════════════════════════════════════════════════
+        //  SCM Pro — Supabase DB Layer (Full Replacement)
+        //  모든 CRUD는 이 레이어를 통해서만 실행됩니다.
+        //  DB_MODE = 'auto': Supabase 우선, 실패 시 LocalStorage
+        //  DB_MODE = 'local': LocalStorage 전용 (오프라인)
+        //  DB_MODE = 'supabase': Supabase 전용
+        // ════════════════════════════════════════════════════════
 
-        async function setupSupabase() {
-            if (typeof CONFIG !== 'undefined' && CONFIG.SUPABASE_URL && CONFIG.SUPABASE_ANON_KEY) {
-                supabase = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
-                console.log("Supabase Client Ready (via Config)");
+        let _supabase = null;
+        let _dbMode = 'local';   // runtime 확정 모드
+        let _dbReady = false;
+
+        // ── 연결 상태 표시 ──────────────────────────────────────
+        function setDbStatus(mode, msg) {
+            const el = document.getElementById('db-status');
+            if (!el) return;
+            const icons = { supabase: '🟢', local: '🟡', error: '🔴', connecting: '🔵' };
+            const colors = { supabase: 'var(--green)', local: 'var(--amber)', error: 'var(--red)', connecting: 'var(--cyan)' };
+            el.textContent = icons[mode] + ' ' + msg;
+            el.style.color = colors[mode] || 'var(--t2)';
+        }
+
+        // ── Supabase 초기화 ─────────────────────────────────────
+        async function setupDB() {
+            const cfg = (typeof CONFIG !== 'undefined') ? CONFIG : {};
+            const url = cfg.SUPABASE_URL || 'https://inhyqhtrpsjpiyywtfhw.supabase.co';
+            const requestedMode = cfg.DB_MODE || 'auto';
+
+            setDbStatus('connecting', 'Connecting...');
+
+            // LocalStorage 전용 모드
+            if (requestedMode === 'local') {
+                _dbMode = 'local';
+                _dbReady = true;
+                setDbStatus('local', 'Local Storage');
+                console.log('%c[DB] LocalStorage mode', 'color:#FFB020');
                 return;
             }
-            const url = 'https://inhyqhtrpsjpiyywtfhw.supabase.co';
-            let key = sessionStorage.getItem('SUPABASE_KEY');
-            if (!key) {
-                key = prompt("보안을 위해 Supabase Anon Key를 입력해주세요.");
-                if (key) sessionStorage.setItem('SUPABASE_KEY', key);
+
+            // Anon key 확보
+            let key = cfg.SUPABASE_ANON_KEY || sessionStorage.getItem('scm_sbkey') || '';
+            if (!key && requestedMode === 'supabase') {
+                key = prompt('Supabase Anon Key를 입력하세요 (Settings > API):');
+                if (key) sessionStorage.setItem('scm_sbkey', key);
             }
+            if (!key && requestedMode === 'auto') {
+                key = sessionStorage.getItem('scm_sbkey') || '';
+            }
+
             if (key && window.supabase) {
-                supabase = window.supabase.createClient(url, key);
-                console.log("Supabase Client Ready (via Prompt)");
-            }
-        }
-
-        // Auto-init if config exists
-        if (typeof CONFIG !== 'undefined') {
-            window.addEventListener('load', setupSupabase);
-        }
-
-        async function syncToDatabase(sheetName, rawData) {
-            if (!supabase) await setupSupabase();
-            if (!supabase) return;
-
-            const tableName = sheetName.toLowerCase().split('_')[1];
-            const cleanData = rawData.map(row => {
-                const newRow = {};
-                for (let key in row) {
-                    let cleanKey = key.replace(' *', '').trim().toLowerCase();
-                    if (cleanKey.includes('code')) cleanKey = cleanKey.replace('code', 'id');
-                    if (cleanKey.includes('date')) {
-                        if (row[key] instanceof Date) cleanKey = row[key].toISOString().slice(0, 10);
-                        else if (typeof row[key] === 'string') cleanKey = row[key].split(' ')[0];
+                try {
+                    _supabase = window.supabase.createClient(url, key, {
+                        auth: { persistSession: false },
+                        db: { schema: 'public' }
+                    });
+                    // 연결 테스트
+                    const { error } = await _supabase.from('scm_vendors').select('vendor_code').limit(1);
+                    if (error && error.code !== 'PGRST116') throw error;
+                    _dbMode = 'supabase';
+                    _dbReady = true;
+                    setDbStatus('supabase', 'Supabase Connected');
+                    console.log('%c[DB] Supabase mode ✓', 'color:#00E5A0');
+                    return;
+                } catch (e) {
+                    console.warn('[DB] Supabase connection failed:', e.message);
+                    if (requestedMode === 'supabase') {
+                        setDbStatus('error', 'Supabase Error: ' + e.message);
+                        return;
                     }
-                    newRow[cleanKey] = row[key];
                 }
-                return newRow;
-            });
-
-            const { error } = await supabase
-                .from(tableName)
-                .upsert(cleanData, { onConflict: tableName.slice(0, -1) + '_id' });
-
-            if (error) {
-                toast(`${sheetName} Sync Fail: ` + error.message, 'error');
-            } else {
-                console.log(`${sheetName} Sync Success!`);
             }
+
+            // Fallback to LocalStorage
+            _dbMode = 'local';
+            _dbReady = true;
+            setDbStatus('local', 'Local Storage (offline)');
+            console.log('%c[DB] Fallback to LocalStorage', 'color:#FFB020');
+        }
+
+        // ── 테이블 이름 해석 ────────────────────────────────────
+        function sbTable(table) {
+            const map = (typeof CONFIG !== 'undefined' && CONFIG.TABLES) ? CONFIG.TABLES : {};
+            return map[table] || `scm_${table}`;
+        }
+
+        function pkOf(table) {
+            const map = (typeof CONFIG !== 'undefined' && CONFIG.PRIMARY_KEYS) ? CONFIG.PRIMARY_KEYS : {};
+            return map[table] || 'id';
+        }
+
+        // ── DB 추상화 레이어 ────────────────────────────────────
+        const DB = {
+
+            // ── GET: 전체 조회 ──────────────────────────────────
+            async get(table) {
+                if (_dbMode === 'supabase' && _supabase) {
+                    try {
+                        const { data, error } = await _supabase
+                            .from(sbTable(table))
+                            .select('*')
+                            .order('created_at', { ascending: true });
+                        if (error) throw error;
+                        // 로컬 캐시 갱신
+                        localStorage.setItem(`scm_${table}`, JSON.stringify(data || []));
+                        return data || [];
+                    } catch (e) {
+                        console.warn(`[DB] Supabase get(${table}) failed, using cache:`, e.message);
+                        // 캐시 fallback
+                        const r = localStorage.getItem(`scm_${table}`);
+                        return r ? JSON.parse(r) : [];
+                    }
+                }
+                // LocalStorage
+                const r = localStorage.getItem(`scm_${table}`);
+                return r ? JSON.parse(r) : [];
+            },
+
+            // ── SAVE: 전체 덮어쓰기 ────────────────────────────
+            async save(table, data) {
+                // 로컬 항상 저장
+                localStorage.setItem(`scm_${table}`, JSON.stringify(data));
+
+                if (_dbMode === 'supabase' && _supabase) {
+                    try {
+                        const pk = pkOf(table);
+                        // delete all + insert (full replace)
+                        const { error: delErr } = await _supabase.from(sbTable(table)).delete().neq(pk, '__never__');
+                        if (delErr) throw delErr;
+                        if (data.length > 0) {
+                            const { error: insErr } = await _supabase.from(sbTable(table)).insert(data);
+                            if (insErr) throw insErr;
+                        }
+                    } catch (e) {
+                        console.warn(`[DB] Supabase save(${table}) failed:`, e.message);
+                        setDbStatus('error', `Sync error: ${table}`);
+                    }
+                }
+                return data;
+            },
+
+            // ── UPSERT: 단건 저장/수정 ─────────────────────────
+            async upsert(table, rec, key = 'id') {
+                // 로컬 처리
+                const localData = await this._localGet(table);
+                const i = localData.findIndex(r => r[key] === rec[key]);
+                const now = new Date().toISOString();
+                const record = { ...rec, updated_at: now };
+                if (i >= 0) localData[i] = { ...localData[i], ...record };
+                else localData.push({ ...record, created_at: now });
+                localStorage.setItem(`scm_${table}`, JSON.stringify(localData));
+
+                // Supabase 동기화
+                if (_dbMode === 'supabase' && _supabase) {
+                    try {
+                        const pk = pkOf(table);
+                        const { error } = await _supabase
+                            .from(sbTable(table))
+                            .upsert(record, { onConflict: pk });
+                        if (error) throw error;
+                    } catch (e) {
+                        console.warn(`[DB] Supabase upsert(${table}) failed:`, e.message);
+                        // 로컬엔 이미 저장됐으므로 사용자에게 경고만
+                        if (e.message.includes('not found') || e.message.includes('does not exist')) {
+                            setDbStatus('error', `테이블 없음: ${sbTable(table)} — SQL Setup 실행하세요`);
+                        }
+                    }
+                }
+                return record;
+            },
+
+            // ── DELETE: 단건 삭제 ──────────────────────────────
+            async delete(table, id, key = 'id') {
+                const localData = await this._localGet(table);
+                const filtered = localData.filter(r => r[key] !== id);
+                localStorage.setItem(`scm_${table}`, JSON.stringify(filtered));
+
+                if (_dbMode === 'supabase' && _supabase) {
+                    try {
+                        const pk = pkOf(table);
+                        const { error } = await _supabase
+                            .from(sbTable(table))
+                            .delete()
+                            .eq(pk, id);
+                        if (error) throw error;
+                    } catch (e) {
+                        console.warn(`[DB] Supabase delete(${table}) failed:`, e.message);
+                    }
+                }
+                return filtered;
+            },
+
+            // ── LOCAL ONLY (내부 헬퍼) ─────────────────────────
+            _localGet(table) {
+                const r = localStorage.getItem(`scm_${table}`);
+                return Promise.resolve(r ? JSON.parse(r) : []);
+            },
+
+            // ── SYNC: Local → Supabase 전체 밀어넣기 ──────────
+            async pushToSupabase(table) {
+                if (!_supabase) return { error: 'Not connected' };
+                const data = await this._localGet(table);
+                if (data.length === 0) return { ok: true, count: 0 };
+                const pk = pkOf(table);
+                const { error } = await _supabase
+                    .from(sbTable(table))
+                    .upsert(data, { onConflict: pk });
+                return error ? { error: error.message } : { ok: true, count: data.length };
+            },
+
+            // ── PULL: Supabase → Local 전체 내려받기 ──────────
+            async pullFromSupabase(table) {
+                if (!_supabase) return { error: 'Not connected' };
+                const { data, error } = await _supabase
+                    .from(sbTable(table))
+                    .select('*');
+                if (error) return { error: error.message };
+                localStorage.setItem(`scm_${table}`, JSON.stringify(data || []));
+                return { ok: true, count: data?.length || 0 };
+            },
+        };
+
+        // ── DB 상태 확인 헬퍼 (Settings 화면용) ────────────────
+        function isSupabaseConnected() { return _dbMode === 'supabase' && !!_supabase; }
+
+        // ── 앱 시작 시 DB 초기화 ───────────────────────────────
+        window.addEventListener('load', async () => {
+            await setupDB();
+            // DB 준비 후 Settings 화면에 상태 반영
+            updateSettingsDbStatus();
+        });
+
+        // ── Settings 화면 DB 상태 업데이트 ─────────────────────
+        function updateSettingsDbStatus() {
+            const el = document.getElementById('settings-db-mode');
+            if (el) el.textContent = _dbMode === 'supabase' ? '🟢 Supabase (Cloud)' : '🟡 LocalStorage (Offline)';
+        }
+
+        // ── 수동 연결 시도 (Settings에서 Key 입력 후 재연결) ───
+        async function reconnectSupabase() {
+            const keyInput = document.getElementById('settings-sb-key');
+            const key = keyInput?.value.trim();
+            if (!key) { if(typeof toast==='function') toast('Anon Key를 입력하세요', 'warn'); return; }
+            sessionStorage.setItem('scm_sbkey', key);
+            _supabase = null;
+            _dbMode = 'local';
+            await setupDB();
+            if (typeof toast === 'function') {
+                toast(_dbMode === 'supabase' ? 'Supabase 연결 성공! ✓' : '연결 실패 — Key를 확인하세요', _dbMode === 'supabase' ? 'success' : 'error');
+            }
+            updateSettingsDbStatus();
+        }
+
+        // ── 전체 테이블 Local → Supabase Push ─────────────────
+        async function pushAllToSupabase() {
+            if (!isSupabaseConnected()) { toast('Supabase에 연결되지 않았습니다', 'error'); return; }
+            const tables = ['vendors','parts','products','bom','inventory','forecast','polist','import_history'];
+            let total = 0, errors = 0;
+            for (const t of tables) {
+                const r = await DB.pushToSupabase(t);
+                if (r.ok) total += r.count;
+                else { errors++; console.warn(`Push failed: ${t}`, r.error); }
+            }
+            toast(`Supabase 동기화 완료 — ${total}개 레코드 ${errors > 0 ? `(${errors}개 테이블 오류)` : ''}`, errors > 0 ? 'warn' : 'success');
+        }
+
+        // ── 전체 테이블 Supabase → Local Pull ─────────────────
+        async function pullAllFromSupabase() {
+            if (!isSupabaseConnected()) { toast('Supabase에 연결되지 않았습니다', 'error'); return; }
+            const tables = ['vendors','parts','products','bom','inventory','forecast','polist','import_history'];
+            let total = 0;
+            for (const t of tables) {
+                const r = await DB.pullFromSupabase(t);
+                if (r.ok) total += r.count;
+            }
+            toast(`Supabase에서 ${total}개 레코드 다운로드 완료`, 'success');
+            // 현재 화면 새로고침
+            if (typeof renderVendors === 'function') renderVendors();
+            if (typeof renderParts === 'function') renderParts();
+            if (typeof renderProducts === 'function') renderProducts();
         }
 
         // ── STATE ──────────────────────────────────────────────
@@ -3771,22 +4063,7 @@
             if (e.key === 'Escape') document.querySelectorAll('.modal-ov.open').forEach(m => m.classList.remove('open'));
         });
 
-        // ── DB ABSTRACTION LAYER (Phase 1 = LocalStorage) ──────
-        // To migrate to Supabase: replace only these function bodies
-        const DB = {
-            async get(table) { const r = localStorage.getItem(`scm_${table}`); return r ? JSON.parse(r) : []; },
-            async save(table, data) { localStorage.setItem(`scm_${table}`, JSON.stringify(data)); return data; },
-            async upsert(table, rec, key = 'id') {
-                const data = await this.get(table);
-                const i = data.findIndex(r => r[key] === rec[key]);
-                if (i >= 0) data[i] = { ...data[i], ...rec }; else data.push({ ...rec, id: rec.id || Date.now().toString() });
-                return this.save(table, data);
-            },
-            async delete(table, id, key = 'id') {
-                const data = await this.get(table);
-                return this.save(table, data.filter(r => r[key] !== id));
-            }
-        };
+        // DB는 위의 Supabase 레이어가 처리합니다 (setupDB() → DB object)
 
         // ── UTILS ──────────────────────────────────────────────
         const fmt = (n, d = 0) => n == null ? '—' : new Intl.NumberFormat('en-US', { minimumFractionDigits: d, maximumFractionDigits: d }).format(n);
@@ -4614,14 +4891,10 @@
 
             toast(`Import complete — ${saved} records saved`, 'success');
 
-            // Sync to Supabase
-            if (importPending) {
-                for (const sheetName of Object.keys(importPending)) {
-                    if (importPending[sheetName].rows.length > 0) {
-                        await syncToDatabase(sheetName, importPending[sheetName].rows);
-                    }
-                }
-                toast("All validated data synced to Supabase DB", "success");
+            // Supabase 자동 동기화 (DB 레이어가 각 upsert/save에서 이미 처리)
+            // 추가로 명시적 확인 메시지
+            if (isSupabaseConnected()) {
+                toast('☁️ Supabase DB에 동기화 완료', 'success', 2000);
             }
 
             importPending = null;
@@ -4810,7 +5083,249 @@
             renderParts();
         });
 
-        console.log('%cSCM Pro — STEP 4 loaded: Forecast + MRP Engine', 'color:#FFB020;font-weight:bold');
+        // ══════════════════════════════════════════════════════
+        //  SUPABASE SETTINGS & SQL SETUP
+        // ══════════════════════════════════════════════════════
+
+        async function testConnection() {
+            if (!_supabase) { toast('연결되지 않음 — Key를 입력하고 Connect를 누르세요', 'warn'); return; }
+            try {
+                setDbStatus('connecting', 'Testing...');
+                const { error } = await _supabase.from('scm_vendors').select('vendor_code').limit(1);
+                if (error && error.code !== 'PGRST116') throw error;
+                setDbStatus('supabase', 'Supabase Connected ✓');
+                toast('Supabase 연결 정상 ✓', 'success');
+            } catch (e) {
+                setDbStatus('error', 'Connection failed');
+                toast('연결 실패: ' + e.message, 'error');
+            }
+        }
+
+        async function refreshLocalSummary() {
+            const tables = ['vendors','parts','products','bom','inventory','forecast','polist','import_history'];
+            const labels = { vendors:'Vendors', parts:'Parts', products:'Products', bom:'BOM',
+                             inventory:'Inventory', forecast:'Forecast', polist:'POs', import_history:'Import Log' };
+            const el = document.getElementById('local-data-summary');
+            if (!el) return;
+            const counts = await Promise.all(tables.map(async t => {
+                const d = await DB._localGet(t);
+                return { table: t, count: d.length };
+            }));
+            el.innerHTML = counts.map(c => `
+                <div style="background:var(--bg2);border:1px solid var(--bd);border-radius:var(--r);padding:10px 12px;text-align:center">
+                    <div style="font-family:var(--fm);font-size:18px;font-weight:600;color:var(--cyan)">${c.count}</div>
+                    <div style="font-size:10px;color:var(--t3);margin-top:2px">${labels[c.table]||c.table}</div>
+                </div>`).join('');
+        }
+
+        async function clearAllLocal() {
+            const ok = await confirm('Clear All Local Data', 'LocalStorage의 모든 SCM 데이터가 삭제됩니다. Supabase에 데이터가 있으면 Pull로 복구할 수 있습니다. 계속하시겠습니까?', 'Clear All', true);
+            if (!ok) return;
+            ['vendors','parts','products','bom','inventory','forecast','polist','import_history'].forEach(t => {
+                localStorage.removeItem(`scm_${t}`);
+            });
+            toast('로컬 데이터 초기화 완료', 'warn');
+            refreshLocalSummary();
+        }
+
+        async function exportAllLocal() {
+            if (!window.XLSX) { toast('Loading...', 'info'); await loadXLSX(); }
+            const tables = ['vendors','parts','products','bom','inventory','forecast','polist'];
+            const wb = XLSX.utils.book_new();
+            for (const t of tables) {
+                const data = await DB._localGet(t);
+                if (data.length > 0) {
+                    const ws = XLSX.utils.json_to_sheet(data);
+                    XLSX.utils.book_append_sheet(wb, ws, t);
+                }
+            }
+            XLSX.writeFile(wb, `SCM_Backup_${new Date().toISOString().slice(0,10)}.xlsx`);
+            toast('전체 데이터 백업 완료', 'success');
+        }
+
+        const SQL_SETUP = `-- SCM Pro — Supabase Table Setup
+-- Supabase Dashboard > SQL Editor에서 실행하세요
+
+-- 1. Vendors
+CREATE TABLE IF NOT EXISTS scm_vendors (
+  id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  vendor_code TEXT UNIQUE NOT NULL,
+  vendor_name TEXT NOT NULL,
+  country TEXT,
+  default_currency TEXT DEFAULT 'USD',
+  payment_terms TEXT,
+  incoterms TEXT,
+  address_line1 TEXT,
+  address_line2 TEXT,
+  city TEXT,
+  state_province TEXT,
+  postal_code TEXT,
+  country_full TEXT,
+  contact_name TEXT,
+  email TEXT,
+  phone TEXT,
+  fax TEXT,
+  bank_name TEXT,
+  bank_account TEXT,
+  swift_code TEXT,
+  iban TEXT,
+  remarks TEXT,
+  leadtime_mp INTEGER,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 2. Parts
+CREATE TABLE IF NOT EXISTS scm_parts (
+  id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  part_no TEXT UNIQUE NOT NULL,
+  part_name TEXT NOT NULL,
+  category TEXT,
+  in_out TEXT,
+  vendor_code TEXT REFERENCES scm_vendors(vendor_code),
+  material TEXT,
+  price NUMERIC(18,6),
+  currency TEXT DEFAULT 'USD',
+  price_date DATE,
+  hs_code TEXT,
+  moq INTEGER,
+  std_pack_size INTEGER,
+  leadtime_mp INTEGER,
+  leadtime_dev INTEGER,
+  incoterms TEXT,
+  shipping_method TEXT,
+  safety_stock TEXT,
+  unit TEXT DEFAULT 'Pcs',
+  remarks TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 3. Products
+CREATE TABLE IF NOT EXISTS scm_products (
+  id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  part_no TEXT UNIQUE NOT NULL,
+  kb_part_no TEXT,
+  car_code TEXT,
+  sub_code TEXT,
+  part_name TEXT NOT NULL,
+  customer TEXT NOT NULL,
+  type TEXT DEFAULT 'mp',
+  price NUMERIC(18,4),
+  currency TEXT DEFAULT 'USD',
+  incoterms TEXT,
+  remarks TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 4. BOM
+CREATE TABLE IF NOT EXISTS scm_bom (
+  id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  assy_part_no TEXT NOT NULL,
+  part_no TEXT NOT NULL,
+  lr TEXT DEFAULT '-',
+  qty INTEGER DEFAULT 1,
+  car_code TEXT,
+  sub_code TEXT,
+  remarks TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 5. Inventory
+CREATE TABLE IF NOT EXISTS scm_inventory (
+  id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  part_no TEXT NOT NULL,
+  location TEXT NOT NULL CHECK (location IN ('onhand','intransit','vmi')),
+  qty INTEGER DEFAULT 0,
+  lot_no TEXT,
+  date DATE,
+  remarks TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 6. Forecast
+CREATE TABLE IF NOT EXISTS scm_forecast (
+  id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  assy_part_no TEXT NOT NULL,
+  customer TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+  -- 주간 컬럼은 동적으로 추가됩니다 (예: "2026W08" NUMERIC DEFAULT 0)
+);
+
+-- 7. PO
+CREATE TABLE IF NOT EXISTS scm_po (
+  id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  po_number TEXT UNIQUE NOT NULL,
+  vendor_code TEXT REFERENCES scm_vendors(vendor_code),
+  date DATE,
+  total_value NUMERIC(18,2),
+  item_count INTEGER DEFAULT 0,
+  progress INTEGER DEFAULT 0,
+  status TEXT DEFAULT 'draft' CHECK (status IN ('draft','issued','partial','received','cancelled')),
+  created_by TEXT,
+  remarks TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 8. Import History
+CREATE TABLE IF NOT EXISTS scm_import_history (
+  id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  date TIMESTAMPTZ DEFAULT NOW(),
+  rows INTEGER,
+  status TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- RLS 활성화 (필요시)
+-- ALTER TABLE scm_vendors ENABLE ROW LEVEL SECURITY;
+-- CREATE POLICY "Allow all for anon" ON scm_vendors FOR ALL USING (true);
+-- (각 테이블마다 반복 적용)
+
+SELECT 'SCM Pro tables created successfully' as result;`;
+
+        function showSqlSetup() {
+            const box = document.getElementById('sql-setup-box');
+            const txt = document.getElementById('sql-setup-text');
+            if (!box || !txt) return;
+            if (box.style.display === 'none') {
+                box.style.display = 'block';
+                txt.value = SQL_SETUP;
+            } else {
+                box.style.display = 'none';
+            }
+        }
+
+        function copySql() {
+            navigator.clipboard?.writeText(SQL_SETUP).then(() => {
+                toast('SQL 복사됨 — Supabase SQL Editor에 붙여넣으세요', 'success');
+            }).catch(() => {
+                // fallback
+                const txt = document.getElementById('sql-setup-text');
+                txt?.select();
+                document.execCommand('copy');
+                toast('SQL 복사됨', 'success');
+            });
+        }
+
+        // Settings 페이지 진입 시 로컬 요약 로드
+        const _origPageInitSettings = PAGE_INIT;
+        PAGE_INIT.settings = () => {
+            refreshLocalSummary();
+            updateSettingsDbStatus();
+            // Key 필드에 저장된 키 표시 (마스킹)
+            const keyEl = document.getElementById('settings-sb-key');
+            if (keyEl) {
+                const saved = sessionStorage.getItem('scm_sbkey') || '';
+                if (saved) keyEl.placeholder = saved.slice(0,20) + '... (저장됨)';
+            }
+        };
+
+        console.log('%cSCM Pro — Supabase DB Layer Ready', 'color:#00D4FF;font-weight:bold');
 
         // ══════════════════════════════════════════════════════
         //  STEP 4 — FORECAST + MRP CALCULATION ENGINE
