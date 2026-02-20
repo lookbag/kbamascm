@@ -2930,8 +2930,7 @@
                                 <div class="empty-text">No POs yet</div>
                             </div>
                         </div>
-                    </div>
-                    <div class="card">
+
                     <div class="card">
                         <div class="card-hdr">
                             <div class="card-title">🕐 Recent Activity</div>
@@ -2944,6 +2943,9 @@
                             </div>
                         </div>
                     </div>
+                </div> <!-- dash-grid -->
+            </div> <!-- pg-dashboard -->
+
             <!-- VENDORS -->
             <div class="page" id="pg-vendors">
                 <div class="ph">
@@ -4086,7 +4088,7 @@ do $$ declare t text; begin for t in select unnest(array['vendors','parts','prod
                 </div>
                 <div class="field">
                     <div class="f-lbl">Vendor<span class="req">*</span></div>
-                    <select class="f-inp" id="dp-vendor"></select>
+                    <select class="f-inp" id="dp-part-vendor"></select>
                 </div>
                 <div class="field">
                     <div class="f-lbl">Material</div><input class="f-inp" id="dp-material"
@@ -5083,7 +5085,7 @@ do $$ declare t text; begin for t in select unnest(array['vendors','parts','prod
 
             // Populate vendor select
             const vendors = await DB.get('vendors');
-            const vsel = document.getElementById('dp-vendor');
+            const vsel = document.getElementById('dp-part-vendor');
             vsel.innerHTML = '<option value="">— Select vendor —</option>' +
                 vendors.map(v => `<option value="${v.vendor_code}">${v.vendor_code} — ${v.vendor_name}</option>`).join('');
 
@@ -5093,7 +5095,7 @@ do $$ declare t text; begin for t in select unnest(array['vendors','parts','prod
                 const el = document.getElementById('dp-' + f);
                 if (el) el.value = (data && data[keys[i]] !== undefined) ? data[keys[i]] : '';
             });
-            if (data?.vendor_code) document.getElementById('dp-vendor').value = data.vendor_code;
+            if (data?.vendor_code) document.getElementById('dp-part-vendor').value = data.vendor_code;
         }
 
         async function savePart() {
@@ -5103,7 +5105,7 @@ do $$ declare t text; begin for t in select unnest(array['vendors','parts','prod
                 part_name: document.getElementById('dp-partname').value.trim(),
                 category: document.getElementById('dp-category').value,
                 in_out: document.getElementById('dp-inout').value,
-                vendor_code: document.getElementById('dp-vendor').value,
+                vendor_code: document.getElementById('dp-part-vendor').value,
                 material: document.getElementById('dp-material').value.trim(),
                 price: parseFloat(document.getElementById('dp-price').value) || 0,
                 currency: document.getElementById('dp-currency').value,
