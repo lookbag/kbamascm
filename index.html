@@ -1864,6 +1864,84 @@
             color: var(--cyan)
         }
 
+        /* ── STEP 7: KPI + ALERTS + DASHBOARD ───────────────── */
+
+        /* Vendor KPI — star rating */
+        .stars { display:inline-flex; gap:2px; font-size:14px; line-height:1 }
+        .star-full  { color:#FFB020 }
+        .star-half  { color:#FFB020; opacity:.5 }
+        .star-empty { color:var(--bd) }
+
+        /* KPI score ring */
+        .kpi-ring-wrap { display:flex; align-items:center; gap:20px; padding:12px 0 }
+        .kpi-ring { position:relative; width:88px; height:88px; flex-shrink:0 }
+        .kpi-ring svg { transform:rotate(-90deg) }
+        .kpi-ring-val { position:absolute; inset:0; display:flex; flex-direction:column;
+            align-items:center; justify-content:center; font-family:var(--fm);
+            font-size:20px; font-weight:700; color:var(--t1) }
+        .kpi-ring-lbl { font-size:9px; color:var(--t3); text-transform:uppercase;
+            letter-spacing:.07em; margin-top:1px }
+        .kpi-criteria { display:flex; flex-direction:column; gap:7px; flex:1 }
+        .kpi-crit-row { display:flex; align-items:center; gap:8px }
+        .kpi-crit-label { font-size:11px; color:var(--t2); flex:1 }
+        .kpi-crit-bar { flex:2; height:5px; background:var(--bg0); border-radius:99px; overflow:hidden }
+        .kpi-crit-fill { height:100%; border-radius:99px; transition:width .6s cubic-bezier(.4,0,.2,1) }
+        .kpi-crit-val { font-family:var(--fm); font-size:11px; font-weight:600;
+            min-width:40px; text-align:right }
+
+        /* KPI history table */
+        .kpi-history { width:100%; border-collapse:collapse; font-size:11px; margin-top:10px }
+        .kpi-history th { padding:6px 10px; border-bottom:2px solid var(--bd);
+            text-align:left; font-size:10px; text-transform:uppercase;
+            color:var(--t3); letter-spacing:.07em }
+        .kpi-history td { padding:8px 10px; border-bottom:1px solid var(--bd) }
+        .kpi-history tr:last-child td { border-bottom:none }
+        .kpi-history tr:hover td { background:var(--bgh) }
+
+        /* Alert cards */
+        .alert-card { display:flex; align-items:flex-start; gap:14px; padding:14px 18px;
+            border-bottom:1px solid var(--bd); transition:background var(--tr); cursor:pointer }
+        .alert-card:last-child { border-bottom:none }
+        .alert-card:hover { background:var(--bgh) }
+        .alert-card.unread { background:rgba(0,212,255,0.03) }
+        .alert-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; margin-top:5px }
+        .alert-dot.r { background:var(--red) }
+        .alert-dot.a { background:var(--amber) }
+        .alert-dot.g { background:var(--green) }
+        .alert-dot.c { background:var(--cyan) }
+        .alert-icon { font-size:22px; flex-shrink:0; width:36px; text-align:center }
+        .alert-body { flex:1; min-width:0 }
+        .alert-title { font-size:13px; font-weight:600; color:var(--t1);
+            white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
+        .alert-desc  { font-size:11px; color:var(--t2); margin-top:3px; line-height:1.5 }
+        .alert-meta  { font-size:10px; color:var(--t3); margin-top:5px;
+            display:flex; align-items:center; gap:8px }
+        .alert-age   { font-size:10px; color:var(--t3); white-space:nowrap; flex-shrink:0 }
+        .alert-filter-bar { display:flex; gap:8px; padding:12px 18px;
+            border-bottom:1px solid var(--bd); flex-wrap:wrap; align-items:center }
+        .alert-tab { padding:5px 14px; border-radius:99px; font-size:11px; font-weight:600;
+            cursor:pointer; border:1px solid var(--bd); color:var(--t2);
+            transition:all var(--tr); white-space:nowrap }
+        .alert-tab.on { background:var(--cyan); color:var(--bg0); border-color:var(--cyan) }
+        .alert-tab:hover:not(.on) { border-color:var(--cyan); color:var(--cyan) }
+        .alert-count-badge { display:inline-flex; align-items:center; justify-content:center;
+            background:var(--red); color:#fff; border-radius:99px;
+            font-size:9px; font-weight:700; min-width:16px; height:16px; padding:0 4px;
+            margin-left:5px }
+
+        /* Dashboard — live ids */
+        .dash-live-badge { display:inline-flex; align-items:center; gap:4px;
+            font-size:10px; color:var(--green); font-weight:500 }
+        .dash-live-dot { width:6px; height:6px; border-radius:50%;
+            background:var(--green); animation:pulse-dot 2s infinite }
+        @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+        /* KPI summary strip on Dashboard */
+        .kpi-mini-strip { display:flex; flex-direction:column; gap:10px }
+        .kpi-mini-row { display:flex; align-items:center; gap:8px }
+        .kpi-mini-vendor { font-size:12px; font-weight:600; color:var(--t1); min-width:90px }
+        .kpi-mini-score { font-family:var(--fm); font-size:12px; font-weight:700; min-width:40px; text-align:right }
+
         .detail-panel {
             position: fixed;
             top: var(--hh);
@@ -2431,11 +2509,6 @@
                 </div>
                 <div class="h-btn" title="Settings" onclick="nav('settings')">⚙️</div>
                 <div class="h-div"></div>
-                <div id="db-indicator" onclick="nav('settings')" title="DB 상태 — Settings에서 연결"
-                    style="font-size:11px;font-family:var(--fm);padding:3px 10px;border-radius:var(--r);border:1px solid var(--bd);cursor:pointer;transition:all var(--tr);white-space:nowrap">
-                    <span style="color:var(--amber)">● Local</span>
-                </div>
-                <div class="h-div"></div>
                 <div class="h-user" onclick="nav('settings')">
                     <div class="avatar" id="u-av">AD</div>
                     <div>
@@ -2508,118 +2581,75 @@
                 <div class="stats-grid">
                     <div class="sc r">
                         <div class="sc-label">Shortage Parts</div>
-                        <div class="sc-val">5</div>
-                        <div class="sc-delta tr2">⚠ Immediate action required</div>
+                        <div class="sc-val" id="dash-shortage">—</div>
+                        <div class="sc-delta tr2" id="dash-shortage-delta">Run MRP to calculate</div>
                         <div class="sc-icon">⚠️</div>
                     </div>
                     <div class="sc a">
                         <div class="sc-label">Impossible POs</div>
-                        <div class="sc-val">2</div>
-                        <div class="sc-delta ta">Lead time exceeded</div>
+                        <div class="sc-val" id="dash-impossible">—</div>
+                        <div class="sc-delta ta" id="dash-impossible-delta">Lead time exceeded</div>
                         <div class="sc-icon">🚨</div>
                     </div>
                     <div class="sc c">
                         <div class="sc-label">Open POs</div>
-                        <div class="sc-val">18</div>
-                        <div class="sc-delta">$284,500 total value</div>
+                        <div class="sc-val" id="dash-open-po">—</div>
+                        <div class="sc-delta" id="dash-open-po-delta">Loading...</div>
                         <div class="sc-icon">📋</div>
                     </div>
                     <div class="sc g">
                         <div class="sc-label">In Transit</div>
-                        <div class="sc-val">6</div>
-                        <div class="sc-delta tg">ETA within 14 days</div>
+                        <div class="sc-val" id="dash-in-transit">—</div>
+                        <div class="sc-delta tg" id="dash-transit-delta">Loading shipments...</div>
                         <div class="sc-icon">🚢</div>
                     </div>
                 </div>
                 <div class="dash-grid">
-                    <!-- Shortage table -->
+                    <!-- Shortage table — LIVE -->
                     <div class="card span2">
                         <div class="card-hdr">
-                            <div class="card-title">🚨 Shortage &amp; Impossible PO Alerts</div><button
-                                class="btn btn-sm btn-s" onclick="nav('mrp')">View All</button>
+                            <div class="card-title">🚨 Shortage &amp; Impossible PO Alerts
+                                <span class="dash-live-badge" style="margin-left:8px">
+                                    <span class="dash-live-dot"></span>LIVE
+                                </span>
+                            </div>
+                            <div style="display:flex;gap:8px;align-items:center">
+                                <span id="dash-alert-badge" style="display:none" class="alert-count-badge">0</span>
+                                <button class="btn btn-sm btn-s" onclick="nav('mrp')">View All →</button>
+                            </div>
                         </div>
                         <table>
                             <thead>
                                 <tr>
                                     <th>Part No</th>
                                     <th>Part Name</th>
-                                    <th>Shortage</th>
-                                    <th>Required By</th>
+                                    <th>Net Position</th>
+                                    <th>Order By</th>
                                     <th>Lead Time</th>
                                     <th>Status</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr onclick="nav('mrp')">
-                                    <td class="mono tc">BC524C2802</td>
-                                    <td class="tx">Noise Shim_INR</td>
-                                    <td class="nn ri">-32,000</td>
-                                    <td class="mono">Mar 10</td>
-                                    <td class="mono">90 days</td>
-                                    <td><span class="badge badge-r">Impossible PO</span></td>
-                                </tr>
-                                <tr onclick="nav('mrp')">
-                                    <td class="mono tc">BC530C2800</td>
-                                    <td class="tx">Back Plate_INR</td>
-                                    <td class="nn ri">-18,000</td>
-                                    <td class="mono">Mar 17</td>
-                                    <td class="mono">80 days</td>
-                                    <td><span class="badge badge-r">Shortage</span></td>
-                                </tr>
-                                <tr onclick="nav('mrp')">
-                                    <td class="mono tc">BC52004300</td>
-                                    <td class="tx">Sensor</td>
-                                    <td class="nw ri">-8,500</td>
-                                    <td class="mono">Mar 24</td>
-                                    <td class="mono">60 days</td>
-                                    <td><span class="badge badge-a">Warning</span></td>
-                                </tr>
-                                <tr onclick="nav('mrp')">
-                                    <td class="mono tc">BC552C2800</td>
-                                    <td class="tx">Noise Shim_OTR</td>
-                                    <td class="nw ri">-5,000</td>
-                                    <td class="mono">Apr 07</td>
-                                    <td class="mono">90 days</td>
-                                    <td><span class="badge badge-a">Warning</span></td>
-                                </tr>
-                                <tr onclick="nav('mrp')">
-                                    <td class="mono tc">BC531C2800</td>
-                                    <td class="tx">Back Plate_OTR</td>
-                                    <td class="nw ri">-2,400</td>
-                                    <td class="mono">Apr 14</td>
-                                    <td class="mono">80 days</td>
-                                    <td><span class="badge badge-a">Warning</span></td>
-                                </tr>
+                            <tbody id="dash-shortage-tbody">
+                                <tr><td colspan="6"><div class="empty" style="padding:24px 0">
+                                    <div class="empty-icon">⚡</div>
+                                    <div class="empty-text">
+                                        <span style="cursor:pointer;color:var(--cyan)" onclick="runMRP().then(renderDashboard)">Run MRP</span>
+                                        to see shortage alerts
+                                    </div>
+                                </div></td></tr>
                             </tbody>
                         </table>
                     </div>
-                    <!-- In Transit -->
+                    <!-- In Transit — LIVE -->
                     <div class="card">
                         <div class="card-hdr">
-                            <div class="card-title">🚢 In Transit</div><button class="btn btn-sm btn-g"
-                                onclick="nav('hqtrade')">Details</button>
+                            <div class="card-title">🚢 In Transit</div>
+                            <button class="btn btn-sm btn-g" onclick="nav('hqtrade')">Details</button>
                         </div>
-                        <div class="card-body" style="padding:0 18px">
-                            <div class="ai">
-                                <div class="ai-icon g">🚢</div>
-                                <div style="flex:1">
-                                    <div class="ai-title">BC530C2800 · 30,000 pcs</div>
-                                    <div class="ai-detail">Finetro → KOR · ETA Mar 05</div>
-                                </div><span class="badge badge-c">On Time</span>
-                            </div>
-                            <div class="ai">
-                                <div class="ai-icon a">🚢</div>
-                                <div style="flex:1">
-                                    <div class="ai-title">BC524C2802 · 16,000 pcs</div>
-                                    <div class="ai-detail">MENETA → USA · ETA Mar 12</div>
-                                </div><span class="badge badge-a">Delayed</span>
-                            </div>
-                            <div class="ai">
-                                <div class="ai-icon g">✈️</div>
-                                <div style="flex:1">
-                                    <div class="ai-title">BC52004300 · 30,000 pcs</div>
-                                    <div class="ai-detail">GSENT → KOR · ETA Feb 28</div>
-                                </div><span class="badge badge-g">Arriving</span>
+                        <div class="card-body" style="padding:0 18px" id="dash-transit-list">
+                            <div class="empty" style="padding:20px 0">
+                                <div class="empty-icon">🚢</div>
+                                <div class="empty-text">No shipments in transit</div>
                             </div>
                         </div>
                     </div>
@@ -2699,107 +2729,45 @@
                             </table>
                         </div>
                     </div>
-                    <!-- Vendor KPI -->
+                    <!-- Vendor KPI — LIVE -->
                     <div class="card">
                         <div class="card-hdr">
-                            <div class="card-title">🎯 Vendor OTD Q1 2026</div><button class="btn btn-sm btn-g"
-                                onclick="nav('kpi')">Details</button>
+                            <div class="card-title">🎯 Vendor Performance</div>
+                            <button class="btn btn-sm btn-g" onclick="nav('kpi')">Details</button>
                         </div>
-                        <div class="card-body">
-                            <div style="display:flex;flex-direction:column;gap:14px">
-                                <div>
-                                    <div class="fib mb-4" style="margin-bottom:4px;font-size:12px">
-                                        <span>Finetro</span><span class="np">94.2%</span>
-                                    </div>
-                                    <div class="prog">
-                                        <div class="prog-fill g" style="width:94%"></div>
-                                    </div>
-                                </div>
-                                <div>
-                                    <div class="fib mb-4" style="margin-bottom:4px;font-size:12px">
-                                        <span>MENETA</span><span class="nw">78.5%</span>
-                                    </div>
-                                    <div class="prog">
-                                        <div class="prog-fill a" style="width:79%"></div>
-                                    </div>
-                                </div>
-                                <div>
-                                    <div class="fib mb-4" style="margin-bottom:4px;font-size:12px">
-                                        <span>GSENT</span><span class="np">98.0%</span>
-                                    </div>
-                                    <div class="prog">
-                                        <div class="prog-fill g" style="width:98%"></div>
-                                    </div>
-                                </div>
-                                <div>
-                                    <div class="fib mb-4" style="margin-bottom:4px;font-size:12px"><span>WAM</span><span
-                                            class="nn">65.0%</span></div>
-                                    <div class="prog">
-                                        <div class="prog-fill r" style="width:65%"></div>
-                                    </div>
-                                </div>
+                        <div class="card-body" id="dash-vendor-kpi-list">
+                            <div class="empty" style="padding:20px 0">
+                                <div class="empty-icon">🎯</div>
+                                <div class="empty-text">Add POs to calculate vendor KPI</div>
                             </div>
                         </div>
                     </div>
-                    <!-- Budget -->
+                    <!-- PO Summary — LIVE -->
                     <div class="card">
                         <div class="card-hdr">
-                            <div class="card-title">💰 Budget Utilization</div>
+                            <div class="card-title">📋 PO Summary</div>
+                            <button class="btn btn-sm btn-g" onclick="nav('polist')">Details</button>
                         </div>
-                        <div class="card-body">
-                            <div style="text-align:center;margin-bottom:16px">
-                                <div style="font-family:var(--fh);font-size:32px;font-weight:800;color:var(--cyan)">67%
-                                </div>
-                                <div style="font-size:11px;color:var(--t3);margin-top:4px">$1.89M of $2.80M used</div>
-                            </div>
-                            <div style="display:flex;flex-direction:column;gap:10px;font-size:11px">
-                                <div class="fib"><span class="tm">Sub-materials</span><span
-                                        class="mono">$1,120,000</span></div>
-                                <div class="fib"><span class="tm">Raw materials</span><span class="mono">$520,000</span>
-                                </div>
-                                <div class="fib"><span class="tm">Logistics</span><span class="mono">$250,000</span>
-                                </div>
-                                <div class="divider"></div>
-                                <div class="fib"><span class="tm">Remaining</span><span class="np fw">$910,000</span>
-                                </div>
+                        <div class="card-body" id="dash-po-summary">
+                            <div class="empty" style="padding:20px 0">
+                                <div class="empty-icon">📋</div>
+                                <div class="empty-text">No POs yet</div>
                             </div>
                         </div>
                     </div>
-                    <!-- Activity -->
+                    <div class="card">
                     <div class="card">
                         <div class="card-hdr">
                             <div class="card-title">🕐 Recent Activity</div>
+                            <button class="btn btn-sm btn-g" onclick="nav('alerts')">All Alerts</button>
                         </div>
-                        <div class="card-body" style="padding:0 18px">
-                            <div class="ai">
-                                <div class="ai-icon g">✅</div>
-                                <div style="flex:1">
-                                    <div class="ai-title">PO-2026-042 Received</div>
-                                    <div class="ai-detail">BC530C2800 · 30,000 pcs</div>
-                                </div>
-                                <div class="ai-time">2h ago</div>
-                            </div>
-                            <div class="ai">
-                                <div class="ai-icon a">📄</div>
-                                <div style="flex:1">
-                                    <div class="ai-title">BL Uploaded</div>
-                                    <div class="ai-detail">Trade #TRD-2026-008</div>
-                                </div>
-                                <div class="ai-time">5h ago</div>
-                            </div>
-                            <div class="ai">
-                                <div class="ai-icon c">📋</div>
-                                <div style="flex:1">
-                                    <div class="ai-title">PO-2026-043 Issued</div>
-                                    <div class="ai-detail">MENETA · $4,931</div>
-                                </div>
-                                <div class="ai-time">1d ago</div>
+                        <div class="card-body" style="padding:0 18px" id="dash-activity-list">
+                            <div class="empty" style="padding:20px 0">
+                                <div class="empty-icon">🕐</div>
+                                <div class="empty-text">No recent activity</div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-
             <!-- VENDORS -->
             <div class="page" id="pg-vendors">
                 <div class="ph">
@@ -3446,123 +3414,115 @@
                 <div class="ph">
                     <div>
                         <div class="ph-title">Vendor KPI</div>
-                        <div class="ph-sub">OTD and quarterly evaluation</div>
+                        <div class="ph-sub" id="kpi-sub">On-Time Delivery · Quality · Lead Time · Overall Rating</div>
+                    </div>
+                    <div class="ph-acts">
+                        <select class="tbl-filter" id="kpi-period" onchange="renderVendorKPI()">
+                            <option value="all">All Time</option>
+                            <option value="q1">Q1 2026</option>
+                            <option value="q2">Q2 2026</option>
+                            <option value="ytd" selected>YTD 2026</option>
+                        </select>
+                        <button class="btn btn-g btn-sm" onclick="exportVendorKPI()">⬇ Export</button>
+                        <button class="btn btn-p btn-sm" onclick="openDP('dp-kpi-entry','new')">+ Log KPI</button>
                     </div>
                 </div>
-                <div class="empty">
-                    <div class="empty-icon">🎯</div>
-                    <div class="empty-text">Vendor KPI — coming in STEP 7</div>
+
+                <!-- KPI Summary Strip -->
+                <div class="stats-grid" style="grid-template-columns:repeat(5,1fr);margin-bottom:20px">
+                    <div class="sc g"><div class="sc-label">Avg OTD Rate</div><div class="sc-val" id="kpi-avg-otd">—</div></div>
+                    <div class="sc c"><div class="sc-label">Avg Quality</div><div class="sc-val" id="kpi-avg-quality">—</div></div>
+                    <div class="sc a"><div class="sc-label">Lead Time Compliance</div><div class="sc-val" id="kpi-avg-lt">—</div></div>
+                    <div class="sc r"><div class="sc-label">Vendors at Risk</div><div class="sc-val" id="kpi-at-risk">—</div></div>
+                    <div class="sc c"><div class="sc-label">Vendors Tracked</div><div class="sc-val" id="kpi-count">—</div></div>
+                </div>
+
+                <!-- Vendor KPI Cards Grid -->
+                <div id="kpi-cards-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px;margin-bottom:20px"></div>
+
+                <!-- Detailed KPI History Table -->
+                <div class="card">
+                    <div class="card-hdr">
+                        <div class="card-title">📋 KPI Log</div>
+                        <select class="tbl-filter" id="kpi-filter-vendor" onchange="renderKPITable()">
+                            <option value="">All Vendors</option>
+                        </select>
+                    </div>
+                    <div class="tbl-wrap" style="border:none;box-shadow:none;padding:0">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Vendor</th>
+                                    <th>PO Ref</th>
+                                    <th style="text-align:right">OTD %</th>
+                                    <th style="text-align:right">Quality %</th>
+                                    <th style="text-align:right">LT Compliance %</th>
+                                    <th style="text-align:right">Overall</th>
+                                    <th>Grade</th>
+                                    <th>Notes</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="kpi-log-tbody"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
+
             <div class="page" id="pg-alerts">
                 <div class="ph">
                     <div>
                         <div class="ph-title">Alert Center</div>
-                        <div class="ph-sub">3 active alerts</div>
+                        <div class="ph-sub" id="alerts-sub">System-generated alerts</div>
+                    </div>
+                    <div class="ph-acts">
+                        <button class="btn btn-g btn-sm" onclick="refreshAlerts()">🔄 Refresh</button>
+                        <button class="btn btn-g btn-sm" onclick="markAllRead()">✓ Mark All Read</button>
+                        <button class="btn btn-p btn-sm" onclick="generateAlerts()">⚡ Regenerate</button>
                     </div>
                 </div>
-                <div class="empty">
-                    <div class="empty-icon">🚨</div>
-                    <div class="empty-text">Alert center — coming in STEP 7</div>
+
+                <!-- Filter tabs -->
+                <div class="alert-filter-bar">
+                    <div class="alert-tab on" data-filter="all" onclick="filterAlerts('all',this)">
+                        All <span class="alert-count-badge" id="ab-all">0</span>
+                    </div>
+                    <div class="alert-tab" data-filter="critical" onclick="filterAlerts('critical',this)">
+                        🔴 Critical <span class="alert-count-badge" id="ab-critical">0</span>
+                    </div>
+                    <div class="alert-tab" data-filter="warning" onclick="filterAlerts('warning',this)">
+                        🟡 Warning <span class="alert-count-badge" id="ab-warning">0</span>
+                    </div>
+                    <div class="alert-tab" data-filter="info" onclick="filterAlerts('info',this)">
+                        🔵 Info <span class="alert-count-badge" id="ab-info">0</span>
+                    </div>
+                    <div class="alert-tab" data-filter="mrp" onclick="filterAlerts('mrp',this)">MRP</div>
+                    <div class="alert-tab" data-filter="po" onclick="filterAlerts('po',this)">PO</div>
+                    <div class="alert-tab" data-filter="shipment" onclick="filterAlerts('shipment',this)">Shipment</div>
+                    <div class="alert-tab" data-filter="inventory" onclick="filterAlerts('inventory',this)">Inventory</div>
+                    <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+                        <label style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--t2);cursor:pointer">
+                            <input type="checkbox" id="alert-unread-only" onchange="renderAlertList()"> Unread only
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Alert list -->
+                <div id="alert-list-container" style="background:var(--bg1);border:1px solid var(--bd);border-radius:var(--r);overflow:hidden">
+                    <div id="alert-list"></div>
                 </div>
             </div>
             <div class="page" id="pg-settings">
                 <div class="ph">
                     <div>
                         <div class="ph-title">Settings</div>
-                        <div class="ph-sub">Database connection &amp; system configuration</div>
-                    </div>
-                    <div class="ph-acts">
-                        <div id="settings-db-status" style="font-size:12px;font-family:var(--fm);padding:5px 12px;border:1px solid var(--bd);border-radius:var(--r)">
-                            <span style="color:var(--amber)">● Not connected</span>
-                        </div>
+                        <div class="ph-sub">Users, roles, system config</div>
                     </div>
                 </div>
-                <div class="g2" style="align-items:start;gap:20px">
-                  <div style="display:flex;flex-direction:column;gap:16px">
-                    <!-- Supabase 연결 -->
-                    <div class="card">
-                        <div class="card-hdr"><div class="card-title">🗄️ Supabase 연결</div></div>
-                        <div class="card-body" style="display:flex;flex-direction:column;gap:12px">
-                            <div style="background:var(--bg0);border:1px solid var(--bd);border-radius:var(--r);padding:10px 14px;font-size:11px">
-                                <div style="color:var(--t3);font-size:10px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px">Project URL</div>
-                                <div style="font-family:var(--fm);color:var(--cyan)">https://inhyqhtrpsjpiyywtfhw.supabase.co</div>
-                            </div>
-                            <div class="field">
-                                <div class="f-lbl">Anon Key <span class="req">*</span></div>
-                                <div style="display:flex;gap:8px">
-                                    <input class="f-inp" id="sb-key-input" type="password" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-                                        style="flex:1;font-family:var(--fm);font-size:11px">
-                                    <button class="btn btn-g btn-sm btn-ic" onclick="var i=document.getElementById('sb-key-input');i.type=i.type==='password'?'text':'password'">👁</button>
-                                </div>
-                                <div style="font-size:10px;color:var(--t3);margin-top:4px">Supabase 대시보드 → Project Settings → API → <b>anon / public</b></div>
-                            </div>
-                            <div style="display:flex;gap:8px">
-                                <button class="btn btn-p" id="sb-connect-btn" onclick="settingsConnect()" style="flex:1">🔌 Connect</button>
-                                <button class="btn btn-g" id="sb-disconnect-btn" onclick="settingsDisconnect()" style="display:none">✕ Disconnect</button>
-                            </div>
-                            <div id="sb-connect-msg" style="font-size:12px;display:none;padding:8px 10px;border-radius:var(--r);border:1px solid"></div>
-                        </div>
-                    </div>
-                    <!-- 마이그레이션 -->
-                    <div class="card">
-                        <div class="card-hdr"><div class="card-title">⬆️ Local → Supabase 마이그레이션</div></div>
-                        <div class="card-body" style="display:flex;flex-direction:column;gap:10px">
-                            <div style="font-size:12px;color:var(--t2);line-height:1.6">LocalStorage 데이터를 Supabase로 동기화합니다. 기존 데이터는 upsert 방식으로 처리됩니다.</div>
-                            <div id="migrate-results" style="display:none;font-size:11px"></div>
-                            <button class="btn btn-p" id="migrate-btn" onclick="settingsMigrate()">🚀 전체 마이그레이션</button>
-                        </div>
-                    </div>
-                    <!-- Danger Zone -->
-                    <div class="card" style="border-color:rgba(255,69,96,0.25)">
-                        <div class="card-hdr" style="border-color:rgba(255,69,96,0.15)"><div class="card-title" style="color:var(--red)">⚠️ Danger Zone</div></div>
-                        <div class="card-body" style="display:flex;flex-direction:column;gap:8px">
-                            <div style="font-size:12px;color:var(--t2)">로컬 캐시를 삭제합니다. Supabase 데이터는 유지됩니다.</div>
-                            <div style="display:flex;gap:8px">
-                                <select class="f-inp" id="clear-table-sel" style="flex:1;font-size:11px">
-                                    <option>vendors</option><option>parts</option><option>products</option>
-                                    <option>bom</option><option>inventory</option><option>forecast</option>
-                                    <option>polist</option><option>hqtrade</option><option>landedcost</option><option>import_history</option>
-                                </select>
-                                <button class="btn btn-g btn-sm" onclick="settingsClearOne()" style="color:var(--red)">🗑 Clear</button>
-                            </div>
-                            <button class="btn btn-g btn-sm" onclick="settingsClearAll()" style="color:var(--red)">💣 Clear ALL Local</button>
-                        </div>
-                    </div>
-                  </div>
-                  <div style="display:flex;flex-direction:column;gap:16px">
-                    <!-- 저장소 현황 -->
-                    <div class="card">
-                        <div class="card-hdr">
-                            <div class="card-title">📊 저장소 현황</div>
-                            <button class="btn btn-g btn-sm" onclick="settingsRefreshStatus()">🔄 Refresh</button>
-                        </div>
-                        <div class="card-body"><div id="storage-status-list"><div style="font-size:11px;color:var(--t3);padding:8px 0">Settings 페이지를 열 때 자동 로딩됩니다</div></div></div>
-                    </div>
-                    <!-- SQL 스키마 -->
-                    <div class="card">
-                        <div class="card-hdr">
-                            <div class="card-title">📋 Supabase SQL 스키마</div>
-                            <button class="btn btn-g btn-sm" onclick="navigator.clipboard.writeText(document.getElementById('schema-sql').textContent).then(()=>toast('SQL 복사됨','success'))">📋 Copy</button>
-                        </div>
-                        <div class="card-body">
-                            <div style="font-size:11px;color:var(--t2);margin-bottom:8px">Supabase → SQL Editor에서 실행하세요.</div>
-                            <pre id="schema-sql" style="background:var(--bg0);border:1px solid var(--bd);border-radius:var(--r);padding:14px;font-family:var(--fm);font-size:10px;color:var(--td);max-height:380px;overflow-y:auto;line-height:1.6">-- SCM Pro Schema v1
-create table if not exists public.vendors (id text primary key, vendor_code text unique not null, vendor_name text not null, country text, default_currency text default 'USD', payment_terms text, contact_name text, email text, phone text, remarks text, created_at timestamptz default now(), updated_at timestamptz default now());
-create table if not exists public.parts (id text primary key, part_no text unique not null, part_name text not null, category text, in_out text, vendor_code text, material text, price numeric, currency text default 'USD', moq integer, leadtime_mp integer, safety_stock text, unit text default 'Pcs', remarks text, created_at timestamptz default now(), updated_at timestamptz default now());
-create table if not exists public.products (id text primary key, part_no text unique not null, part_name text not null, customer text, type text default 'mp', price numeric, currency text default 'USD', remarks text, created_at timestamptz default now(), updated_at timestamptz default now());
-create table if not exists public.bom (id text primary key, assy_part_no text, part_no text, lr text default '-', qty integer default 1, remarks text, created_at timestamptz default now(), updated_at timestamptz default now());
-create table if not exists public.inventory (id text primary key, part_no text, location text, qty integer default 0, lot_no text, date date, remarks text, created_at timestamptz default now(), updated_at timestamptz default now());
-create table if not exists public.forecast (id text primary key, assy_part_no text, customer text, created_at timestamptz default now(), updated_at timestamptz default now());
-create table if not exists public.polist (id text primary key, po_number text unique not null, vendor_code text, date date, total_value numeric, currency text default 'USD', item_count integer, progress integer default 0, status text default 'draft', created_by text, lines text, remarks text, created_at timestamptz default now(), updated_at timestamptz default now());
-create table if not exists public.hqtrade (id text primary key, shipment_no text unique not null, vendor_code text, po_ref text, etd date, eta date, invoice_amt numeric, currency text default 'USD', qty integer, status text default 'open', incoterms text, origin text, dest text, doc_invoice_status text, doc_invoice_no text, doc_invoice_date date, doc_packing_status text, doc_packing_no text, doc_packing_date date, doc_bl_status text, doc_bl_no text, doc_bl_date date, doc_co_status text, doc_co_no text, doc_co_date date, doc_entry_status text, doc_entry_no text, doc_entry_date date, doc_pod_status text, doc_pod_no text, doc_pod_date date, remarks text, created_at timestamptz default now(), updated_at timestamptz default now());
-create table if not exists public.landedcost (id text primary key, shipment_no text, vendor text, invoice_no text, invoice_amt numeric, fx_rate numeric, ocean numeric, air numeric, inland_ori numeric, inland_dest numeric, insurance numeric, forwarding numeric, duty_rate numeric, vat_rate numeric, brokerage numeric, other numeric, total_qty integer, weight numeric, grand_total_krw numeric, calc_date date, created_at timestamptz default now());
-create table if not exists public.import_history (id text primary key, date text, filename text, rows integer, status text, created_at timestamptz default now());
--- RLS policies
-do $$ declare t text; begin for t in select unnest(array['vendors','parts','products','bom','inventory','forecast','polist','hqtrade','landedcost','import_history']) loop execute format('alter table public.%I enable row level security', t); execute format('create policy if not exists "allow_all" on public.%I for all using (true) with check (true)', t); end loop; end $$;</pre>
-                        </div>
-                    </div>
-                  </div>
+                <div class="empty">
+                    <div class="empty-icon">⚙️</div>
+                    <div class="empty-text">Settings panel — coming in STEP 7</div>
                 </div>
             </div>
         </main>
@@ -4189,6 +4149,107 @@ do $$ declare t text; begin for t in select unnest(array['vendors','parts','prod
         </div>
     </div>
 
+    <!-- KPI ENTRY PANEL -->
+    <div class="detail-panel" id="dp-kpi-entry">
+        <div class="dp-hdr">
+            <div>
+                <div class="dp-title" id="dp-kpi-title">Log KPI Entry</div>
+                <div class="dp-sub">Manual vendor performance record</div>
+            </div>
+            <div class="dp-close" onclick="closeDP()">✕</div>
+        </div>
+        <div class="dp-body">
+            <input type="hidden" id="dkpi-id">
+            <div class="f-ptitle">Reference</div>
+            <div class="fg fg2 mb16" style="margin-bottom:16px">
+                <div class="field">
+                    <div class="f-lbl">Vendor<span class="req">*</span></div>
+                    <select class="f-inp" id="dkpi-vendor"></select>
+                </div>
+                <div class="field">
+                    <div class="f-lbl">Period / Date<span class="req">*</span></div>
+                    <input class="f-inp" id="dkpi-date" type="date">
+                </div>
+                <div class="field">
+                    <div class="f-lbl">PO Reference</div>
+                    <select class="f-inp" id="dkpi-po"></select>
+                </div>
+                <div class="field">
+                    <div class="f-lbl">Shipment Ref</div>
+                    <input class="f-inp" id="dkpi-shipment" placeholder="SHP-2026-001">
+                </div>
+            </div>
+            <div class="f-ptitle">Performance Scores</div>
+            <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:16px">
+                <div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                        <div class="f-lbl" style="margin:0">On-Time Delivery (OTD) <span style="color:var(--t3)">(0–100)</span></div>
+                        <span style="font-family:var(--fm);font-size:16px;font-weight:700;color:var(--cyan)" id="dkpi-otd-val">100</span>
+                    </div>
+                    <input type="range" id="dkpi-otd" min="0" max="100" value="100"
+                        oninput="document.getElementById('dkpi-otd-val').textContent=this.value;calcKPIGrade()"
+                        style="width:100%;accent-color:var(--cyan)">
+                    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--t3);margin-top:2px">
+                        <span>0% — Never</span><span>80% — Target</span><span>100% — Perfect</span>
+                    </div>
+                </div>
+                <div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                        <div class="f-lbl" style="margin:0">Quality / Defect Rate <span style="color:var(--t3)">(0–100)</span></div>
+                        <span style="font-family:var(--fm);font-size:16px;font-weight:700;color:var(--green)" id="dkpi-quality-val">100</span>
+                    </div>
+                    <input type="range" id="dkpi-quality" min="0" max="100" value="100"
+                        oninput="document.getElementById('dkpi-quality-val').textContent=this.value;calcKPIGrade()"
+                        style="width:100%;accent-color:var(--green)">
+                    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--t3);margin-top:2px">
+                        <span>0% — Critical</span><span>95% — Target</span><span>100% — Perfect</span>
+                    </div>
+                </div>
+                <div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                        <div class="f-lbl" style="margin:0">Lead Time Compliance <span style="color:var(--t3)">(0–100)</span></div>
+                        <span style="font-family:var(--fm);font-size:16px;font-weight:700;color:var(--amber)" id="dkpi-lt-val">100</span>
+                    </div>
+                    <input type="range" id="dkpi-lt" min="0" max="100" value="100"
+                        oninput="document.getElementById('dkpi-lt-val').textContent=this.value;calcKPIGrade()"
+                        style="width:100%;accent-color:var(--amber)">
+                </div>
+                <div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                        <div class="f-lbl" style="margin:0">Responsiveness <span style="color:var(--t3)">(0–100)</span></div>
+                        <span style="font-family:var(--fm);font-size:16px;font-weight:700;color:var(--t2)" id="dkpi-resp-val">100</span>
+                    </div>
+                    <input type="range" id="dkpi-resp" min="0" max="100" value="100"
+                        oninput="document.getElementById('dkpi-resp-val').textContent=this.value;calcKPIGrade()"
+                        style="width:100%;accent-color:var(--t2)">
+                </div>
+            </div>
+
+            <!-- Overall grade preview -->
+            <div id="dkpi-grade-preview" style="display:flex;align-items:center;gap:16px;padding:14px 16px;background:var(--bg2);border:1px solid var(--bd);border-radius:var(--r);margin-bottom:16px">
+                <div style="text-align:center;flex-shrink:0">
+                    <div style="font-family:var(--fm);font-size:32px;font-weight:800;color:var(--cyan)" id="dkpi-grade-score">100</div>
+                    <div style="font-size:10px;color:var(--t3)">Overall Score</div>
+                </div>
+                <div style="flex:1">
+                    <div style="font-size:16px;font-weight:700" id="dkpi-grade-label">S — Excellent</div>
+                    <div class="stars" id="dkpi-grade-stars" style="margin-top:4px">★★★★★</div>
+                    <div style="font-size:11px;color:var(--t3);margin-top:4px" id="dkpi-grade-hint">Outstanding vendor performance</div>
+                </div>
+            </div>
+
+            <div class="field">
+                <div class="f-lbl">Notes / Issues</div>
+                <textarea class="f-inp" id="dkpi-notes" rows="2" style="resize:vertical;margin-top:8px" placeholder="Delivery delay reason, quality issue description..."></textarea>
+            </div>
+        </div>
+        <div class="dp-foot">
+            <button class="btn btn-g" id="dkpi-delete-btn" onclick="deleteKPIEntry()" style="margin-right:auto;display:none;color:var(--red)">🗑 Delete</button>
+            <button class="btn btn-g" onclick="closeDP()">Cancel</button>
+            <button class="btn btn-p" onclick="saveKPIEntry()">💾 Save</button>
+        </div>
+    </div>
+
     <!-- TOAST -->
     <div id="toast-container"></div>
 
@@ -4205,80 +4266,61 @@ do $$ declare t text; begin for t in select unnest(array['vendors','parts','prod
     </div>
 
     <script>
-        // ══════════════════════════════════════════════════════
-        //  SUPABASE — sbClient (avoids conflict with window.supabase CDN namespace)
-        // ══════════════════════════════════════════════════════
-        const SB_URL = 'https://inhyqhtrpsjpiyywtfhw.supabase.co';
-        const TABLE_PK = {
-            vendors:'vendor_code', parts:'part_no', products:'part_no',
-            bom:'id', inventory:'id', forecast:'id',
-            polist:'po_number', import_history:'id',
-            hqtrade:'shipment_no', landedcost:'id',
-        };
-        let sbClient = null;
-        let SB_READY = false;
+        // ── SUPABASE INTEGRATION ──────────────────────────────
+        let supabase = null;
 
-        // Auto-connect on page load if key was saved
-        window.addEventListener('load', async () => {
-            const saved = localStorage.getItem('scm_sb_key');
-            if (saved) await sbConnect(saved, true);
-            updateSBIndicator();
-        });
-
-        async function sbConnect(key, silent = false) {
-            if (!key || !window.supabase) return false;
-            try {
-                const client = window.supabase.createClient(SB_URL, key, { auth: { persistSession: false } });
-                const { error } = await client.from('vendors').select('vendor_code').limit(1);
-                if (error) throw error;
-                sbClient = client;
-                SB_READY = true;
-                localStorage.setItem('scm_sb_key', key);
-                updateSBIndicator();
-                if (!silent) toast('Supabase 연결 완료 ✓', 'success');
-                console.log('%c[SCM] Supabase connected', 'color:#00E5A0;font-weight:bold');
-                return true;
-            } catch (e) {
-                sbClient = null; SB_READY = false;
-                updateSBIndicator();
-                if (!silent) toast('연결 실패: ' + e.message, 'error', 5000);
-                return false;
+        async function setupSupabase() {
+            if (typeof CONFIG !== 'undefined' && CONFIG.SUPABASE_URL && CONFIG.SUPABASE_ANON_KEY) {
+                supabase = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+                console.log("Supabase Client Ready (via Config)");
+                return;
+            }
+            const url = 'https://inhyqhtrpsjpiyywtfhw.supabase.co';
+            let key = sessionStorage.getItem('SUPABASE_KEY');
+            if (!key) {
+                key = prompt("보안을 위해 Supabase Anon Key를 입력해주세요.");
+                if (key) sessionStorage.setItem('SUPABASE_KEY', key);
+            }
+            if (key && window.supabase) {
+                supabase = window.supabase.createClient(url, key);
+                console.log("Supabase Client Ready (via Prompt)");
             }
         }
 
-        function sbDisconnect() {
-            sbClient = null; SB_READY = false;
-            localStorage.removeItem('scm_sb_key');
-            updateSBIndicator();
-            toast('Supabase 연결 해제 — LocalStorage 모드', 'info');
+        // Auto-init if config exists
+        if (typeof CONFIG !== 'undefined') {
+            window.addEventListener('load', setupSupabase);
         }
 
-        function updateSBIndicator() {
-            const el = document.getElementById('db-indicator');
-            if (el) {
-                el.innerHTML = SB_READY
-                    ? '<span style="color:var(--green)">● Supabase</span>'
-                    : '<span style="color:var(--amber)">● Local</span>';
-                el.title = SB_READY ? 'Connected to Supabase' : 'LocalStorage only — click Settings to connect';
+        async function syncToDatabase(sheetName, rawData) {
+            if (!supabase) await setupSupabase();
+            if (!supabase) return;
+
+            const tableName = sheetName.toLowerCase().split('_')[1];
+            const cleanData = rawData.map(row => {
+                const newRow = {};
+                for (let key in row) {
+                    let cleanKey = key.replace(' *', '').trim().toLowerCase();
+                    if (cleanKey.includes('code')) cleanKey = cleanKey.replace('code', 'id');
+                    if (cleanKey.includes('date')) {
+                        if (row[key] instanceof Date) cleanKey = row[key].toISOString().slice(0, 10);
+                        else if (typeof row[key] === 'string') cleanKey = row[key].split(' ')[0];
+                    }
+                    newRow[cleanKey] = row[key];
+                }
+                return newRow;
+            });
+
+            const { error } = await supabase
+                .from(tableName)
+                .upsert(cleanData, { onConflict: tableName.slice(0, -1) + '_id' });
+
+            if (error) {
+                toast(`${sheetName} Sync Fail: ` + error.message, 'error');
+            } else {
+                console.log(`${sheetName} Sync Success!`);
             }
-            const si = document.getElementById('settings-db-status');
-            if (si) si.innerHTML = SB_READY
-                ? '<span style="color:var(--green)">● Connected</span>'
-                : '<span style="color:var(--amber)">● Not connected</span>';
         }
-
-        function sbClean(rec) {
-            const out = {};
-            for (const [k, v] of Object.entries(rec)) {
-                if (v === undefined) continue;
-                out[k] = v === '' ? null : v;
-            }
-            return out;
-        }
-
-        // Legacy stub — no longer used but kept for safety
-        async function setupSupabase() { /* replaced by sbConnect */ }
-        async function syncToDatabase() { /* replaced by DB.bulkUpsert */ }
 
         // ── STATE ──────────────────────────────────────────────
         const S = { page: 'dashboard', theme: 'dark' };
@@ -4379,99 +4421,18 @@ do $$ declare t text; begin for t in select unnest(array['vendors','parts','prod
 
         // ── DB ABSTRACTION LAYER (Phase 1 = LocalStorage) ──────
         // To migrate to Supabase: replace only these function bodies
-        // ── DB LAYER — Supabase-first, LocalStorage fallback ──
         const DB = {
-            async get(table) {
-                if (SB_READY && sbClient) {
-                    try {
-                        const { data, error } = await sbClient.from(table).select('*')
-                            .order('created_at', { ascending: false }).limit(5000);
-                        if (error) throw error;
-                        if (data) localStorage.setItem(`scm_${table}`, JSON.stringify(data));
-                        return data || [];
-                    } catch (e) { console.warn(`[DB.get:${table}]`, e.message); }
-                }
-                const r = localStorage.getItem(`scm_${table}`);
-                return r ? JSON.parse(r) : [];
-            },
-            async save(table, data) {
-                localStorage.setItem(`scm_${table}`, JSON.stringify(data));
-                if (SB_READY && sbClient && data.length > 0) {
-                    const pk = TABLE_PK[table] || 'id';
-                    for (let i = 0; i < data.length; i += 400) {
-                        const { error } = await sbClient.from(table)
-                            .upsert(data.slice(i, i+400).map(sbClean), { onConflict: pk });
-                        if (error) { console.warn(`[DB.save:${table}]`, error.message); break; }
-                    }
-                }
-                return data;
-            },
+            async get(table) { const r = localStorage.getItem(`scm_${table}`); return r ? JSON.parse(r) : []; },
+            async save(table, data) { localStorage.setItem(`scm_${table}`, JSON.stringify(data)); return data; },
             async upsert(table, rec, key = 'id') {
-                const pk = TABLE_PK[table] || key;
-                if (!rec.id) rec.id = rec[pk] || Date.now().toString();
-                if (!rec.created_at) rec.created_at = new Date().toISOString();
-                rec.updated_at = new Date().toISOString();
-                // Local cache
-                const local = JSON.parse(localStorage.getItem(`scm_${table}`) || '[]');
-                const idx = local.findIndex(r => r[pk] === rec[pk]);
-                if (idx >= 0) local[idx] = { ...local[idx], ...rec }; else local.push(rec);
-                localStorage.setItem(`scm_${table}`, JSON.stringify(local));
-                // Supabase
-                if (SB_READY && sbClient) {
-                    const { error } = await sbClient.from(table)
-                        .upsert(sbClean({...rec}), { onConflict: pk });
-                    if (error) console.warn(`[DB.upsert:${table}]`, error.message);
-                }
-                return rec;
+                const data = await this.get(table);
+                const i = data.findIndex(r => r[key] === rec[key]);
+                if (i >= 0) data[i] = { ...data[i], ...rec }; else data.push({ ...rec, id: rec.id || Date.now().toString() });
+                return this.save(table, data);
             },
             async delete(table, id, key = 'id') {
-                const pk = TABLE_PK[table] || key;
-                const local = JSON.parse(localStorage.getItem(`scm_${table}`) || '[]');
-                const filtered = local.filter(r => r[pk] !== id && r.id !== id);
-                localStorage.setItem(`scm_${table}`, JSON.stringify(filtered));
-                if (SB_READY && sbClient) {
-                    const { error } = await sbClient.from(table).delete().eq(pk, id);
-                    if (error) console.warn(`[DB.delete:${table}]`, error.message);
-                }
-                return filtered;
-            },
-            async bulkUpsert(table, rows, pkField) {
-                const pk = pkField || TABLE_PK[table] || 'id';
-                const now = new Date().toISOString();
-                const withTs = rows.map(r => ({
-                    ...r,
-                    id: r.id || r[pk] || (Date.now().toString(36) + Math.random().toString(36).slice(2)),
-                    created_at: r.created_at || now, updated_at: now,
-                }));
-                // Merge local
-                const local = JSON.parse(localStorage.getItem(`scm_${table}`) || '[]');
-                const map = {}; local.forEach(r => { if(r[pk]) map[r[pk]] = r; });
-                withTs.forEach(r => { if(r[pk]) map[r[pk]] = { ...map[r[pk]], ...r }; });
-                localStorage.setItem(`scm_${table}`, JSON.stringify(Object.values(map)));
-                // Supabase
-                if (SB_READY && sbClient && withTs.length > 0) {
-                    try {
-                        for (let i = 0; i < withTs.length; i += 400) {
-                            const { error } = await sbClient.from(table)
-                                .upsert(withTs.slice(i,i+400).map(sbClean), { onConflict: pk });
-                            if (error) throw error;
-                        }
-                        return { ok: withTs.length, sbSynced: true };
-                    } catch (e) {
-                        return { ok: withTs.length, sbSynced: false, error: e.message };
-                    }
-                }
-                return { ok: withTs.length, sbSynced: false };
-            },
-            async migrateAll() {
-                if (!SB_READY) return { error: 'Not connected' };
-                const results = {};
-                for (const [table, pk] of Object.entries(TABLE_PK)) {
-                    const local = JSON.parse(localStorage.getItem(`scm_${table}`) || '[]');
-                    if (!local.length) { results[table] = { ok:0, skipped:true }; continue; }
-                    results[table] = await this.bulkUpsert(table, local, pk);
-                }
-                return results;
+                const data = await this.get(table);
+                return this.save(table, data.filter(r => r[key] !== id));
             }
         };
 
@@ -5273,58 +5234,59 @@ do $$ declare t text; begin for t in select unnest(array['vendors','parts','prod
         async function commitImport() {
             if (!importPending) return;
             const tableMap = {
-                '1_Vendors':'vendors','2_Parts':'parts','3_Products':'products',
-                '4_BOM':'bom','5_Inventory':'inventory','6_Forecast':'forecast'
+                '1_Vendors': 'vendors', '2_Parts': 'parts', '3_Products': 'products',
+                '4_BOM': 'bom', '5_Inventory': 'inventory', '6_Forecast': 'forecast'
             };
-            const pkMap = {
-                '1_Vendors':'vendor_code','2_Parts':'part_no','3_Products':'part_no',
-                '4_BOM':'id','5_Inventory':'id','6_Forecast':'id'
+            const keyMap = {
+                '1_Vendors': 'vendor_code', '2_Parts': 'part_no', '3_Products': 'part_no',
+                '4_BOM': null, '5_Inventory': 'part_no', '6_Forecast': null
             };
-            const btn = document.getElementById('import-commit-btn');
-            if (btn) { btn.textContent = '⏳ 저장 중...'; btn.disabled = true; }
 
-            let totalSaved = 0;
-            const sbErrors = [];
-            const now = new Date().toISOString();
-
+            let saved = 0;
             for (const [sheet, res] of Object.entries(importPending)) {
-                if (!res.rows || res.rows.length === 0) continue;
+                if (res.rows.length === 0) continue;
                 const table = tableMap[sheet];
-                const pk = pkMap[sheet];
-                if (!table) continue;
-                const rows = res.rows.map(row => ({
-                    ...row,
-                    id: row.id || row[pk] || (Date.now().toString(36) + Math.random().toString(36).slice(2)),
-                    created_at: row.created_at || now,
-                    updated_at: now,
-                }));
-                const result = await DB.bulkUpsert(table, rows, pk);
-                totalSaved += result.ok;
-                if (result.error) sbErrors.push(`${sheet}: ${result.error}`);
+                const key = keyMap[sheet];
+                if (key) {
+                    for (const row of res.rows) {
+                        row.id = row.id || row[key] || Date.now().toString();
+                        await DB.upsert(table, row, 'id');
+                        saved++;
+                    }
+                } else {
+                    const existing = await DB.get(table);
+                    const merged = [...existing];
+                    res.rows.forEach(row => { row.id = row.id || Date.now().toString() + Math.random(); merged.push(row); });
+                    await DB.save(table, merged);
+                    saved += res.rows.length;
+                }
             }
 
-            if (SB_READY && sbErrors.length === 0) {
-                toast(`✅ ${totalSaved}개 레코드 — Supabase 저장 완료`, 'success', 4000);
-            } else if (SB_READY) {
-                toast(`⚠ ${totalSaved}개 저장 (일부 Supabase 실패)`, 'warn', 5000);
-            } else {
-                toast(`✅ ${totalSaved}개 로컬 저장`, 'info', 3000);
-            }
+            toast(`Import complete — ${saved} records saved`, 'success');
 
-            await DB.upsert('import_history', {
-                id: Date.now().toString(),
-                date: now.slice(0,16).replace('T',' '),
-                filename: 'SCM_Import_Template.xlsx',
-                rows: totalSaved,
-                status: sbErrors.length > 0 ? 'Partial' : 'Success',
-                created_at: now,
-            }, 'id');
+            // Sync to Supabase
+            if (importPending) {
+                for (const sheetName of Object.keys(importPending)) {
+                    if (importPending[sheetName].rows.length > 0) {
+                        await syncToDatabase(sheetName, importPending[sheetName].rows);
+                    }
+                }
+                toast("All validated data synced to Supabase DB", "success");
+            }
 
             importPending = null;
-            if (btn) { btn.textContent = '✅ Save Valid Data'; btn.disabled = false; }
             closeDP();
 
-            renderVendors(); renderParts(); renderProducts(); renderBom(); renderImportHistory();
+            // Add to history
+            const hist = await DB.get('import_history');
+            hist.push({ id: Date.now().toString(), date: new Date().toISOString().slice(0, 16).replace('T', ' '), status: 'Success', rows: saved });
+            await DB.save('import_history', hist);
+
+            renderVendors();
+            renderParts();
+            renderProducts();
+            renderBom();
+            renderImportHistory();
         }
 
         function downloadErrors() {
@@ -5464,19 +5426,16 @@ do $$ declare t text; begin for t in select unnest(array['vendors','parts','prod
 
         // ── PAGE INIT ──────────────────────────────────────────
         const PAGE_INIT = {
-            vendors:     renderVendors,
-            parts:       renderParts,
-            products:    renderProducts,
-            bom:         renderBom,
-            inventory:   renderInventory,
-            polist:      renderPOList,
-            forecast:    renderForecast,
-            mrp:         () => { if (MRP_RESULTS.length > 0) renderMRP(); },
-            import:      () => { initImportPage(); renderImportHistory(); },
-            poplan:      renderPOPlan,
-            hqtrade:     renderHQTrade,
-            landedcost:  () => { calcLandedCost(); renderLCHistory(); },
-            settings:    settingsPageInit,
+            vendors: renderVendors,
+            parts: renderParts,
+            products: renderProducts,
+            bom: renderBom,
+            inventory: renderInventory,
+            polist: renderPOList,
+            forecast: renderForecast,
+            mrp: () => { if (MRP_RESULTS.length > 0) renderMRP(); },
+            import: () => { initImportPage(); renderImportHistory(); },
+            poplan: renderPOPlan,
         };
 
 
@@ -5843,7 +5802,703 @@ do $$ declare t text; begin for t in select unnest(array['vendors','parts','prod
             nav('mrp');
             renderMRP();
             updateDashboardKPIs();
-            toast('MRP calculation complete', 'success');
+        // ══════════════════════════════════════════════════════
+        //  STEP 7 — DASHBOARD LIVE DATA + VENDOR KPI + ALERTS
+        // ══════════════════════════════════════════════════════
+
+        // ── DASHBOARD LIVE RENDER ─────────────────────────────
+        async function renderDashboard() {
+            const [pos, trades, inventory, parts, alerts] = await Promise.all([
+                DB.get('polist'), DB.get('hqtrade'), DB.get('inventory'),
+                DB.get('parts'), DB.get('alerts')
+            ]);
+
+            const today = new Date();
+            const todayStr = today.toISOString().slice(0, 10);
+
+            // ── KPI strip ──
+            const openPOs    = pos.filter(p => ['issued','partial'].includes(p.status));
+            const inTransit  = trades.filter(t => t.status === 'in_transit');
+            const poValue    = openPOs.reduce((s, p) => s + (parseFloat(p.total_value)||0), 0);
+
+            const el = id => document.getElementById(id);
+            if (el('dash-open-po'))        el('dash-open-po').textContent       = openPOs.length;
+            if (el('dash-open-po-delta'))  el('dash-open-po-delta').textContent = poValue > 0 ? `$${fmt2(poValue,0)} total value` : 'No open POs';
+            if (el('dash-in-transit'))     el('dash-in-transit').textContent    = inTransit.length;
+            if (el('dash-transit-delta'))  el('dash-transit-delta').textContent = inTransit.length > 0 ? `${inTransit.length} shipments en route` : 'No active shipments';
+
+            // MRP-driven KPIs
+            const shortage   = MRP_RESULTS.filter(r => r.status === 'shortage').length;
+            const impossible = MRP_RESULTS.filter(r => r.status === 'impossible').length;
+            if (el('dash-shortage'))      el('dash-shortage').textContent      = MRP_RESULTS.length > 0 ? shortage   : '—';
+            if (el('dash-impossible'))    el('dash-impossible').textContent    = MRP_RESULTS.length > 0 ? impossible : '—';
+            if (el('dash-shortage-delta')) el('dash-shortage-delta').textContent = MRP_RESULTS.length > 0 ? (shortage > 0 ? '⚠ Immediate action required' : '✓ All parts sufficient') : 'Run MRP to calculate';
+            if (el('dash-impossible-delta')) el('dash-impossible-delta').textContent = MRP_RESULTS.length > 0 ? (impossible > 0 ? 'Lead time exceeded' : '✓ None') : '—';
+
+            // Alert badge
+            const critAlerts = alerts ? alerts.filter(a => !a.read && a.severity === 'critical').length : 0;
+            const abEl = el('dash-alert-badge');
+            if (abEl) { abEl.style.display = critAlerts > 0 ? '' : 'none'; abEl.textContent = critAlerts; }
+
+            // ── Shortage table ──
+            const shortageEl = el('dash-shortage-tbody');
+            if (shortageEl) {
+                const items = MRP_RESULTS.filter(r => ['impossible','shortage','warning'].includes(r.status)).slice(0, 6);
+                if (items.length > 0) {
+                    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+                    shortageEl.innerHTML = items.map(r => {
+                        const badge = r.status === 'impossible' ? `<span class="badge badge-r">Impossible PO</span>`
+                            : r.status === 'shortage' ? `<span class="badge badge-r">Shortage</span>`
+                            : `<span class="badge badge-a">Warning</span>`;
+                        const orderBy = r.order_by_date ? months[r.order_by_date.getMonth()]+' '+r.order_by_date.getDate() : '—';
+                        return `<tr onclick="nav('mrp')" style="cursor:pointer">
+                            <td class="mono tc">${r.part_no}</td>
+                            <td class="tx">${r.part_name||'—'}</td>
+                            <td class="nn ri mono">${fmt2(r.net_position)}</td>
+                            <td class="mono">${orderBy}</td>
+                            <td class="mono mu">${r.leadtime_mp ? r.leadtime_mp+'d' : '—'}</td>
+                            <td>${badge}</td>
+                        </tr>`;
+                    }).join('');
+                } else if (MRP_RESULTS.length > 0) {
+                    shortageEl.innerHTML = `<tr><td colspan="6"><div class="empty" style="padding:20px 0">
+                        <div class="empty-icon">✅</div><div class="empty-text">All ${MRP_RESULTS.length} parts sufficient</div>
+                    </div></td></tr>`;
+                }
+            }
+
+            // ── In Transit list ──
+            const transitEl = el('dash-transit-list');
+            if (transitEl) {
+                if (inTransit.length > 0) {
+                    transitEl.innerHTML = inTransit.slice(0, 5).map(t => {
+                        const etaDays = t.eta ? Math.round((new Date(t.eta) - today) / 86400000) : null;
+                        const etaClass = etaDays === null ? 'c' : etaDays < 0 ? 'r' : etaDays <= 7 ? 'g' : 'a';
+                        const badge = etaDays === null ? `<span class="badge badge-m">—</span>`
+                            : etaDays < 0 ? `<span class="badge badge-r">Overdue</span>`
+                            : etaDays <= 3 ? `<span class="badge badge-g">Arriving</span>`
+                            : etaDays <= 14 ? `<span class="badge badge-c">On Time</span>`
+                            : `<span class="badge badge-a">En Route</span>`;
+                        return `<div class="ai" onclick="nav('hqtrade')" style="cursor:pointer">
+                            <div class="ai-icon ${etaClass}">🚢</div>
+                            <div style="flex:1">
+                                <div class="ai-title">${t.shipment_no} · ${t.qty ? fmt2(t.qty)+' pcs' : ''}</div>
+                                <div class="ai-detail">${t.vendor_code||'—'} · ETA ${t.eta||'—'}</div>
+                            </div>${badge}
+                        </div>`;
+                    }).join('');
+                } else {
+                    transitEl.innerHTML = `<div class="empty" style="padding:20px 0"><div class="empty-icon">🚢</div><div class="empty-text">No shipments in transit</div></div>`;
+                }
+            }
+
+            // ── PO Summary ──
+            const poEl = el('dash-po-summary');
+            if (poEl && pos.length > 0) {
+                const byStatus = {};
+                pos.forEach(p => { byStatus[p.status] = (byStatus[p.status]||0) + 1; });
+                const totalVal = pos.reduce((s,p) => s+(parseFloat(p.total_value)||0), 0);
+                poEl.innerHTML = `
+                    <div style="text-align:center;padding:8px 0 12px">
+                        <div style="font-family:var(--fm);font-size:28px;font-weight:800;color:var(--cyan)">$${fmt2(totalVal,0)}</div>
+                        <div style="font-size:11px;color:var(--t3);margin-top:2px">${pos.length} total POs</div>
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:8px;font-size:11px">
+                        ${Object.entries(byStatus).map(([s, n]) => `
+                        <div class="fib">
+                            <span class="tm" style="text-transform:capitalize">${s.replace('_',' ')}</span>
+                            <span class="mono">${n}</span>
+                        </div>`).join('')}
+                    </div>`;
+            } else if (poEl) {
+                poEl.innerHTML = `<div class="empty" style="padding:20px 0"><div class="empty-icon">📋</div><div class="empty-text"><span style="color:var(--cyan);cursor:pointer" onclick="nav('poplan')">Create POs</span> from MRP shortage</div></div>`;
+            }
+
+            // ── Vendor KPI mini ──
+            renderDashVendorKPI(pos);
+
+            // ── Activity ──
+            renderDashActivity(pos, trades);
+
+            // Dashboard subtitle
+            const phSub = document.querySelector('#pg-dashboard .ph-sub');
+            if (phSub) phSub.innerHTML = `Last updated: ${today.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})} · <span class="dash-live-badge"><span class="dash-live-dot"></span>LIVE</span>`;
+        }
+
+        async function renderDashVendorKPI(pos) {
+            const kpiEl = document.getElementById('dash-vendor-kpi-list');
+            if (!kpiEl) return;
+            const kpiLogs = await DB.get('vendorkpi');
+            if (!kpiLogs || kpiLogs.length === 0) {
+                // Fall back to PO-derived OTD
+                if (!pos || pos.length === 0) return;
+                const byVendor = {};
+                pos.filter(p => p.status === 'received').forEach(p => {
+                    const v = p.vendor_code; if (!v) return;
+                    if (!byVendor[v]) byVendor[v] = { total:0, onTime:0 };
+                    byVendor[v].total++;
+                    if ((parseInt(p.progress)||0) >= 100) byVendor[v].onTime++;
+                });
+                const vendors = Object.entries(byVendor).slice(0,5);
+                if (!vendors.length) return;
+                kpiEl.innerHTML = `<div class="kpi-mini-strip">${vendors.map(([v, d]) => {
+                    const pct = d.total > 0 ? Math.round(d.onTime/d.total*100) : 0;
+                    const col = pct>=90?'var(--green)':pct>=75?'var(--amber)':'var(--red)';
+                    return `<div class="kpi-mini-row">
+                        <div class="kpi-mini-vendor">${v}</div>
+                        <div style="flex:1;height:5px;background:var(--bg0);border-radius:99px;overflow:hidden">
+                            <div style="width:${pct}%;height:100%;background:${col};border-radius:99px"></div>
+                        </div>
+                        <div class="kpi-mini-score" style="color:${col}">${pct}%</div>
+                    </div>`;
+                }).join('')}</div>`;
+                return;
+            }
+            // Aggregate KPI logs by vendor
+            const byV = {};
+            kpiLogs.forEach(k => {
+                const v = k.vendor_code; if(!v) return;
+                if (!byV[v]) byV[v] = { otd:[], quality:[], lt:[] };
+                byV[v].otd.push(parseFloat(k.otd)||0);
+                byV[v].quality.push(parseFloat(k.quality)||0);
+                byV[v].lt.push(parseFloat(k.lt_compliance)||0);
+            });
+            kpiEl.innerHTML = `<div class="kpi-mini-strip">${Object.entries(byV).slice(0,5).map(([v,d]) => {
+                const avg = arr => arr.length ? Math.round(arr.reduce((s,x)=>s+x,0)/arr.length) : 0;
+                const score = Math.round((avg(d.otd)*0.5 + avg(d.quality)*0.3 + avg(d.lt)*0.2));
+                const col = score>=90?'var(--green)':score>=75?'var(--amber)':'var(--red)';
+                return `<div class="kpi-mini-row">
+                    <div class="kpi-mini-vendor">${v}</div>
+                    <div style="flex:1;height:5px;background:var(--bg0);border-radius:99px;overflow:hidden">
+                        <div style="width:${score}%;height:100%;background:${col};border-radius:99px"></div>
+                    </div>
+                    <div class="kpi-mini-score" style="color:${col}">${score}</div>
+                </div>`;
+            }).join('')}</div>`;
+        }
+
+        function renderDashActivity(pos, trades) {
+            const actEl = document.getElementById('dash-activity-list');
+            if (!actEl) return;
+            const items = [];
+            pos.slice(0,3).forEach(p => {
+                items.push({
+                    icon: p.status==='received'?'✅':p.status==='issued'?'📤':'📋',
+                    cls:  p.status==='received'?'g':p.status==='issued'?'c':'a',
+                    title: `${p.po_number} — ${p.status}`,
+                    detail: `${p.vendor_code||'—'} · $${fmt2(p.total_value||0,0)}`,
+                    time: p.updated_at || p.date || '',
+                });
+            });
+            trades.slice(0,2).forEach(t => {
+                items.push({
+                    icon: t.status==='delivered'?'✅':'🚢',
+                    cls: t.status==='delivered'?'g':'c',
+                    title: `${t.shipment_no} — ${t.status}`,
+                    detail: `${t.vendor_code||'—'} · ETA ${t.eta||'—'}`,
+                    time: t.updated_at || t.etd || '',
+                });
+            });
+            items.sort((a,b) => b.time.localeCompare(a.time));
+            if (!items.length) {
+                actEl.innerHTML = `<div class="empty" style="padding:20px 0"><div class="empty-icon">🕐</div><div class="empty-text">No recent activity</div></div>`;
+                return;
+            }
+            const fmtAge = ts => {
+                if (!ts) return '—';
+                const d = new Date(ts); const now = new Date();
+                const diff = Math.floor((now - d) / 60000);
+                if (diff < 60) return diff + 'm ago';
+                if (diff < 1440) return Math.floor(diff/60) + 'h ago';
+                return Math.floor(diff/1440) + 'd ago';
+            };
+            actEl.innerHTML = items.slice(0,5).map(i => `
+                <div class="ai">
+                    <div class="ai-icon ${i.cls}">${i.icon}</div>
+                    <div style="flex:1">
+                        <div class="ai-title">${i.title}</div>
+                        <div class="ai-detail">${i.detail}</div>
+                    </div>
+                    <div class="ai-time">${fmtAge(i.time)}</div>
+                </div>`).join('');
+        }
+
+        // ── VENDOR KPI PAGE ───────────────────────────────────
+        function kpiGrade(score) {
+            if (score >= 95) return { label:'S — Excellent', stars:'★★★★★', color:'var(--green)',  hint:'Outstanding vendor performance' };
+            if (score >= 85) return { label:'A — Good',      stars:'★★★★☆', color:'var(--cyan)',   hint:'Above expectations' };
+            if (score >= 75) return { label:'B — Acceptable',stars:'★★★☆☆', color:'var(--amber)',  hint:'Meets minimum requirements' };
+            if (score >= 60) return { label:'C — Warning',   stars:'★★☆☆☆', color:'#FF8040',       hint:'Improvement plan required' };
+            return              { label:'D — Critical',       stars:'★☆☆☆☆', color:'var(--red)',    hint:'Immediate corrective action' };
+        }
+
+        function calcKPIGrade() {
+            const otd  = parseFloat(document.getElementById('dkpi-otd')?.value)||0;
+            const qual = parseFloat(document.getElementById('dkpi-quality')?.value)||0;
+            const lt   = parseFloat(document.getElementById('dkpi-lt')?.value)||0;
+            const resp = parseFloat(document.getElementById('dkpi-resp')?.value)||0;
+            const score = Math.round(otd*0.4 + qual*0.3 + lt*0.2 + resp*0.1);
+            const g = kpiGrade(score);
+            const scoreEl = document.getElementById('dkpi-grade-score');
+            const labelEl = document.getElementById('dkpi-grade-label');
+            const starsEl = document.getElementById('dkpi-grade-stars');
+            const hintEl  = document.getElementById('dkpi-grade-hint');
+            if (scoreEl) scoreEl.textContent = score;
+            if (labelEl) { labelEl.textContent = g.label; labelEl.style.color = g.color; }
+            if (starsEl) { starsEl.textContent = g.stars; starsEl.style.color = g.color; }
+            if (hintEl)  hintEl.textContent = g.hint;
+        }
+
+        async function prepKPIPanel(mode, data) {
+            const isNew = mode === 'new';
+            document.getElementById('dp-kpi-title').textContent = isNew ? 'Log KPI Entry' : 'Edit KPI Entry';
+            document.getElementById('dkpi-delete-btn').style.display = isNew ? 'none' : '';
+            const vendors = await DB.get('vendors');
+            const vsel = document.getElementById('dkpi-vendor');
+            vsel.innerHTML = '<option value="">— Select Vendor —</option>' + vendors.map(v=>`<option value="${v.vendor_code}">${v.vendor_code} — ${v.vendor_name}</option>`).join('');
+            const pos = await DB.get('polist');
+            const psel = document.getElementById('dkpi-po');
+            psel.innerHTML = '<option value="">— Link PO (optional) —</option>' + pos.map(p=>`<option value="${p.po_number}">${p.po_number}</option>`).join('');
+            const set = (id, val) => { const el = document.getElementById(id); if(el) el.value = val ?? ''; };
+            set('dkpi-id', data?.id||'');
+            set('dkpi-date', data?.date || new Date().toISOString().slice(0,10));
+            set('dkpi-shipment', data?.shipment_ref||'');
+            set('dkpi-notes', data?.notes||'');
+            if (data?.vendor_code) vsel.value = data.vendor_code;
+            if (data?.po_ref) psel.value = data.po_ref;
+            ['otd','quality','lt','resp'].forEach(k => {
+                const sl = document.getElementById(`dkpi-${k}`);
+                const vl = document.getElementById(`dkpi-${k}-val`);
+                const val = data?.[k === 'lt' ? 'lt_compliance' : k === 'resp' ? 'responsiveness' : k] ?? 100;
+                if (sl) sl.value = val;
+                if (vl) vl.textContent = val;
+            });
+            calcKPIGrade();
+        }
+
+        async function saveKPIEntry() {
+            const vendor = document.getElementById('dkpi-vendor')?.value;
+            const date   = document.getElementById('dkpi-date')?.value;
+            if (!vendor || !date) { toast('Vendor와 Date는 필수입니다', 'error'); return; }
+            const otd  = parseFloat(document.getElementById('dkpi-otd')?.value)||0;
+            const qual = parseFloat(document.getElementById('dkpi-quality')?.value)||0;
+            const lt   = parseFloat(document.getElementById('dkpi-lt')?.value)||0;
+            const resp = parseFloat(document.getElementById('dkpi-resp')?.value)||0;
+            const score = Math.round(otd*0.4 + qual*0.3 + lt*0.2 + resp*0.1);
+            const rec = {
+                id:              document.getElementById('dkpi-id').value || Date.now().toString(),
+                vendor_code:     vendor,
+                date,
+                po_ref:          document.getElementById('dkpi-po')?.value || '',
+                shipment_ref:    document.getElementById('dkpi-shipment')?.value.trim() || '',
+                otd,
+                quality:         qual,
+                lt_compliance:   lt,
+                responsiveness:  resp,
+                overall_score:   score,
+                grade:           kpiGrade(score).label.split(' — ')[0],
+                notes:           document.getElementById('dkpi-notes')?.value.trim() || '',
+            };
+            await DB.upsert('vendorkpi', rec, 'id');
+            toast(`KPI 저장됨 — ${vendor} 종합점수 ${score}`, 'success');
+            closeDP();
+            renderVendorKPI();
+        }
+
+        async function deleteKPIEntry() {
+            const id = document.getElementById('dkpi-id')?.value;
+            if (!id) return;
+            const ok = await confirm('KPI 기록 삭제', 'KPI 기록을 삭제합니다.', '삭제', true);
+            if (!ok) return;
+            await DB.delete('vendorkpi', id);
+            toast('삭제됨', 'warn'); closeDP(); renderVendorKPI();
+        }
+
+        function kpiRingHTML(score, size = 88) {
+            const r = (size/2) - 8;
+            const circ = 2 * Math.PI * r;
+            const dash = (score / 100) * circ;
+            const col = score >= 90 ? '#00E5A0' : score >= 75 ? '#FFB020' : '#FF4560';
+            return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+                <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="var(--bd)" stroke-width="8"/>
+                <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${col}" stroke-width="8"
+                    stroke-dasharray="${dash.toFixed(1)} ${circ.toFixed(1)}" stroke-linecap="round"/>
+            </svg>`;
+        }
+
+        async function renderVendorKPI() {
+            const logs = await DB.get('vendorkpi');
+            const vendors = await DB.get('vendors');
+
+            // Vendor filter dropdown
+            const vf = document.getElementById('kpi-filter-vendor');
+            if (vf) {
+                const vcs = [...new Set(logs.map(l=>l.vendor_code).filter(Boolean))].sort();
+                const cur = vf.value;
+                vf.innerHTML = '<option value="">All Vendors</option>' + vcs.map(v=>`<option>${v}</option>`).join('');
+                vf.value = cur;
+            }
+
+            // Aggregate by vendor
+            const byVendor = {};
+            logs.forEach(l => {
+                const v = l.vendor_code; if (!v) return;
+                if (!byVendor[v]) byVendor[v] = { otd:[], quality:[], lt:[], resp:[], scores:[], logs:[] };
+                byVendor[v].otd.push(parseFloat(l.otd)||0);
+                byVendor[v].quality.push(parseFloat(l.quality)||0);
+                byVendor[v].lt.push(parseFloat(l.lt_compliance)||0);
+                byVendor[v].resp.push(parseFloat(l.responsiveness)||0);
+                byVendor[v].scores.push(parseFloat(l.overall_score)||0);
+                byVendor[v].logs.push(l);
+            });
+
+            const avg = arr => arr.length ? Math.round(arr.reduce((s,x)=>s+x,0)/arr.length) : null;
+            const vList = Object.entries(byVendor);
+
+            // Summary KPIs
+            const allScores = vList.map(([,d]) => avg(d.scores)).filter(s=>s!=null);
+            const avgOTD    = avg(vList.flatMap(([,d])=>d.otd));
+            const avgQual   = avg(vList.flatMap(([,d])=>d.quality));
+            const avgLT     = avg(vList.flatMap(([,d])=>d.lt));
+            const atRisk    = vList.filter(([,d]) => avg(d.scores) < 75).length;
+            const el = id => document.getElementById(id);
+            if (el('kpi-avg-otd'))     el('kpi-avg-otd').textContent     = avgOTD   != null ? avgOTD+'%'   : '—';
+            if (el('kpi-avg-quality')) el('kpi-avg-quality').textContent  = avgQual  != null ? avgQual+'%'  : '—';
+            if (el('kpi-avg-lt'))      el('kpi-avg-lt').textContent       = avgLT    != null ? avgLT+'%'    : '—';
+            if (el('kpi-at-risk'))     el('kpi-at-risk').textContent      = atRisk;
+            if (el('kpi-count'))       el('kpi-count').textContent        = vList.length;
+            if (el('kpi-sub'))         el('kpi-sub').textContent          = `${logs.length} KPI records · ${vList.length} vendors tracked`;
+
+            // Cards
+            const grid = el('kpi-cards-grid');
+            if (grid) {
+                if (!vList.length) {
+                    grid.innerHTML = `<div style="grid-column:1/-1"><div class="empty"><div class="empty-icon">🎯</div>
+                        <div class="empty-text">No KPI data — <span style="color:var(--cyan);cursor:pointer" onclick="openDP('dp-kpi-entry','new')">Log first entry</span></div>
+                    </div></div>`;
+                } else {
+                    grid.innerHTML = vList.sort((a,b) => (avg(b[1].scores)||0) - (avg(a[1].scores)||0)).map(([vendor, d]) => {
+                        const score   = avg(d.scores) ?? 0;
+                        const g       = kpiGrade(score);
+                        const vendorInfo = vendors.find(v=>v.vendor_code===vendor);
+                        const criteria = [
+                            { label:'OTD',          val: avg(d.otd),     color:'var(--cyan)',  weight:'40%' },
+                            { label:'Quality',      val: avg(d.quality), color:'var(--green)', weight:'30%' },
+                            { label:'Lead Time',    val: avg(d.lt),      color:'var(--amber)', weight:'20%' },
+                            { label:'Responsiveness', val: avg(d.resp),  color:'var(--t2)',    weight:'10%' },
+                        ];
+                        return `<div class="card">
+                            <div class="card-hdr">
+                                <div>
+                                    <div class="card-title">${vendor}</div>
+                                    <div style="font-size:11px;color:var(--t3)">${vendorInfo?.vendor_name||''} · ${d.logs.length} entries</div>
+                                </div>
+                                <button class="btn btn-g btn-sm" onclick="openDP('dp-kpi-entry','new')">+ Log</button>
+                            </div>
+                            <div class="card-body">
+                                <div class="kpi-ring-wrap">
+                                    <div class="kpi-ring">
+                                        ${kpiRingHTML(score)}
+                                        <div class="kpi-ring-val">
+                                            <span style="color:${g.color}">${score}</span>
+                                            <span class="kpi-ring-lbl">${g.label.split(' — ')[0]}</span>
+                                        </div>
+                                    </div>
+                                    <div class="kpi-criteria">
+                                        ${criteria.map(c => `
+                                        <div class="kpi-crit-row">
+                                            <div class="kpi-crit-label">${c.label} <span style="color:var(--t3);font-size:10px">${c.weight}</span></div>
+                                            <div class="kpi-crit-bar"><div class="kpi-crit-fill" style="width:${c.val??0}%;background:${c.color}"></div></div>
+                                            <div class="kpi-crit-val" style="color:${c.color}">${c.val!=null?c.val+'%':'—'}</div>
+                                        </div>`).join('')}
+                                    </div>
+                                </div>
+                                <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-top:1px solid var(--bd);margin-top:8px">
+                                    <div class="stars" style="color:${g.color}">${g.stars}</div>
+                                    <div style="font-size:11px;color:${g.color};font-weight:600">${g.hint}</div>
+                                </div>
+                            </div>
+                        </div>`;
+                    }).join('');
+                }
+            }
+            renderKPITable();
+        }
+
+        async function renderKPITable() {
+            const logs = await DB.get('vendorkpi');
+            const vf   = document.getElementById('kpi-filter-vendor')?.value || '';
+            const filtered = vf ? logs.filter(l=>l.vendor_code===vf) : logs;
+            filtered.sort((a,b) => (b.date||'').localeCompare(a.date||''));
+            const tbody = document.getElementById('kpi-log-tbody');
+            if (!tbody) return;
+            tbody.innerHTML = filtered.map(l => {
+                const g = kpiGrade(l.overall_score||0);
+                const esc = JSON.stringify(l).replace(/"/g,'&quot;');
+                return `<tr onclick="openDP('dp-kpi-entry','edit',${esc})" style="cursor:pointer">
+                    <td class="mono">${l.date||'—'}</td>
+                    <td class="tx fw">${l.vendor_code||'—'}</td>
+                    <td class="mono mu">${l.po_ref||'—'}</td>
+                    <td class="mono ri" style="color:var(--cyan)">${l.otd!=null?l.otd+'%':'—'}</td>
+                    <td class="mono ri" style="color:var(--green)">${l.quality!=null?l.quality+'%':'—'}</td>
+                    <td class="mono ri" style="color:var(--amber)">${l.lt_compliance!=null?l.lt_compliance+'%':'—'}</td>
+                    <td class="mono ri fw" style="color:${g.color}">${l.overall_score||'—'}</td>
+                    <td><span class="badge" style="background:${g.color}22;color:${g.color};border:1px solid ${g.color}55">${l.grade||'—'}</span></td>
+                    <td class="tx mu" style="font-size:11px">${l.notes||''}</td>
+                    <td><button class="btn btn-g btn-sm btn-ic" onclick="event.stopPropagation();openDP('dp-kpi-entry','edit',${esc})">✏️</button></td>
+                </tr>`;
+            }).join('') || `<tr><td colspan="10"><div class="empty"><div class="empty-icon">🎯</div>
+                <div class="empty-text">No KPI records for this vendor</div></div></td></tr>`;
+        }
+
+        async function exportVendorKPI() {
+            const logs = await DB.get('vendorkpi');
+            if (!logs.length) { toast('No KPI data', 'warn'); return; }
+            if (!window.XLSX) await loadXLSX();
+            const ws = XLSX.utils.json_to_sheet(logs);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Vendor_KPI');
+            XLSX.writeFile(wb, `Vendor_KPI_${new Date().toISOString().slice(0,10)}.xlsx`);
+            toast('Exported', 'success');
+        }
+
+        // ── ALERT CENTER ──────────────────────────────────────
+        let ALERTS = [];
+        let ALERT_FILTER = 'all';
+
+        async function generateAlerts() {
+            const [parts, inventory, pos, trades, forecast, kpis] = await Promise.all([
+                DB.get('parts'), DB.get('inventory'), DB.get('polist'),
+                DB.get('hqtrade'), DB.get('forecast'), DB.get('vendorkpi')
+            ]);
+            const newAlerts = [];
+            const now = new Date();
+            const todayStr = now.toISOString().slice(0, 10);
+            let id = Date.now();
+
+            // 1. MRP Shortage alerts
+            MRP_RESULTS.filter(r => r.status === 'impossible').forEach(r => {
+                newAlerts.push({ id: (id++).toString(), type:'mrp', severity:'critical', read:false,
+                    title: `Impossible PO — ${r.part_no}`,
+                    desc:  `${r.part_name||r.part_no} 재고 부족 ${fmt2(Math.abs(r.net_position))} pcs. 리드타임 초과로 정상 발주 불가.`,
+                    meta:  `Vendor: ${r.vendor_code||'—'} · LT: ${r.leadtime_mp}d`,
+                    action: 'poplan', actionLabel: 'PO Planning', created_at: todayStr,
+                });
+            });
+            MRP_RESULTS.filter(r => r.status === 'shortage').forEach(r => {
+                newAlerts.push({ id: (id++).toString(), type:'mrp', severity:'critical', read:false,
+                    title: `Shortage — ${r.part_no}`,
+                    desc:  `${r.part_name||r.part_no} 부족: ${fmt2(Math.abs(r.net_position))} pcs. 발주 필요.`,
+                    meta:  `Vendor: ${r.vendor_code||'—'} · Order By: ${r.order_by_date?.toISOString().slice(0,10)||'ASAP'}`,
+                    action: 'poplan', actionLabel: 'Issue PO', created_at: todayStr,
+                });
+            });
+            MRP_RESULTS.filter(r => r.status === 'warning').forEach(r => {
+                newAlerts.push({ id: (id++).toString(), type:'mrp', severity:'warning', read:false,
+                    title: `Low Stock Warning — ${r.part_no}`,
+                    desc:  `${r.part_name||r.part_no} 안전재고 임박. Net: ${fmt2(r.net_position)} pcs.`,
+                    meta:  `Vendor: ${r.vendor_code||'—'}`,
+                    action: 'poplan', actionLabel: 'Plan PO', created_at: todayStr,
+                });
+            });
+
+            // 2. PO ETA overdue
+            pos.filter(p => ['issued','partial'].includes(p.status) && p.eta && p.eta < todayStr).forEach(p => {
+                const days = Math.round((now - new Date(p.eta)) / 86400000);
+                newAlerts.push({ id: (id++).toString(), type:'po', severity:'warning', read:false,
+                    title: `PO Overdue — ${p.po_number}`,
+                    desc:  `ETA ${p.eta}로부터 ${days}일 경과. 납기 확인 필요.`,
+                    meta:  `Vendor: ${p.vendor_code||'—'} · Value: $${fmt2(p.total_value||0,0)}`,
+                    action: 'polist', actionLabel: 'View PO', created_at: todayStr,
+                });
+            });
+
+            // 3. Shipment ETAs
+            trades.filter(t => t.status === 'in_transit' && t.eta).forEach(t => {
+                const eta = new Date(t.eta);
+                const days = Math.round((eta - now) / 86400000);
+                if (days < 0) {
+                    newAlerts.push({ id: (id++).toString(), type:'shipment', severity:'critical', read:false,
+                        title: `Shipment Overdue — ${t.shipment_no}`,
+                        desc:  `ETA ${t.eta}로부터 ${Math.abs(days)}일 경과. 포워더 확인 필요.`,
+                        meta:  `Vendor: ${t.vendor_code||'—'}`,
+                        action: 'hqtrade', actionLabel: 'View Shipment', created_at: todayStr,
+                    });
+                } else if (days <= 7) {
+                    newAlerts.push({ id: (id++).toString(), type:'shipment', severity:'info', read:false,
+                        title: `Shipment Arriving Soon — ${t.shipment_no}`,
+                        desc:  `ETA ${t.eta} (${days}일 후). 입고 준비를 시작하세요.`,
+                        meta:  `Vendor: ${t.vendor_code||'—'} · Qty: ${fmt2(t.qty||0)} pcs`,
+                        action: 'hqtrade', actionLabel: 'View', created_at: todayStr,
+                    });
+                }
+            });
+
+            // 4. Missing documents on in-transit shipments
+            trades.filter(t => ['in_transit','customs'].includes(t.status)).forEach(t => {
+                const missing = ['invoice','bl','packing'].filter(d => !['received','approved'].includes(t[`doc_${d}_status`]));
+                if (missing.length > 0) {
+                    newAlerts.push({ id: (id++).toString(), type:'shipment', severity:'warning', read:false,
+                        title: `Missing Documents — ${t.shipment_no}`,
+                        desc:  `미수령 서류: ${missing.join(', ')}`,
+                        meta:  `Vendor: ${t.vendor_code||'—'} · Status: ${t.status}`,
+                        action: 'hqtrade', actionLabel: 'Update Docs', created_at: todayStr,
+                    });
+                }
+            });
+
+            // 5. Low stock (inventory below safety)
+            const invByPart = {};
+            inventory.forEach(i => { invByPart[i.part_no] = (invByPart[i.part_no]||0) + (parseInt(i.qty)||0); });
+            parts.forEach(p => {
+                const ss = parseInt(p.safety_stock) || 0;
+                const qty = invByPart[p.part_no] || 0;
+                if (ss > 0 && qty < ss && !MRP_RESULTS.find(r => r.part_no === p.part_no)) {
+                    newAlerts.push({ id: (id++).toString(), type:'inventory', severity:'warning', read:false,
+                        title: `Below Safety Stock — ${p.part_no}`,
+                        desc:  `${p.part_name||p.part_no} 현재고 ${fmt2(qty)} < 안전재고 ${fmt2(ss)} pcs`,
+                        meta:  `Vendor: ${p.vendor_code||'—'}`,
+                        action: 'inventory', actionLabel: 'View Inventory', created_at: todayStr,
+                    });
+                }
+            });
+
+            // 6. Vendor KPI at risk
+            const byV = {};
+            kpis.forEach(k => {
+                const v = k.vendor_code; if(!v) return;
+                if (!byV[v]) byV[v] = [];
+                byV[v].push(parseFloat(k.overall_score)||0);
+            });
+            Object.entries(byV).forEach(([vendor, scores]) => {
+                const avg = scores.reduce((s,x)=>s+x,0)/scores.length;
+                if (avg < 75) {
+                    newAlerts.push({ id: (id++).toString(), type:'kpi', severity: avg<60?'critical':'warning', read:false,
+                        title: `Vendor at Risk — ${vendor}`,
+                        desc:  `종합 KPI ${Math.round(avg)}점 — 개선 계획 수립 필요.`,
+                        meta:  `${scores.length}건 평가 평균`,
+                        action: 'kpi', actionLabel: 'View KPI', created_at: todayStr,
+                    });
+                }
+            });
+
+            ALERTS = newAlerts;
+            await DB.save('alerts', ALERTS);
+            renderAlertList();
+            updateAlertBadges();
+            toast(`${ALERTS.length}개 알림 생성됨`, 'info', 3000);
+        }
+
+        async function refreshAlerts() {
+            const saved = await DB.get('alerts');
+            ALERTS = saved.length > 0 ? saved : [];
+            if (ALERTS.length === 0) await generateAlerts();
+            else { renderAlertList(); updateAlertBadges(); }
+        }
+
+        function updateAlertBadges() {
+            const counts = { all:ALERTS.length, critical:0, warning:0, info:0 };
+            ALERTS.forEach(a => { if(counts[a.severity]!=null) counts[a.severity]++; });
+            Object.entries(counts).forEach(([k,v]) => {
+                const el = document.getElementById(`ab-${k}`);
+                if (el) el.textContent = v;
+            });
+            // Sidebar bell badge
+            const dot = document.querySelector('.badge-dot');
+            const crit = ALERTS.filter(a=>!a.read&&a.severity==='critical').length;
+            if (dot) dot.style.display = crit > 0 ? '' : 'none';
+            // Dashboard badge
+            const dbBadge = document.getElementById('dash-alert-badge');
+            if (dbBadge) { dbBadge.textContent = crit; dbBadge.style.display = crit>0?'':'none'; }
+        }
+
+        function filterAlerts(filter, btn) {
+            ALERT_FILTER = filter;
+            document.querySelectorAll('.alert-tab').forEach(t => t.classList.remove('on'));
+            if (btn) btn.classList.add('on');
+            renderAlertList();
+        }
+
+        function renderAlertList() {
+            const listEl = document.getElementById('alert-list');
+            if (!listEl) return;
+            const unreadOnly = document.getElementById('alert-unread-only')?.checked;
+            let filtered = [...ALERTS];
+            if (ALERT_FILTER !== 'all') {
+                const sevFilters = ['critical','warning','info'];
+                if (sevFilters.includes(ALERT_FILTER)) filtered = filtered.filter(a => a.severity === ALERT_FILTER);
+                else filtered = filtered.filter(a => a.type === ALERT_FILTER);
+            }
+            if (unreadOnly) filtered = filtered.filter(a => !a.read);
+
+            const subEl = document.getElementById('alerts-sub');
+            if (subEl) subEl.textContent = `${ALERTS.filter(a=>!a.read).length} unread · ${ALERTS.length} total alerts`;
+
+            const dotColor = { critical:'r', warning:'a', info:'c', kpi:'c', mrp:'r', po:'a', shipment:'a', inventory:'a' };
+            const icon = { mrp:'⚡', po:'📋', shipment:'🚢', inventory:'📦', kpi:'🎯' };
+            const fmtAge = ts => { if(!ts) return '—'; const d=new Date(ts),now=new Date(),diff=Math.floor((now-d)/60000); if(diff<60) return diff+'m ago'; if(diff<1440) return Math.floor(diff/60)+'h ago'; return Math.floor(diff/1440)+'d ago'; };
+
+            if (!filtered.length) {
+                listEl.innerHTML = `<div class="empty" style="padding:48px 0">
+                    <div class="empty-icon">✅</div>
+                    <div class="empty-text">No alerts for this filter</div>
+                </div>`;
+                return;
+            }
+            listEl.innerHTML = filtered.map((a, i) => `
+                <div class="alert-card ${!a.read?'unread':''}" onclick="markRead('${a.id}')">
+                    <div class="alert-dot ${dotColor[a.severity]||dotColor[a.type]||'c'}" ${a.read?'style="opacity:.3"':''}></div>
+                    <div class="alert-icon">${icon[a.type]||'🔔'}</div>
+                    <div class="alert-body">
+                        <div class="alert-title">${a.title}</div>
+                        <div class="alert-desc">${a.desc}</div>
+                        <div class="alert-meta">
+                            <span class="badge ${a.severity==='critical'?'badge-r':a.severity==='warning'?'badge-a':'badge-c'}" style="font-size:9px">${a.severity}</span>
+                            <span>${a.meta||''}</span>
+                            ${a.action ? `<span style="color:var(--cyan);cursor:pointer;text-decoration:underline" onclick="event.stopPropagation();nav('${a.action}')">${a.actionLabel||'View'} →</span>` : ''}
+                        </div>
+                    </div>
+                    <div class="alert-age">${fmtAge(a.created_at)}</div>
+                </div>`).join('');
+        }
+
+        function markRead(id) {
+            const a = ALERTS.find(x=>x.id===id);
+            if (a) { a.read = true; DB.save('alerts', ALERTS); }
+            renderAlertList(); updateAlertBadges();
+        }
+
+        function markAllRead() {
+            ALERTS.forEach(a => a.read = true);
+            DB.save('alerts', ALERTS);
+            renderAlertList(); updateAlertBadges();
+            toast('모든 알림 읽음 처리', 'info', 2000);
+        }
+
+        // openDP extension for dp-kpi-entry
+        const _openDPStep7 = openDP;
+        window.openDP = function(id, mode, data) {
+            if (id === 'dp-kpi-entry') {
+                closeDP(); activeDP = id;
+                document.getElementById('dp-overlay').classList.add('open');
+                document.getElementById(id)?.classList.add('open');
+                prepKPIPanel(mode, data); return;
+            }
+            _openDPStep7(id, mode, data);
+        };
+
+        // PAGE_INIT wiring
+        PAGE_INIT.kpi    = renderVendorKPI;
+        PAGE_INIT.alerts = refreshAlerts;
+        PAGE_INIT.dashboard = renderDashboard;
+
+        // Auto-run dashboard on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(renderDashboard, 400);
+        });
+
+        console.log('%cSCM Pro — STEP 7 loaded: Dashboard Live + Vendor KPI + Alert Center', 'color:#00E5A0;font-weight:bold');
+        toast('MRP calculation complete', 'success');
         }
 
         let MRP_FILTER = { search: '', status: '', vendor: '' };
@@ -6486,383 +7141,6 @@ do $$ declare t text; begin for t in select unnest(array['vendors','parts','prod
         }
 
 
-        // ══════════════════════════════════════════════════════
-        //  SETTINGS PAGE FUNCTIONS
-        // ══════════════════════════════════════════════════════
-        function settingsPageInit() {
-            updateSBIndicator();
-            const saved = localStorage.getItem('scm_sb_key');
-            const inp = document.getElementById('sb-key-input');
-            if (saved && inp && !inp.value) inp.value = saved;
-            const discBtn = document.getElementById('sb-disconnect-btn');
-            if (discBtn) discBtn.style.display = SB_READY ? '' : 'none';
-            if (SB_READY) {
-                const msg = document.getElementById('sb-connect-msg');
-                if (msg) {
-                    msg.style.display = '';
-                    msg.style.cssText += ';background:rgba(0,229,160,.08);border-color:rgba(0,229,160,.25);color:var(--green)';
-                    msg.textContent = '✅ Supabase 연결됨 — 모든 데이터가 실시간 동기화됩니다';
-                }
-            }
-            settingsRefreshStatus();
-        }
-
-        async function settingsConnect() {
-            const key = document.getElementById('sb-key-input')?.value.trim();
-            if (!key) { toast('Anon Key를 입력하세요', 'warn'); return; }
-            const btn = document.getElementById('sb-connect-btn');
-            if (btn) { btn.textContent = '⏳ 연결 중...'; btn.disabled = true; }
-            const ok = await sbConnect(key);
-            if (btn) { btn.textContent = '🔌 Connect'; btn.disabled = false; }
-            const msg = document.getElementById('sb-connect-msg');
-            const discBtn = document.getElementById('sb-disconnect-btn');
-            if (ok) {
-                if (msg) { msg.style.display=''; msg.style.cssText+=';background:rgba(0,229,160,.08);border-color:rgba(0,229,160,.25);color:var(--green)'; msg.textContent='✅ 연결 성공! 이제 모든 데이터가 Supabase에 저장됩니다.'; }
-                if (discBtn) discBtn.style.display = '';
-                settingsRefreshStatus();
-            } else {
-                if (msg) { msg.style.display=''; msg.style.cssText+=';background:rgba(255,69,96,.08);border-color:rgba(255,69,96,.25);color:var(--red)'; msg.textContent='❌ 연결 실패. Anon Key를 확인하세요.'; }
-            }
-        }
-
-        function settingsDisconnect() {
-            sbDisconnect();
-            const msg = document.getElementById('sb-connect-msg');
-            if (msg) msg.style.display = 'none';
-            const discBtn = document.getElementById('sb-disconnect-btn');
-            if (discBtn) discBtn.style.display = 'none';
-            settingsRefreshStatus();
-        }
-
-        async function settingsMigrate() {
-            if (!SB_READY) { toast('먼저 Supabase에 연결하세요', 'warn'); return; }
-            const btn = document.getElementById('migrate-btn');
-            if (btn) { btn.textContent = '⏳ 마이그레이션 중...'; btn.disabled = true; }
-            const results = await DB.migrateAll();
-            let html = '', total = 0;
-            for (const [table, res] of Object.entries(results)) {
-                if (res.skipped) html += `<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bd);font-family:var(--fm);font-size:11px"><span>${table}</span><span style="color:var(--t3)">empty</span></div>`;
-                else if (res.error) html += `<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bd);font-family:var(--fm);font-size:11px"><span>${table}</span><span style="color:var(--red)">${res.ok} ⚠ ${res.error}</span></div>`;
-                else { total += res.ok; html += `<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bd);font-family:var(--fm);font-size:11px"><span>${table}</span><span style="color:var(--green)">${res.ok} ✓</span></div>`; }
-            }
-            const el = document.getElementById('migrate-results');
-            if (el) { el.style.display=''; el.innerHTML=html; }
-            toast(`마이그레이션 완료 — ${total}개 레코드`, 'success', 5000);
-            if (btn) { btn.textContent = '🚀 전체 마이그레이션'; btn.disabled = false; }
-            settingsRefreshStatus();
-        }
-
-        async function settingsRefreshStatus() {
-            const list = document.getElementById('storage-status-list');
-            if (!list) return;
-            list.innerHTML = '<div style="font-size:11px;color:var(--t3);padding:8px 0">로딩 중...</div>';
-            const rows = [];
-            for (const [table, pk] of Object.entries(TABLE_PK)) {
-                const local = JSON.parse(localStorage.getItem(`scm_${table}`) || '[]');
-                let sbCount = '—';
-                if (SB_READY && sbClient) {
-                    try { const { count } = await sbClient.from(table).select('*',{count:'exact',head:true}); sbCount = count ?? '—'; }
-                    catch { sbCount = 'err'; }
-                }
-                const synced = SB_READY && local.length === sbCount;
-                rows.push(`<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--bd);font-size:11px">
-                    <span style="font-family:var(--fm);min-width:120px;color:var(--td)">${table}</span>
-                    <span style="color:${local.length>0?'var(--cyan)':'var(--t3)'};min-width:80px">${local.length} local</span>
-                    <span style="color:var(--t3)">→</span>
-                    <span style="color:${SB_READY?(sbCount>0?'var(--green)':'var(--t3)'):'var(--t3)'}">${SB_READY?sbCount+' Supabase':'not connected'}</span>
-                    ${SB_READY&&!synced&&local.length>0?'<span style="color:var(--amber);font-size:10px">⚠ out of sync</span>':SB_READY&&synced&&local.length>0?'<span style="color:var(--green);font-size:10px">✓</span>':''}
-                </div>`);
-            }
-            list.innerHTML = rows.join('');
-        }
-
-        async function settingsClearOne() {
-            const table = document.getElementById('clear-table-sel')?.value;
-            if (!table) return;
-            const ok = await confirm(`"${table}" 로컬 캐시 삭제`,`LocalStorage의 ${table} 데이터를 삭제합니다.`,'삭제',true);
-            if (!ok) return;
-            localStorage.removeItem(`scm_${table}`);
-            toast(`${table} 로컬 캐시 삭제됨`, 'warn');
-            settingsRefreshStatus();
-        }
-
-        async function settingsClearAll() {
-            const ok = await confirm('전체 로컬 데이터 삭제','모든 LocalStorage 캐시를 삭제합니다.','전체 삭제',true);
-            if (!ok) return;
-            Object.keys(TABLE_PK).forEach(t => localStorage.removeItem(`scm_${t}`));
-            toast('모든 로컬 캐시 삭제됨', 'error');
-            settingsRefreshStatus();
-        }
-
-        // ══════════════════════════════════════════════════════
-        //  STEP 6 — HQ TRADE + LANDED COST
-        // ══════════════════════════════════════════════════════
-        const DOC_TYPES = ['invoice','packing','bl','co','entry','pod'];
-
-        async function renderHQTrade() {
-            const data   = await DB.get('hqtrade');
-            const search = document.getElementById('hq-search')?.value.toLowerCase() || '';
-            const sf     = document.getElementById('hq-filter-status')?.value || '';
-            const vf     = document.getElementById('hq-filter-vendor')?.value || '';
-            let filtered = [...data];
-            if (search) filtered = filtered.filter(r => (r.shipment_no+r.po_ref+r.vendor_code).toLowerCase().includes(search));
-            if (sf) filtered = filtered.filter(r => r.status === sf);
-            if (vf) filtered = filtered.filter(r => r.vendor_code === vf);
-            filtered.sort((a,b) => (b.etd||'').localeCompare(a.etd||''));
-
-            document.getElementById('hq-kpi-total').textContent     = data.length;
-            document.getElementById('hq-kpi-transit').textContent   = data.filter(r=>r.status==='in_transit').length;
-            document.getElementById('hq-kpi-customs').textContent   = data.filter(r=>r.status==='customs').length;
-            document.getElementById('hq-kpi-delivered').textContent = data.filter(r=>['delivered','closed'].includes(r.status)).length;
-            const totalVal = data.reduce((s,r)=>s+(parseFloat(r.invoice_amt)||0),0);
-            document.getElementById('hq-kpi-value').textContent = '$'+fmt2(totalVal,0);
-
-            ['invoice','bl','packing','entry','pod'].forEach(doc => {
-                const cnt = data.filter(r=>['received','approved','filed'].includes(r[`doc_${doc}_status`])).length;
-                const el = document.getElementById(`hq-cnt-${doc}`); if(el) el.textContent = cnt;
-                const stage = document.getElementById(`hq-stage-${doc}`);
-                if(stage) { stage.classList.remove('has-data','complete','alert');
-                    if(cnt===data.length&&data.length>0) stage.classList.add('complete');
-                    else if(cnt>0) stage.classList.add('has-data'); }
-            });
-            document.getElementById('hq-count').textContent = `${filtered.length} shipments`;
-            const subEl = document.getElementById('hq-sub');
-            if(subEl) subEl.textContent = `${data.length} shipments · $${fmt2(totalVal,0)} total`;
-
-            const vsel = document.getElementById('hq-filter-vendor');
-            if(vsel) { const vendors=[...new Set(data.map(r=>r.vendor_code).filter(Boolean))].sort(); const cur=vsel.value; vsel.innerHTML='<option value="">All Vendors</option>'+vendors.map(v=>`<option>${v}</option>`).join(''); vsel.value=cur; }
-
-            const statusBadge = s => ({open:`<span class="badge badge-m">Open</span>`,in_transit:`<span class="badge badge-c">In Transit</span>`,customs:`<span class="badge badge-a">At Customs</span>`,delivered:`<span class="badge badge-g">Delivered</span>`,closed:`<span class="badge badge-g" style="opacity:.6">Closed</span>`})[s]||`<span class="badge badge-m">${s||'—'}</span>`;
-            const docPills = r => DOC_TYPES.map(d=>{const st=r[`doc_${d}_status`]||'pending';const cls=['received','approved','filed'].includes(st)?'done':st==='issues'?'partial':'missing';return `<div class="doc-pill ${cls}" title="${d}: ${st}"></div>`;}).join('');
-
-            document.getElementById('hq-tbody').innerHTML = filtered.map(r => {
-                const esc = JSON.stringify(r).replace(/"/g,'&quot;');
-                return `<tr onclick="openDP('dp-trade','edit',${esc})" style="cursor:pointer">
-                    <td class="mono tc" style="color:var(--cyan)">${r.shipment_no||'—'}</td>
-                    <td class="mono mu">${r.po_ref||'—'}</td>
-                    <td class="tx fw">${r.vendor_code||'—'}</td>
-                    <td class="mono">${r.etd||'—'}</td>
-                    <td class="mono">${r.eta||'—'}</td>
-                    <td class="mono ri">${r.invoice_amt?'$'+fmt2(r.invoice_amt,0):'—'}</td>
-                    <td class="mono mu">${r.currency||'USD'}</td>
-                    <td><div class="doc-pills">${docPills(r)}</div></td>
-                    <td>${statusBadge(r.status)}</td>
-                    <td><button class="btn btn-g btn-sm btn-ic" onclick="event.stopPropagation();openDP('dp-trade','edit',${esc})">✏️</button></td>
-                </tr>`;
-            }).join('') || `<tr><td colspan="10"><div class="empty"><div class="empty-icon">🚢</div><div class="empty-text">No shipments — <span style="color:var(--cyan);cursor:pointer" onclick="openDP('dp-trade','new')">create one</span></div></div></td></tr>`;
-        }
-
-        async function prepTradePanel(mode, data) {
-            const isNew = mode==='new';
-            document.getElementById('dp-trade-title').textContent = isNew ? 'New Shipment' : `Shipment: ${data?.shipment_no}`;
-            document.getElementById('dp-trade-sub').textContent   = isNew ? 'Import document tracking' : `Status: ${data?.status||'open'}`;
-            document.getElementById('dtrade-delete-btn').style.display = isNew?'none':'';
-            const vendors = await DB.get('vendors');
-            const vsel = document.getElementById('dtrade-vendor');
-            vsel.innerHTML = '<option value="">— Select Vendor —</option>' + vendors.map(v=>`<option value="${v.vendor_code}">${v.vendor_code} — ${v.vendor_name}</option>`).join('');
-            const pos = await DB.get('polist');
-            const psel = document.getElementById('dtrade-po');
-            psel.innerHTML = '<option value="">— Link to PO —</option>' + pos.map(p=>`<option value="${p.po_number}">${p.po_number} / ${p.vendor_code}</option>`).join('');
-            const set = (id, val) => { const el = document.getElementById(id); if(el) el.value = val ?? ''; };
-            set('dtrade-id', data?.id||''); set('dtrade-no', data?.shipment_no||generateShipmentNo());
-            set('dtrade-etd', data?.etd||''); set('dtrade-eta', data?.eta||'');
-            set('dtrade-invoice-amt', data?.invoice_amt||''); set('dtrade-currency', data?.currency||'USD');
-            set('dtrade-qty', data?.qty||''); set('dtrade-status', data?.status||'open');
-            set('dtrade-incoterms', data?.incoterms||'FOB'); set('dtrade-origin', data?.origin||'');
-            set('dtrade-dest', data?.dest||''); set('dtrade-remarks', data?.remarks||'');
-            if(data?.vendor_code) vsel.value = data.vendor_code;
-            if(data?.po_ref) psel.value = data.po_ref;
-            DOC_TYPES.forEach(doc => {
-                const stEl=document.getElementById(`doc-${doc}-status`); const noEl=document.getElementById(`doc-${doc}-no`); const dtEl=document.getElementById(`doc-${doc}-date`);
-                if(stEl) stEl.value = data?.[`doc_${doc}_status`]||'pending';
-                if(noEl) noEl.value = data?.[`doc_${doc}_no`]||'';
-                if(dtEl) dtEl.value = data?.[`doc_${doc}_date`]||'';
-                updateDocStyle(doc);
-            });
-        }
-
-        function updateDocStyle(doc) {
-            const sel = document.getElementById(`doc-${doc}-status`);
-            const row = document.getElementById(`doc-${doc}`);
-            if(!sel||!row) return;
-            const st = sel.value;
-            row.classList.remove('received','issues');
-            if(['received','approved','filed'].includes(st)) row.classList.add('received');
-            else if(st==='issues') row.classList.add('issues');
-        }
-
-        async function saveTrade() {
-            const no = document.getElementById('dtrade-no')?.value.trim();
-            const vendor = document.getElementById('dtrade-vendor')?.value;
-            if(!no||!vendor) { toast('Shipment No와 Vendor는 필수입니다','error'); return; }
-            const rec = {
-                id: document.getElementById('dtrade-id').value || Date.now().toString(),
-                shipment_no: no, vendor_code: vendor,
-                po_ref:      document.getElementById('dtrade-po').value,
-                etd:         document.getElementById('dtrade-etd').value,
-                eta:         document.getElementById('dtrade-eta').value,
-                invoice_amt: parseFloat(document.getElementById('dtrade-invoice-amt').value)||0,
-                currency:    document.getElementById('dtrade-currency').value,
-                qty:         parseInt(document.getElementById('dtrade-qty').value)||0,
-                status:      document.getElementById('dtrade-status').value,
-                incoterms:   document.getElementById('dtrade-incoterms').value,
-                origin:      document.getElementById('dtrade-origin').value,
-                dest:        document.getElementById('dtrade-dest').value,
-                remarks:     document.getElementById('dtrade-remarks').value.trim(),
-            };
-            DOC_TYPES.forEach(doc => {
-                rec[`doc_${doc}_status`] = document.getElementById(`doc-${doc}-status`)?.value||'pending';
-                rec[`doc_${doc}_no`]     = document.getElementById(`doc-${doc}-no`)?.value.trim()||'';
-                rec[`doc_${doc}_date`]   = document.getElementById(`doc-${doc}-date`)?.value||'';
-            });
-            await DB.upsert('hqtrade', rec, 'shipment_no');
-            toast(`Shipment ${rec.shipment_no} 저장됨`, 'success');
-            closeDP(); renderHQTrade();
-        }
-
-        async function deleteTrade() {
-            const id = document.getElementById('dtrade-id').value;
-            const no = document.getElementById('dtrade-no').value;
-            if(!id) return;
-            const ok = await confirm('Shipment 삭제',`${no}를 삭제합니다.`,'삭제',true);
-            if(!ok) return;
-            await DB.delete('hqtrade', id);
-            toast('Shipment 삭제됨','warn'); closeDP(); renderHQTrade();
-        }
-
-        function openLCFromTrade() {
-            const no=document.getElementById('dtrade-no')?.value;
-            const vd=document.getElementById('dtrade-vendor')?.value;
-            const inv=document.getElementById('dtrade-invoice-amt')?.value;
-            closeDP(); nav('landedcost');
-            setTimeout(()=>{
-                if(no){const el=document.getElementById('lc-shipment-no');if(el)el.value=no;}
-                if(vd){const el=document.getElementById('lc-vendor');if(el)el.value=vd;}
-                if(inv){const el=document.getElementById('lc-invoice-amt');if(el)el.value=inv;}
-                calcLandedCost();
-            },200);
-        }
-
-        function generateShipmentNo() {
-            const d=new Date();
-            return `SHP-${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}-${String(Math.floor(Math.random()*900)+100)}`;
-        }
-
-        async function exportHQTrade() {
-            const data = await DB.get('hqtrade');
-            if(!data.length){toast('No data','warn');return;}
-            if(!window.XLSX) await loadXLSX();
-            const ws=XLSX.utils.json_to_sheet(data); const wb=XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb,ws,'HQ_Trade');
-            XLSX.writeFile(wb,`HQ_Trade_${new Date().toISOString().slice(0,10)}.xlsx`);
-            toast('Exported','success');
-        }
-
-        // ── LANDED COST ───────────────────────────────────────
-        const LC_COLORS = ['#00D4FF','#00E5A0','#FFB020','#FF4560','#8888FF','#FF8080'];
-
-        function calcLandedCost() {
-            const v = id => parseFloat(document.getElementById(id)?.value)||0;
-            const fx = v('lc-fx-rate')||1380;
-            const invoiceUSD=v('lc-invoice-amt'), oceanUSD=v('lc-ocean'), airUSD=v('lc-air');
-            const inlandOriUSD=v('lc-inland-origin'), insUSD=v('lc-insurance'), fwdUSD=v('lc-forwarding');
-            const inlandDestKRW=v('lc-inland-dest'), brokerKRW=v('lc-brokerage'), otherKRW=v('lc-other');
-            const freightUSD = oceanUSD+airUSD+inlandOriUSD+insUSD+fwdUSD;
-            const cifUSD = invoiceUSD+freightUSD;
-            const el=id=>document.getElementById(id);
-            if(el('lc-cif-display')) el('lc-cif-display').textContent='$'+fmt2(cifUSD,0);
-            const cifKRW=cifUSD*fx, dutyRate=v('lc-duty-rate')/100, vatRate=v('lc-vat-rate')/100;
-            const dutyKRW=cifKRW*dutyRate, vatKRW=(cifKRW+dutyKRW)*vatRate;
-            if(el('lc-duty-display')) el('lc-duty-display').textContent='₩'+fmt2(dutyKRW,0);
-            if(el('lc-vat-display'))  el('lc-vat-display').textContent='₩'+fmt2(vatKRW,0);
-            const purchaseKRW=invoiceUSD*fx, freightKRW=freightUSD*fx+inlandDestKRW;
-            const customsKRW=dutyKRW+vatKRW+brokerKRW;
-            const grandKRW=purchaseKRW+freightKRW+customsKRW+otherKRW;
-            const grandUSD=grandKRW/fx;
-            if(el('lc-grand-total-krw')) el('lc-grand-total-krw').textContent='₩ '+fmt2(grandKRW,0);
-            if(el('lc-grand-total-usd')) el('lc-grand-total-usd').textContent='≈ $'+fmt2(grandUSD,0);
-            const qty=v('lc-total-qty'), wt=v('lc-weight');
-            if(el('lc-unit-cost')) el('lc-unit-cost').textContent=qty>0?'₩'+fmt2(grandKRW/qty,0):'—';
-            if(el('lc-cost-kg'))   el('lc-cost-kg').textContent  =wt>0?'₩'+fmt2(grandKRW/wt,0):'—';
-            if(el('lc-markup')) { const m=invoiceUSD>0?((grandUSD-invoiceUSD)/invoiceUSD*100):0; el('lc-markup').textContent=m>0?'+'+fmt2(m,1)+'%':'—'; }
-            const sections=[
-                {label:'Purchase Cost',krw:purchaseKRW,color:LC_COLORS[0]},
-                {label:'Freight & Logistics',krw:freightKRW,color:LC_COLORS[1]},
-                {label:'Customs Duty',krw:dutyKRW,color:LC_COLORS[2]},
-                {label:'VAT',krw:vatKRW,color:LC_COLORS[3]},
-                {label:'Brokerage',krw:brokerKRW,color:LC_COLORS[4]},
-                {label:'Other',krw:otherKRW,color:LC_COLORS[5]},
-            ].filter(s=>s.krw>0);
-            const bkEl=el('lc-breakdown-rows');
-            if(bkEl&&grandKRW>0) bkEl.innerHTML=sections.map(s=>{const pct=(s.krw/grandKRW*100).toFixed(1);return `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid var(--bd)"><div style="width:10px;height:10px;border-radius:2px;background:${s.color};flex-shrink:0"></div><div style="flex:1;font-size:11px;color:var(--t2)">${s.label}</div><div style="font-family:var(--fm);font-size:11px">₩${fmt2(s.krw,0)}</div><div style="font-size:10px;color:var(--t3);min-width:36px;text-align:right">${pct}%</div></div>`;}).join('');
-            const barEl=el('lc-bar-stack');
-            if(barEl&&grandKRW>0) barEl.innerHTML=sections.map(s=>`<div style="width:${(s.krw/grandKRW*100).toFixed(2)}%;background:${s.color}" title="${s.label}: ₩${fmt2(s.krw,0)}"></div>`).join('');
-        }
-
-        async function loadLCShipment() {
-            const no=document.getElementById('lc-filter-shipment')?.value; if(!no) return;
-            const trades=await DB.get('hqtrade'); const trade=trades.find(t=>t.shipment_no===no); if(!trade) return;
-            const set=(id,val)=>{const el=document.getElementById(id);if(el)el.value=val??'';};
-            set('lc-shipment-no',trade.shipment_no); set('lc-vendor',trade.vendor_code);
-            set('lc-invoice-no',trade.doc_invoice_no||''); set('lc-invoice-date',trade.doc_invoice_date||'');
-            set('lc-invoice-amt',trade.invoice_amt||0);
-            calcLandedCost(); toast(`Loaded: ${no}`,'info',2000);
-        }
-
-        async function saveLandedCost() {
-            const v=id=>document.getElementById(id)?.value;
-            const grandTotalKRWText=document.getElementById('lc-grand-total-krw')?.textContent||'';
-            const grandTotalKRW=parseFloat(grandTotalKRWText.replace(/[^\d.-]/g,''))||0;
-            if(grandTotalKRW===0){toast('먼저 계산해주세요','warn');return;}
-            const rec={id:Date.now().toString(),shipment_no:v('lc-shipment-no')||'LC-'+Date.now().toString(36),vendor:v('lc-vendor')||'',invoice_no:v('lc-invoice-no')||'',invoice_amt:parseFloat(v('lc-invoice-amt'))||0,fx_rate:parseFloat(v('lc-fx-rate'))||1380,ocean:parseFloat(v('lc-ocean'))||0,air:parseFloat(v('lc-air'))||0,inland_ori:parseFloat(v('lc-inland-origin'))||0,inland_dest:parseFloat(v('lc-inland-dest'))||0,insurance:parseFloat(v('lc-insurance'))||0,forwarding:parseFloat(v('lc-forwarding'))||0,duty_rate:parseFloat(v('lc-duty-rate'))||0,vat_rate:parseFloat(v('lc-vat-rate'))||10,brokerage:parseFloat(v('lc-brokerage'))||0,other:parseFloat(v('lc-other'))||0,total_qty:parseInt(v('lc-total-qty'))||0,weight:parseFloat(v('lc-weight'))||0,grand_total_krw:grandTotalKRW,calc_date:new Date().toISOString().slice(0,10)};
-            await DB.upsert('landedcost',rec,'id');
-            toast('Landed Cost 저장됨','success'); renderLCHistory();
-        }
-
-        async function renderLCHistory() {
-            const data=await DB.get('landedcost');
-            const trades=await DB.get('hqtrade');
-            const fsel=document.getElementById('lc-filter-shipment');
-            if(fsel){const cur=fsel.value;fsel.innerHTML='<option value="">— Load from Shipment —</option>'+trades.map(t=>`<option value="${t.shipment_no}">${t.shipment_no} / ${t.vendor_code}</option>`).join('');fsel.value=cur;}
-            const listEl=document.getElementById('lc-history-list'); if(!listEl) return;
-            if(!data.length){listEl.innerHTML='<div style="font-size:11px;color:var(--t3);text-align:center;padding:12px">No saved calculations</div>';return;}
-            listEl.innerHTML=[...data].reverse().slice(0,8).map(r=>`<div style="border:1px solid var(--bd);border-radius:var(--r);padding:8px 12px;cursor:pointer;transition:all var(--tr)" onclick="loadSavedLC('${r.id}')" onmouseenter="this.style.borderColor='var(--cyan)'" onmouseleave="this.style.borderColor='var(--bd)'"><div style="display:flex;justify-content:space-between"><span style="font-family:var(--fm);font-size:12px;color:var(--cyan)">${r.shipment_no}</span><span style="font-family:var(--fm);font-size:12px;font-weight:700">₩${fmt2(r.grand_total_krw,0)}</span></div><div style="display:flex;justify-content:space-between;margin-top:3px"><span style="font-size:10px;color:var(--t3)">${r.vendor||'—'} · ${r.calc_date||'—'}</span><span style="font-size:10px;color:var(--t3)">${r.total_qty?fmt2(r.total_qty)+' pcs':''}</span></div></div>`).join('');
-        }
-
-        async function loadSavedLC(id) {
-            const data=await DB.get('landedcost'); const r=data.find(d=>d.id===id); if(!r) return;
-            const set=(elId,val)=>{const el=document.getElementById(elId);if(el)el.value=val??'';};
-            set('lc-shipment-no',r.shipment_no);set('lc-vendor',r.vendor);set('lc-invoice-no',r.invoice_no);
-            set('lc-invoice-amt',r.invoice_amt);set('lc-fx-rate',r.fx_rate);set('lc-ocean',r.ocean);
-            set('lc-air',r.air);set('lc-inland-origin',r.inland_ori);set('lc-inland-dest',r.inland_dest);
-            set('lc-insurance',r.insurance);set('lc-forwarding',r.forwarding);set('lc-duty-rate',r.duty_rate);
-            set('lc-vat-rate',r.vat_rate);set('lc-brokerage',r.brokerage);set('lc-other',r.other);
-            set('lc-total-qty',r.total_qty);set('lc-weight',r.weight);
-            calcLandedCost(); toast(`Loaded: ${r.shipment_no}`,'info',2000);
-        }
-
-        async function exportLandedCost() {
-            const v=id=>document.getElementById(id)?.value;
-            const r={shipment_no:v('lc-shipment-no'),vendor:v('lc-vendor'),invoice_amt:v('lc-invoice-amt'),fx_rate:v('lc-fx-rate'),ocean:v('lc-ocean'),air:v('lc-air'),inland_origin:v('lc-inland-origin'),inland_dest:v('lc-inland-dest'),insurance:v('lc-insurance'),forwarding:v('lc-forwarding'),duty_rate:v('lc-duty-rate'),vat_rate:v('lc-vat-rate'),brokerage:v('lc-brokerage'),other:v('lc-other'),total_qty:v('lc-total-qty'),weight:v('lc-weight'),grand_total_krw:document.getElementById('lc-grand-total-krw')?.textContent,unit_cost:document.getElementById('lc-unit-cost')?.textContent};
-            if(!window.XLSX) await loadXLSX();
-            const ws=XLSX.utils.json_to_sheet([r]);const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Landed_Cost');
-            XLSX.writeFile(wb,`Landed_Cost_${r.shipment_no||'calc'}_${new Date().toISOString().slice(0,10)}.xlsx`);
-            toast('Exported','success');
-        }
-
-        // openDP extension for dp-trade
-        const _openDPOrig = openDP;
-        window.openDP = function(id, mode, data) {
-            if (id === 'dp-trade') {
-                closeDP(); activeDP = id;
-                document.getElementById('dp-overlay').classList.add('open');
-                document.getElementById(id)?.classList.add('open');
-                prepTradePanel(mode, data); return;
-            }
-            _openDPOrig(id, mode, data);
-        };
-
-        console.log('%cSCM Pro — STEP 6 loaded: Settings + HQ Trade + Landed Cost', 'color:#8888FF;font-weight:bold');
     </script>
 </body>
 
