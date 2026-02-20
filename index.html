@@ -253,7 +253,6 @@
         #app {
             display: none;
             height: 100vh;
-            overflow: hidden
         }
 
         /* HEADER */
@@ -606,11 +605,11 @@
         .page {
             display: none;
             padding: 24px;
-            animation: pageIn 0.2s ease forwards
         }
 
         .page.active {
-            display: block
+            display: block;
+            animation: pageIn 0.2s ease both
         }
 
         @keyframes pageIn {
@@ -4812,7 +4811,7 @@ do $$ declare t text; begin for t in select unnest(array['vendors','parts','prod
             document.getElementById('login-page').style.display = 'none';
             document.getElementById('app').style.display = 'block';
             localStorage.setItem('scm_sess', JSON.stringify(u));
-            nav('dashboard');
+            setTimeout(() => (window.nav || nav)('dashboard'), 0);
         }
 
         function doLogout() {
@@ -4832,6 +4831,8 @@ do $$ declare t text; begin for t in select unnest(array['vendors','parts','prod
                     document.getElementById('u-av').textContent = u.av;
                     document.getElementById('login-page').style.display = 'none';
                     document.getElementById('app').style.display = 'block';
+                    // nav('dashboard') after all JS is parsed
+                    setTimeout(() => window.nav ? window.nav('dashboard') : nav('dashboard'), 0);
                 } catch (e) { }
             }
         })();
