@@ -6331,6 +6331,8 @@ do $$ declare t text; begin for t in select unnest(array['vendors','parts','prod
             nav('mrp');
             renderMRP();
             updateDashboardKPIs();
+        }
+
         // ══════════════════════════════════════════════════════
         //  STEP 7 — DASHBOARD LIVE DATA + VENDOR KPI + ALERTS
         // ══════════════════════════════════════════════════════
@@ -7028,7 +7030,6 @@ do $$ declare t text; begin for t in select unnest(array['vendors','parts','prod
 
         console.log('%cSCM Pro — STEP 7 loaded: Dashboard Live + Vendor KPI + Alert Center', 'color:#00E5A0;font-weight:bold');
         toast('MRP calculation complete', 'success');
-        }
 
         let MRP_FILTER = { search: '', status: '', vendor: '' };
 
