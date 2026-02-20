@@ -2431,6 +2431,11 @@
                 </div>
                 <div class="h-btn" title="Settings" onclick="nav('settings')">⚙️</div>
                 <div class="h-div"></div>
+                <div id="db-indicator" onclick="nav('settings')" title="DB 상태 — Settings에서 연결"
+                    style="font-size:11px;font-family:var(--fm);padding:3px 10px;border-radius:var(--r);border:1px solid var(--bd);cursor:pointer;transition:all var(--tr);white-space:nowrap">
+                    <span style="color:var(--amber)">● Local</span>
+                </div>
+                <div class="h-div"></div>
                 <div class="h-user" onclick="nav('settings')">
                     <div class="avatar" id="u-av">AD</div>
                     <div>
@@ -3465,12 +3470,99 @@
                 <div class="ph">
                     <div>
                         <div class="ph-title">Settings</div>
-                        <div class="ph-sub">Users, roles, system config</div>
+                        <div class="ph-sub">Database connection &amp; system configuration</div>
+                    </div>
+                    <div class="ph-acts">
+                        <div id="settings-db-status" style="font-size:12px;font-family:var(--fm);padding:5px 12px;border:1px solid var(--bd);border-radius:var(--r)">
+                            <span style="color:var(--amber)">● Not connected</span>
+                        </div>
                     </div>
                 </div>
-                <div class="empty">
-                    <div class="empty-icon">⚙️</div>
-                    <div class="empty-text">Settings panel — coming in STEP 7</div>
+                <div class="g2" style="align-items:start;gap:20px">
+                  <div style="display:flex;flex-direction:column;gap:16px">
+                    <!-- Supabase 연결 -->
+                    <div class="card">
+                        <div class="card-hdr"><div class="card-title">🗄️ Supabase 연결</div></div>
+                        <div class="card-body" style="display:flex;flex-direction:column;gap:12px">
+                            <div style="background:var(--bg0);border:1px solid var(--bd);border-radius:var(--r);padding:10px 14px;font-size:11px">
+                                <div style="color:var(--t3);font-size:10px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px">Project URL</div>
+                                <div style="font-family:var(--fm);color:var(--cyan)">https://inhyqhtrpsjpiyywtfhw.supabase.co</div>
+                            </div>
+                            <div class="field">
+                                <div class="f-lbl">Anon Key <span class="req">*</span></div>
+                                <div style="display:flex;gap:8px">
+                                    <input class="f-inp" id="sb-key-input" type="password" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                                        style="flex:1;font-family:var(--fm);font-size:11px">
+                                    <button class="btn btn-g btn-sm btn-ic" onclick="var i=document.getElementById('sb-key-input');i.type=i.type==='password'?'text':'password'">👁</button>
+                                </div>
+                                <div style="font-size:10px;color:var(--t3);margin-top:4px">Supabase 대시보드 → Project Settings → API → <b>anon / public</b></div>
+                            </div>
+                            <div style="display:flex;gap:8px">
+                                <button class="btn btn-p" id="sb-connect-btn" onclick="settingsConnect()" style="flex:1">🔌 Connect</button>
+                                <button class="btn btn-g" id="sb-disconnect-btn" onclick="settingsDisconnect()" style="display:none">✕ Disconnect</button>
+                            </div>
+                            <div id="sb-connect-msg" style="font-size:12px;display:none;padding:8px 10px;border-radius:var(--r);border:1px solid"></div>
+                        </div>
+                    </div>
+                    <!-- 마이그레이션 -->
+                    <div class="card">
+                        <div class="card-hdr"><div class="card-title">⬆️ Local → Supabase 마이그레이션</div></div>
+                        <div class="card-body" style="display:flex;flex-direction:column;gap:10px">
+                            <div style="font-size:12px;color:var(--t2);line-height:1.6">LocalStorage 데이터를 Supabase로 동기화합니다. 기존 데이터는 upsert 방식으로 처리됩니다.</div>
+                            <div id="migrate-results" style="display:none;font-size:11px"></div>
+                            <button class="btn btn-p" id="migrate-btn" onclick="settingsMigrate()">🚀 전체 마이그레이션</button>
+                        </div>
+                    </div>
+                    <!-- Danger Zone -->
+                    <div class="card" style="border-color:rgba(255,69,96,0.25)">
+                        <div class="card-hdr" style="border-color:rgba(255,69,96,0.15)"><div class="card-title" style="color:var(--red)">⚠️ Danger Zone</div></div>
+                        <div class="card-body" style="display:flex;flex-direction:column;gap:8px">
+                            <div style="font-size:12px;color:var(--t2)">로컬 캐시를 삭제합니다. Supabase 데이터는 유지됩니다.</div>
+                            <div style="display:flex;gap:8px">
+                                <select class="f-inp" id="clear-table-sel" style="flex:1;font-size:11px">
+                                    <option>vendors</option><option>parts</option><option>products</option>
+                                    <option>bom</option><option>inventory</option><option>forecast</option>
+                                    <option>polist</option><option>hqtrade</option><option>landedcost</option><option>import_history</option>
+                                </select>
+                                <button class="btn btn-g btn-sm" onclick="settingsClearOne()" style="color:var(--red)">🗑 Clear</button>
+                            </div>
+                            <button class="btn btn-g btn-sm" onclick="settingsClearAll()" style="color:var(--red)">💣 Clear ALL Local</button>
+                        </div>
+                    </div>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:16px">
+                    <!-- 저장소 현황 -->
+                    <div class="card">
+                        <div class="card-hdr">
+                            <div class="card-title">📊 저장소 현황</div>
+                            <button class="btn btn-g btn-sm" onclick="settingsRefreshStatus()">🔄 Refresh</button>
+                        </div>
+                        <div class="card-body"><div id="storage-status-list"><div style="font-size:11px;color:var(--t3);padding:8px 0">Settings 페이지를 열 때 자동 로딩됩니다</div></div></div>
+                    </div>
+                    <!-- SQL 스키마 -->
+                    <div class="card">
+                        <div class="card-hdr">
+                            <div class="card-title">📋 Supabase SQL 스키마</div>
+                            <button class="btn btn-g btn-sm" onclick="navigator.clipboard.writeText(document.getElementById('schema-sql').textContent).then(()=>toast('SQL 복사됨','success'))">📋 Copy</button>
+                        </div>
+                        <div class="card-body">
+                            <div style="font-size:11px;color:var(--t2);margin-bottom:8px">Supabase → SQL Editor에서 실행하세요.</div>
+                            <pre id="schema-sql" style="background:var(--bg0);border:1px solid var(--bd);border-radius:var(--r);padding:14px;font-family:var(--fm);font-size:10px;color:var(--td);max-height:380px;overflow-y:auto;line-height:1.6">-- SCM Pro Schema v1
+create table if not exists public.vendors (id text primary key, vendor_code text unique not null, vendor_name text not null, country text, default_currency text default 'USD', payment_terms text, contact_name text, email text, phone text, remarks text, created_at timestamptz default now(), updated_at timestamptz default now());
+create table if not exists public.parts (id text primary key, part_no text unique not null, part_name text not null, category text, in_out text, vendor_code text, material text, price numeric, currency text default 'USD', moq integer, leadtime_mp integer, safety_stock text, unit text default 'Pcs', remarks text, created_at timestamptz default now(), updated_at timestamptz default now());
+create table if not exists public.products (id text primary key, part_no text unique not null, part_name text not null, customer text, type text default 'mp', price numeric, currency text default 'USD', remarks text, created_at timestamptz default now(), updated_at timestamptz default now());
+create table if not exists public.bom (id text primary key, assy_part_no text, part_no text, lr text default '-', qty integer default 1, remarks text, created_at timestamptz default now(), updated_at timestamptz default now());
+create table if not exists public.inventory (id text primary key, part_no text, location text, qty integer default 0, lot_no text, date date, remarks text, created_at timestamptz default now(), updated_at timestamptz default now());
+create table if not exists public.forecast (id text primary key, assy_part_no text, customer text, created_at timestamptz default now(), updated_at timestamptz default now());
+create table if not exists public.polist (id text primary key, po_number text unique not null, vendor_code text, date date, total_value numeric, currency text default 'USD', item_count integer, progress integer default 0, status text default 'draft', created_by text, lines text, remarks text, created_at timestamptz default now(), updated_at timestamptz default now());
+create table if not exists public.hqtrade (id text primary key, shipment_no text unique not null, vendor_code text, po_ref text, etd date, eta date, invoice_amt numeric, currency text default 'USD', qty integer, status text default 'open', incoterms text, origin text, dest text, doc_invoice_status text, doc_invoice_no text, doc_invoice_date date, doc_packing_status text, doc_packing_no text, doc_packing_date date, doc_bl_status text, doc_bl_no text, doc_bl_date date, doc_co_status text, doc_co_no text, doc_co_date date, doc_entry_status text, doc_entry_no text, doc_entry_date date, doc_pod_status text, doc_pod_no text, doc_pod_date date, remarks text, created_at timestamptz default now(), updated_at timestamptz default now());
+create table if not exists public.landedcost (id text primary key, shipment_no text, vendor text, invoice_no text, invoice_amt numeric, fx_rate numeric, ocean numeric, air numeric, inland_ori numeric, inland_dest numeric, insurance numeric, forwarding numeric, duty_rate numeric, vat_rate numeric, brokerage numeric, other numeric, total_qty integer, weight numeric, grand_total_krw numeric, calc_date date, created_at timestamptz default now());
+create table if not exists public.import_history (id text primary key, date text, filename text, rows integer, status text, created_at timestamptz default now());
+-- RLS policies
+do $$ declare t text; begin for t in select unnest(array['vendors','parts','products','bom','inventory','forecast','polist','hqtrade','landedcost','import_history']) loop execute format('alter table public.%I enable row level security', t); execute format('create policy if not exists "allow_all" on public.%I for all using (true) with check (true)', t); end loop; end $$;</pre>
+                        </div>
+                    </div>
+                  </div>
                 </div>
             </div>
         </main>
@@ -4113,61 +4205,80 @@
     </div>
 
     <script>
-        // ── SUPABASE INTEGRATION ──────────────────────────────
-        let supabase = null;
+        // ══════════════════════════════════════════════════════
+        //  SUPABASE — sbClient (avoids conflict with window.supabase CDN namespace)
+        // ══════════════════════════════════════════════════════
+        const SB_URL = 'https://inhyqhtrpsjpiyywtfhw.supabase.co';
+        const TABLE_PK = {
+            vendors:'vendor_code', parts:'part_no', products:'part_no',
+            bom:'id', inventory:'id', forecast:'id',
+            polist:'po_number', import_history:'id',
+            hqtrade:'shipment_no', landedcost:'id',
+        };
+        let sbClient = null;
+        let SB_READY = false;
 
-        async function setupSupabase() {
-            if (typeof CONFIG !== 'undefined' && CONFIG.SUPABASE_URL && CONFIG.SUPABASE_ANON_KEY) {
-                supabase = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
-                console.log("Supabase Client Ready (via Config)");
-                return;
-            }
-            const url = 'https://inhyqhtrpsjpiyywtfhw.supabase.co';
-            let key = sessionStorage.getItem('SUPABASE_KEY');
-            if (!key) {
-                key = prompt("보안을 위해 Supabase Anon Key를 입력해주세요.");
-                if (key) sessionStorage.setItem('SUPABASE_KEY', key);
-            }
-            if (key && window.supabase) {
-                supabase = window.supabase.createClient(url, key);
-                console.log("Supabase Client Ready (via Prompt)");
-            }
-        }
+        // Auto-connect on page load if key was saved
+        window.addEventListener('load', async () => {
+            const saved = localStorage.getItem('scm_sb_key');
+            if (saved) await sbConnect(saved, true);
+            updateSBIndicator();
+        });
 
-        // Auto-init if config exists
-        if (typeof CONFIG !== 'undefined') {
-            window.addEventListener('load', setupSupabase);
-        }
-
-        async function syncToDatabase(sheetName, rawData) {
-            if (!supabase) await setupSupabase();
-            if (!supabase) return;
-
-            const tableName = sheetName.toLowerCase().split('_')[1];
-            const cleanData = rawData.map(row => {
-                const newRow = {};
-                for (let key in row) {
-                    let cleanKey = key.replace(' *', '').trim().toLowerCase();
-                    if (cleanKey.includes('code')) cleanKey = cleanKey.replace('code', 'id');
-                    if (cleanKey.includes('date')) {
-                        if (row[key] instanceof Date) cleanKey = row[key].toISOString().slice(0, 10);
-                        else if (typeof row[key] === 'string') cleanKey = row[key].split(' ')[0];
-                    }
-                    newRow[cleanKey] = row[key];
-                }
-                return newRow;
-            });
-
-            const { error } = await supabase
-                .from(tableName)
-                .upsert(cleanData, { onConflict: tableName.slice(0, -1) + '_id' });
-
-            if (error) {
-                toast(`${sheetName} Sync Fail: ` + error.message, 'error');
-            } else {
-                console.log(`${sheetName} Sync Success!`);
+        async function sbConnect(key, silent = false) {
+            if (!key || !window.supabase) return false;
+            try {
+                const client = window.supabase.createClient(SB_URL, key, { auth: { persistSession: false } });
+                const { error } = await client.from('vendors').select('vendor_code').limit(1);
+                if (error) throw error;
+                sbClient = client;
+                SB_READY = true;
+                localStorage.setItem('scm_sb_key', key);
+                updateSBIndicator();
+                if (!silent) toast('Supabase 연결 완료 ✓', 'success');
+                console.log('%c[SCM] Supabase connected', 'color:#00E5A0;font-weight:bold');
+                return true;
+            } catch (e) {
+                sbClient = null; SB_READY = false;
+                updateSBIndicator();
+                if (!silent) toast('연결 실패: ' + e.message, 'error', 5000);
+                return false;
             }
         }
+
+        function sbDisconnect() {
+            sbClient = null; SB_READY = false;
+            localStorage.removeItem('scm_sb_key');
+            updateSBIndicator();
+            toast('Supabase 연결 해제 — LocalStorage 모드', 'info');
+        }
+
+        function updateSBIndicator() {
+            const el = document.getElementById('db-indicator');
+            if (el) {
+                el.innerHTML = SB_READY
+                    ? '<span style="color:var(--green)">● Supabase</span>'
+                    : '<span style="color:var(--amber)">● Local</span>';
+                el.title = SB_READY ? 'Connected to Supabase' : 'LocalStorage only — click Settings to connect';
+            }
+            const si = document.getElementById('settings-db-status');
+            if (si) si.innerHTML = SB_READY
+                ? '<span style="color:var(--green)">● Connected</span>'
+                : '<span style="color:var(--amber)">● Not connected</span>';
+        }
+
+        function sbClean(rec) {
+            const out = {};
+            for (const [k, v] of Object.entries(rec)) {
+                if (v === undefined) continue;
+                out[k] = v === '' ? null : v;
+            }
+            return out;
+        }
+
+        // Legacy stub — no longer used but kept for safety
+        async function setupSupabase() { /* replaced by sbConnect */ }
+        async function syncToDatabase() { /* replaced by DB.bulkUpsert */ }
 
         // ── STATE ──────────────────────────────────────────────
         const S = { page: 'dashboard', theme: 'dark' };
@@ -4268,18 +4379,99 @@
 
         // ── DB ABSTRACTION LAYER (Phase 1 = LocalStorage) ──────
         // To migrate to Supabase: replace only these function bodies
+        // ── DB LAYER — Supabase-first, LocalStorage fallback ──
         const DB = {
-            async get(table) { const r = localStorage.getItem(`scm_${table}`); return r ? JSON.parse(r) : []; },
-            async save(table, data) { localStorage.setItem(`scm_${table}`, JSON.stringify(data)); return data; },
+            async get(table) {
+                if (SB_READY && sbClient) {
+                    try {
+                        const { data, error } = await sbClient.from(table).select('*')
+                            .order('created_at', { ascending: false }).limit(5000);
+                        if (error) throw error;
+                        if (data) localStorage.setItem(`scm_${table}`, JSON.stringify(data));
+                        return data || [];
+                    } catch (e) { console.warn(`[DB.get:${table}]`, e.message); }
+                }
+                const r = localStorage.getItem(`scm_${table}`);
+                return r ? JSON.parse(r) : [];
+            },
+            async save(table, data) {
+                localStorage.setItem(`scm_${table}`, JSON.stringify(data));
+                if (SB_READY && sbClient && data.length > 0) {
+                    const pk = TABLE_PK[table] || 'id';
+                    for (let i = 0; i < data.length; i += 400) {
+                        const { error } = await sbClient.from(table)
+                            .upsert(data.slice(i, i+400).map(sbClean), { onConflict: pk });
+                        if (error) { console.warn(`[DB.save:${table}]`, error.message); break; }
+                    }
+                }
+                return data;
+            },
             async upsert(table, rec, key = 'id') {
-                const data = await this.get(table);
-                const i = data.findIndex(r => r[key] === rec[key]);
-                if (i >= 0) data[i] = { ...data[i], ...rec }; else data.push({ ...rec, id: rec.id || Date.now().toString() });
-                return this.save(table, data);
+                const pk = TABLE_PK[table] || key;
+                if (!rec.id) rec.id = rec[pk] || Date.now().toString();
+                if (!rec.created_at) rec.created_at = new Date().toISOString();
+                rec.updated_at = new Date().toISOString();
+                // Local cache
+                const local = JSON.parse(localStorage.getItem(`scm_${table}`) || '[]');
+                const idx = local.findIndex(r => r[pk] === rec[pk]);
+                if (idx >= 0) local[idx] = { ...local[idx], ...rec }; else local.push(rec);
+                localStorage.setItem(`scm_${table}`, JSON.stringify(local));
+                // Supabase
+                if (SB_READY && sbClient) {
+                    const { error } = await sbClient.from(table)
+                        .upsert(sbClean({...rec}), { onConflict: pk });
+                    if (error) console.warn(`[DB.upsert:${table}]`, error.message);
+                }
+                return rec;
             },
             async delete(table, id, key = 'id') {
-                const data = await this.get(table);
-                return this.save(table, data.filter(r => r[key] !== id));
+                const pk = TABLE_PK[table] || key;
+                const local = JSON.parse(localStorage.getItem(`scm_${table}`) || '[]');
+                const filtered = local.filter(r => r[pk] !== id && r.id !== id);
+                localStorage.setItem(`scm_${table}`, JSON.stringify(filtered));
+                if (SB_READY && sbClient) {
+                    const { error } = await sbClient.from(table).delete().eq(pk, id);
+                    if (error) console.warn(`[DB.delete:${table}]`, error.message);
+                }
+                return filtered;
+            },
+            async bulkUpsert(table, rows, pkField) {
+                const pk = pkField || TABLE_PK[table] || 'id';
+                const now = new Date().toISOString();
+                const withTs = rows.map(r => ({
+                    ...r,
+                    id: r.id || r[pk] || (Date.now().toString(36) + Math.random().toString(36).slice(2)),
+                    created_at: r.created_at || now, updated_at: now,
+                }));
+                // Merge local
+                const local = JSON.parse(localStorage.getItem(`scm_${table}`) || '[]');
+                const map = {}; local.forEach(r => { if(r[pk]) map[r[pk]] = r; });
+                withTs.forEach(r => { if(r[pk]) map[r[pk]] = { ...map[r[pk]], ...r }; });
+                localStorage.setItem(`scm_${table}`, JSON.stringify(Object.values(map)));
+                // Supabase
+                if (SB_READY && sbClient && withTs.length > 0) {
+                    try {
+                        for (let i = 0; i < withTs.length; i += 400) {
+                            const { error } = await sbClient.from(table)
+                                .upsert(withTs.slice(i,i+400).map(sbClean), { onConflict: pk });
+                            if (error) throw error;
+                        }
+                        return { ok: withTs.length, sbSynced: true };
+                    } catch (e) {
+                        return { ok: withTs.length, sbSynced: false, error: e.message };
+                    }
+                }
+                return { ok: withTs.length, sbSynced: false };
+            },
+            async migrateAll() {
+                if (!SB_READY) return { error: 'Not connected' };
+                const results = {};
+                for (const [table, pk] of Object.entries(TABLE_PK)) {
+                    const local = JSON.parse(localStorage.getItem(`scm_${table}`) || '[]');
+                    if (!local.length) { results[table] = { ok:0, skipped:true }; continue; }
+                    results[table] = await this.bulkUpsert(table, local, pk);
+                }
+                return results;
             }
         };
 
@@ -5081,59 +5273,58 @@
         async function commitImport() {
             if (!importPending) return;
             const tableMap = {
-                '1_Vendors': 'vendors', '2_Parts': 'parts', '3_Products': 'products',
-                '4_BOM': 'bom', '5_Inventory': 'inventory', '6_Forecast': 'forecast'
+                '1_Vendors':'vendors','2_Parts':'parts','3_Products':'products',
+                '4_BOM':'bom','5_Inventory':'inventory','6_Forecast':'forecast'
             };
-            const keyMap = {
-                '1_Vendors': 'vendor_code', '2_Parts': 'part_no', '3_Products': 'part_no',
-                '4_BOM': null, '5_Inventory': 'part_no', '6_Forecast': null
+            const pkMap = {
+                '1_Vendors':'vendor_code','2_Parts':'part_no','3_Products':'part_no',
+                '4_BOM':'id','5_Inventory':'id','6_Forecast':'id'
             };
+            const btn = document.getElementById('import-commit-btn');
+            if (btn) { btn.textContent = '⏳ 저장 중...'; btn.disabled = true; }
 
-            let saved = 0;
+            let totalSaved = 0;
+            const sbErrors = [];
+            const now = new Date().toISOString();
+
             for (const [sheet, res] of Object.entries(importPending)) {
-                if (res.rows.length === 0) continue;
+                if (!res.rows || res.rows.length === 0) continue;
                 const table = tableMap[sheet];
-                const key = keyMap[sheet];
-                if (key) {
-                    for (const row of res.rows) {
-                        row.id = row.id || row[key] || Date.now().toString();
-                        await DB.upsert(table, row, 'id');
-                        saved++;
-                    }
-                } else {
-                    const existing = await DB.get(table);
-                    const merged = [...existing];
-                    res.rows.forEach(row => { row.id = row.id || Date.now().toString() + Math.random(); merged.push(row); });
-                    await DB.save(table, merged);
-                    saved += res.rows.length;
-                }
+                const pk = pkMap[sheet];
+                if (!table) continue;
+                const rows = res.rows.map(row => ({
+                    ...row,
+                    id: row.id || row[pk] || (Date.now().toString(36) + Math.random().toString(36).slice(2)),
+                    created_at: row.created_at || now,
+                    updated_at: now,
+                }));
+                const result = await DB.bulkUpsert(table, rows, pk);
+                totalSaved += result.ok;
+                if (result.error) sbErrors.push(`${sheet}: ${result.error}`);
             }
 
-            toast(`Import complete — ${saved} records saved`, 'success');
-
-            // Sync to Supabase
-            if (importPending) {
-                for (const sheetName of Object.keys(importPending)) {
-                    if (importPending[sheetName].rows.length > 0) {
-                        await syncToDatabase(sheetName, importPending[sheetName].rows);
-                    }
-                }
-                toast("All validated data synced to Supabase DB", "success");
+            if (SB_READY && sbErrors.length === 0) {
+                toast(`✅ ${totalSaved}개 레코드 — Supabase 저장 완료`, 'success', 4000);
+            } else if (SB_READY) {
+                toast(`⚠ ${totalSaved}개 저장 (일부 Supabase 실패)`, 'warn', 5000);
+            } else {
+                toast(`✅ ${totalSaved}개 로컬 저장`, 'info', 3000);
             }
+
+            await DB.upsert('import_history', {
+                id: Date.now().toString(),
+                date: now.slice(0,16).replace('T',' '),
+                filename: 'SCM_Import_Template.xlsx',
+                rows: totalSaved,
+                status: sbErrors.length > 0 ? 'Partial' : 'Success',
+                created_at: now,
+            }, 'id');
 
             importPending = null;
+            if (btn) { btn.textContent = '✅ Save Valid Data'; btn.disabled = false; }
             closeDP();
 
-            // Add to history
-            const hist = await DB.get('import_history');
-            hist.push({ id: Date.now().toString(), date: new Date().toISOString().slice(0, 16).replace('T', ' '), status: 'Success', rows: saved });
-            await DB.save('import_history', hist);
-
-            renderVendors();
-            renderParts();
-            renderProducts();
-            renderBom();
-            renderImportHistory();
+            renderVendors(); renderParts(); renderProducts(); renderBom(); renderImportHistory();
         }
 
         function downloadErrors() {
@@ -5273,16 +5464,19 @@
 
         // ── PAGE INIT ──────────────────────────────────────────
         const PAGE_INIT = {
-            vendors: renderVendors,
-            parts: renderParts,
-            products: renderProducts,
-            bom: renderBom,
-            inventory: renderInventory,
-            polist: renderPOList,
-            forecast: renderForecast,
-            mrp: () => { if (MRP_RESULTS.length > 0) renderMRP(); },
-            import: () => { initImportPage(); renderImportHistory(); },
-            poplan: renderPOPlan,
+            vendors:     renderVendors,
+            parts:       renderParts,
+            products:    renderProducts,
+            bom:         renderBom,
+            inventory:   renderInventory,
+            polist:      renderPOList,
+            forecast:    renderForecast,
+            mrp:         () => { if (MRP_RESULTS.length > 0) renderMRP(); },
+            import:      () => { initImportPage(); renderImportHistory(); },
+            poplan:      renderPOPlan,
+            hqtrade:     renderHQTrade,
+            landedcost:  () => { calcLandedCost(); renderLCHistory(); },
+            settings:    settingsPageInit,
         };
 
 
@@ -6292,6 +6486,383 @@
         }
 
 
+        // ══════════════════════════════════════════════════════
+        //  SETTINGS PAGE FUNCTIONS
+        // ══════════════════════════════════════════════════════
+        function settingsPageInit() {
+            updateSBIndicator();
+            const saved = localStorage.getItem('scm_sb_key');
+            const inp = document.getElementById('sb-key-input');
+            if (saved && inp && !inp.value) inp.value = saved;
+            const discBtn = document.getElementById('sb-disconnect-btn');
+            if (discBtn) discBtn.style.display = SB_READY ? '' : 'none';
+            if (SB_READY) {
+                const msg = document.getElementById('sb-connect-msg');
+                if (msg) {
+                    msg.style.display = '';
+                    msg.style.cssText += ';background:rgba(0,229,160,.08);border-color:rgba(0,229,160,.25);color:var(--green)';
+                    msg.textContent = '✅ Supabase 연결됨 — 모든 데이터가 실시간 동기화됩니다';
+                }
+            }
+            settingsRefreshStatus();
+        }
+
+        async function settingsConnect() {
+            const key = document.getElementById('sb-key-input')?.value.trim();
+            if (!key) { toast('Anon Key를 입력하세요', 'warn'); return; }
+            const btn = document.getElementById('sb-connect-btn');
+            if (btn) { btn.textContent = '⏳ 연결 중...'; btn.disabled = true; }
+            const ok = await sbConnect(key);
+            if (btn) { btn.textContent = '🔌 Connect'; btn.disabled = false; }
+            const msg = document.getElementById('sb-connect-msg');
+            const discBtn = document.getElementById('sb-disconnect-btn');
+            if (ok) {
+                if (msg) { msg.style.display=''; msg.style.cssText+=';background:rgba(0,229,160,.08);border-color:rgba(0,229,160,.25);color:var(--green)'; msg.textContent='✅ 연결 성공! 이제 모든 데이터가 Supabase에 저장됩니다.'; }
+                if (discBtn) discBtn.style.display = '';
+                settingsRefreshStatus();
+            } else {
+                if (msg) { msg.style.display=''; msg.style.cssText+=';background:rgba(255,69,96,.08);border-color:rgba(255,69,96,.25);color:var(--red)'; msg.textContent='❌ 연결 실패. Anon Key를 확인하세요.'; }
+            }
+        }
+
+        function settingsDisconnect() {
+            sbDisconnect();
+            const msg = document.getElementById('sb-connect-msg');
+            if (msg) msg.style.display = 'none';
+            const discBtn = document.getElementById('sb-disconnect-btn');
+            if (discBtn) discBtn.style.display = 'none';
+            settingsRefreshStatus();
+        }
+
+        async function settingsMigrate() {
+            if (!SB_READY) { toast('먼저 Supabase에 연결하세요', 'warn'); return; }
+            const btn = document.getElementById('migrate-btn');
+            if (btn) { btn.textContent = '⏳ 마이그레이션 중...'; btn.disabled = true; }
+            const results = await DB.migrateAll();
+            let html = '', total = 0;
+            for (const [table, res] of Object.entries(results)) {
+                if (res.skipped) html += `<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bd);font-family:var(--fm);font-size:11px"><span>${table}</span><span style="color:var(--t3)">empty</span></div>`;
+                else if (res.error) html += `<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bd);font-family:var(--fm);font-size:11px"><span>${table}</span><span style="color:var(--red)">${res.ok} ⚠ ${res.error}</span></div>`;
+                else { total += res.ok; html += `<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bd);font-family:var(--fm);font-size:11px"><span>${table}</span><span style="color:var(--green)">${res.ok} ✓</span></div>`; }
+            }
+            const el = document.getElementById('migrate-results');
+            if (el) { el.style.display=''; el.innerHTML=html; }
+            toast(`마이그레이션 완료 — ${total}개 레코드`, 'success', 5000);
+            if (btn) { btn.textContent = '🚀 전체 마이그레이션'; btn.disabled = false; }
+            settingsRefreshStatus();
+        }
+
+        async function settingsRefreshStatus() {
+            const list = document.getElementById('storage-status-list');
+            if (!list) return;
+            list.innerHTML = '<div style="font-size:11px;color:var(--t3);padding:8px 0">로딩 중...</div>';
+            const rows = [];
+            for (const [table, pk] of Object.entries(TABLE_PK)) {
+                const local = JSON.parse(localStorage.getItem(`scm_${table}`) || '[]');
+                let sbCount = '—';
+                if (SB_READY && sbClient) {
+                    try { const { count } = await sbClient.from(table).select('*',{count:'exact',head:true}); sbCount = count ?? '—'; }
+                    catch { sbCount = 'err'; }
+                }
+                const synced = SB_READY && local.length === sbCount;
+                rows.push(`<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--bd);font-size:11px">
+                    <span style="font-family:var(--fm);min-width:120px;color:var(--td)">${table}</span>
+                    <span style="color:${local.length>0?'var(--cyan)':'var(--t3)'};min-width:80px">${local.length} local</span>
+                    <span style="color:var(--t3)">→</span>
+                    <span style="color:${SB_READY?(sbCount>0?'var(--green)':'var(--t3)'):'var(--t3)'}">${SB_READY?sbCount+' Supabase':'not connected'}</span>
+                    ${SB_READY&&!synced&&local.length>0?'<span style="color:var(--amber);font-size:10px">⚠ out of sync</span>':SB_READY&&synced&&local.length>0?'<span style="color:var(--green);font-size:10px">✓</span>':''}
+                </div>`);
+            }
+            list.innerHTML = rows.join('');
+        }
+
+        async function settingsClearOne() {
+            const table = document.getElementById('clear-table-sel')?.value;
+            if (!table) return;
+            const ok = await confirm(`"${table}" 로컬 캐시 삭제`,`LocalStorage의 ${table} 데이터를 삭제합니다.`,'삭제',true);
+            if (!ok) return;
+            localStorage.removeItem(`scm_${table}`);
+            toast(`${table} 로컬 캐시 삭제됨`, 'warn');
+            settingsRefreshStatus();
+        }
+
+        async function settingsClearAll() {
+            const ok = await confirm('전체 로컬 데이터 삭제','모든 LocalStorage 캐시를 삭제합니다.','전체 삭제',true);
+            if (!ok) return;
+            Object.keys(TABLE_PK).forEach(t => localStorage.removeItem(`scm_${t}`));
+            toast('모든 로컬 캐시 삭제됨', 'error');
+            settingsRefreshStatus();
+        }
+
+        // ══════════════════════════════════════════════════════
+        //  STEP 6 — HQ TRADE + LANDED COST
+        // ══════════════════════════════════════════════════════
+        const DOC_TYPES = ['invoice','packing','bl','co','entry','pod'];
+
+        async function renderHQTrade() {
+            const data   = await DB.get('hqtrade');
+            const search = document.getElementById('hq-search')?.value.toLowerCase() || '';
+            const sf     = document.getElementById('hq-filter-status')?.value || '';
+            const vf     = document.getElementById('hq-filter-vendor')?.value || '';
+            let filtered = [...data];
+            if (search) filtered = filtered.filter(r => (r.shipment_no+r.po_ref+r.vendor_code).toLowerCase().includes(search));
+            if (sf) filtered = filtered.filter(r => r.status === sf);
+            if (vf) filtered = filtered.filter(r => r.vendor_code === vf);
+            filtered.sort((a,b) => (b.etd||'').localeCompare(a.etd||''));
+
+            document.getElementById('hq-kpi-total').textContent     = data.length;
+            document.getElementById('hq-kpi-transit').textContent   = data.filter(r=>r.status==='in_transit').length;
+            document.getElementById('hq-kpi-customs').textContent   = data.filter(r=>r.status==='customs').length;
+            document.getElementById('hq-kpi-delivered').textContent = data.filter(r=>['delivered','closed'].includes(r.status)).length;
+            const totalVal = data.reduce((s,r)=>s+(parseFloat(r.invoice_amt)||0),0);
+            document.getElementById('hq-kpi-value').textContent = '$'+fmt2(totalVal,0);
+
+            ['invoice','bl','packing','entry','pod'].forEach(doc => {
+                const cnt = data.filter(r=>['received','approved','filed'].includes(r[`doc_${doc}_status`])).length;
+                const el = document.getElementById(`hq-cnt-${doc}`); if(el) el.textContent = cnt;
+                const stage = document.getElementById(`hq-stage-${doc}`);
+                if(stage) { stage.classList.remove('has-data','complete','alert');
+                    if(cnt===data.length&&data.length>0) stage.classList.add('complete');
+                    else if(cnt>0) stage.classList.add('has-data'); }
+            });
+            document.getElementById('hq-count').textContent = `${filtered.length} shipments`;
+            const subEl = document.getElementById('hq-sub');
+            if(subEl) subEl.textContent = `${data.length} shipments · $${fmt2(totalVal,0)} total`;
+
+            const vsel = document.getElementById('hq-filter-vendor');
+            if(vsel) { const vendors=[...new Set(data.map(r=>r.vendor_code).filter(Boolean))].sort(); const cur=vsel.value; vsel.innerHTML='<option value="">All Vendors</option>'+vendors.map(v=>`<option>${v}</option>`).join(''); vsel.value=cur; }
+
+            const statusBadge = s => ({open:`<span class="badge badge-m">Open</span>`,in_transit:`<span class="badge badge-c">In Transit</span>`,customs:`<span class="badge badge-a">At Customs</span>`,delivered:`<span class="badge badge-g">Delivered</span>`,closed:`<span class="badge badge-g" style="opacity:.6">Closed</span>`})[s]||`<span class="badge badge-m">${s||'—'}</span>`;
+            const docPills = r => DOC_TYPES.map(d=>{const st=r[`doc_${d}_status`]||'pending';const cls=['received','approved','filed'].includes(st)?'done':st==='issues'?'partial':'missing';return `<div class="doc-pill ${cls}" title="${d}: ${st}"></div>`;}).join('');
+
+            document.getElementById('hq-tbody').innerHTML = filtered.map(r => {
+                const esc = JSON.stringify(r).replace(/"/g,'&quot;');
+                return `<tr onclick="openDP('dp-trade','edit',${esc})" style="cursor:pointer">
+                    <td class="mono tc" style="color:var(--cyan)">${r.shipment_no||'—'}</td>
+                    <td class="mono mu">${r.po_ref||'—'}</td>
+                    <td class="tx fw">${r.vendor_code||'—'}</td>
+                    <td class="mono">${r.etd||'—'}</td>
+                    <td class="mono">${r.eta||'—'}</td>
+                    <td class="mono ri">${r.invoice_amt?'$'+fmt2(r.invoice_amt,0):'—'}</td>
+                    <td class="mono mu">${r.currency||'USD'}</td>
+                    <td><div class="doc-pills">${docPills(r)}</div></td>
+                    <td>${statusBadge(r.status)}</td>
+                    <td><button class="btn btn-g btn-sm btn-ic" onclick="event.stopPropagation();openDP('dp-trade','edit',${esc})">✏️</button></td>
+                </tr>`;
+            }).join('') || `<tr><td colspan="10"><div class="empty"><div class="empty-icon">🚢</div><div class="empty-text">No shipments — <span style="color:var(--cyan);cursor:pointer" onclick="openDP('dp-trade','new')">create one</span></div></div></td></tr>`;
+        }
+
+        async function prepTradePanel(mode, data) {
+            const isNew = mode==='new';
+            document.getElementById('dp-trade-title').textContent = isNew ? 'New Shipment' : `Shipment: ${data?.shipment_no}`;
+            document.getElementById('dp-trade-sub').textContent   = isNew ? 'Import document tracking' : `Status: ${data?.status||'open'}`;
+            document.getElementById('dtrade-delete-btn').style.display = isNew?'none':'';
+            const vendors = await DB.get('vendors');
+            const vsel = document.getElementById('dtrade-vendor');
+            vsel.innerHTML = '<option value="">— Select Vendor —</option>' + vendors.map(v=>`<option value="${v.vendor_code}">${v.vendor_code} — ${v.vendor_name}</option>`).join('');
+            const pos = await DB.get('polist');
+            const psel = document.getElementById('dtrade-po');
+            psel.innerHTML = '<option value="">— Link to PO —</option>' + pos.map(p=>`<option value="${p.po_number}">${p.po_number} / ${p.vendor_code}</option>`).join('');
+            const set = (id, val) => { const el = document.getElementById(id); if(el) el.value = val ?? ''; };
+            set('dtrade-id', data?.id||''); set('dtrade-no', data?.shipment_no||generateShipmentNo());
+            set('dtrade-etd', data?.etd||''); set('dtrade-eta', data?.eta||'');
+            set('dtrade-invoice-amt', data?.invoice_amt||''); set('dtrade-currency', data?.currency||'USD');
+            set('dtrade-qty', data?.qty||''); set('dtrade-status', data?.status||'open');
+            set('dtrade-incoterms', data?.incoterms||'FOB'); set('dtrade-origin', data?.origin||'');
+            set('dtrade-dest', data?.dest||''); set('dtrade-remarks', data?.remarks||'');
+            if(data?.vendor_code) vsel.value = data.vendor_code;
+            if(data?.po_ref) psel.value = data.po_ref;
+            DOC_TYPES.forEach(doc => {
+                const stEl=document.getElementById(`doc-${doc}-status`); const noEl=document.getElementById(`doc-${doc}-no`); const dtEl=document.getElementById(`doc-${doc}-date`);
+                if(stEl) stEl.value = data?.[`doc_${doc}_status`]||'pending';
+                if(noEl) noEl.value = data?.[`doc_${doc}_no`]||'';
+                if(dtEl) dtEl.value = data?.[`doc_${doc}_date`]||'';
+                updateDocStyle(doc);
+            });
+        }
+
+        function updateDocStyle(doc) {
+            const sel = document.getElementById(`doc-${doc}-status`);
+            const row = document.getElementById(`doc-${doc}`);
+            if(!sel||!row) return;
+            const st = sel.value;
+            row.classList.remove('received','issues');
+            if(['received','approved','filed'].includes(st)) row.classList.add('received');
+            else if(st==='issues') row.classList.add('issues');
+        }
+
+        async function saveTrade() {
+            const no = document.getElementById('dtrade-no')?.value.trim();
+            const vendor = document.getElementById('dtrade-vendor')?.value;
+            if(!no||!vendor) { toast('Shipment No와 Vendor는 필수입니다','error'); return; }
+            const rec = {
+                id: document.getElementById('dtrade-id').value || Date.now().toString(),
+                shipment_no: no, vendor_code: vendor,
+                po_ref:      document.getElementById('dtrade-po').value,
+                etd:         document.getElementById('dtrade-etd').value,
+                eta:         document.getElementById('dtrade-eta').value,
+                invoice_amt: parseFloat(document.getElementById('dtrade-invoice-amt').value)||0,
+                currency:    document.getElementById('dtrade-currency').value,
+                qty:         parseInt(document.getElementById('dtrade-qty').value)||0,
+                status:      document.getElementById('dtrade-status').value,
+                incoterms:   document.getElementById('dtrade-incoterms').value,
+                origin:      document.getElementById('dtrade-origin').value,
+                dest:        document.getElementById('dtrade-dest').value,
+                remarks:     document.getElementById('dtrade-remarks').value.trim(),
+            };
+            DOC_TYPES.forEach(doc => {
+                rec[`doc_${doc}_status`] = document.getElementById(`doc-${doc}-status`)?.value||'pending';
+                rec[`doc_${doc}_no`]     = document.getElementById(`doc-${doc}-no`)?.value.trim()||'';
+                rec[`doc_${doc}_date`]   = document.getElementById(`doc-${doc}-date`)?.value||'';
+            });
+            await DB.upsert('hqtrade', rec, 'shipment_no');
+            toast(`Shipment ${rec.shipment_no} 저장됨`, 'success');
+            closeDP(); renderHQTrade();
+        }
+
+        async function deleteTrade() {
+            const id = document.getElementById('dtrade-id').value;
+            const no = document.getElementById('dtrade-no').value;
+            if(!id) return;
+            const ok = await confirm('Shipment 삭제',`${no}를 삭제합니다.`,'삭제',true);
+            if(!ok) return;
+            await DB.delete('hqtrade', id);
+            toast('Shipment 삭제됨','warn'); closeDP(); renderHQTrade();
+        }
+
+        function openLCFromTrade() {
+            const no=document.getElementById('dtrade-no')?.value;
+            const vd=document.getElementById('dtrade-vendor')?.value;
+            const inv=document.getElementById('dtrade-invoice-amt')?.value;
+            closeDP(); nav('landedcost');
+            setTimeout(()=>{
+                if(no){const el=document.getElementById('lc-shipment-no');if(el)el.value=no;}
+                if(vd){const el=document.getElementById('lc-vendor');if(el)el.value=vd;}
+                if(inv){const el=document.getElementById('lc-invoice-amt');if(el)el.value=inv;}
+                calcLandedCost();
+            },200);
+        }
+
+        function generateShipmentNo() {
+            const d=new Date();
+            return `SHP-${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}-${String(Math.floor(Math.random()*900)+100)}`;
+        }
+
+        async function exportHQTrade() {
+            const data = await DB.get('hqtrade');
+            if(!data.length){toast('No data','warn');return;}
+            if(!window.XLSX) await loadXLSX();
+            const ws=XLSX.utils.json_to_sheet(data); const wb=XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb,ws,'HQ_Trade');
+            XLSX.writeFile(wb,`HQ_Trade_${new Date().toISOString().slice(0,10)}.xlsx`);
+            toast('Exported','success');
+        }
+
+        // ── LANDED COST ───────────────────────────────────────
+        const LC_COLORS = ['#00D4FF','#00E5A0','#FFB020','#FF4560','#8888FF','#FF8080'];
+
+        function calcLandedCost() {
+            const v = id => parseFloat(document.getElementById(id)?.value)||0;
+            const fx = v('lc-fx-rate')||1380;
+            const invoiceUSD=v('lc-invoice-amt'), oceanUSD=v('lc-ocean'), airUSD=v('lc-air');
+            const inlandOriUSD=v('lc-inland-origin'), insUSD=v('lc-insurance'), fwdUSD=v('lc-forwarding');
+            const inlandDestKRW=v('lc-inland-dest'), brokerKRW=v('lc-brokerage'), otherKRW=v('lc-other');
+            const freightUSD = oceanUSD+airUSD+inlandOriUSD+insUSD+fwdUSD;
+            const cifUSD = invoiceUSD+freightUSD;
+            const el=id=>document.getElementById(id);
+            if(el('lc-cif-display')) el('lc-cif-display').textContent='$'+fmt2(cifUSD,0);
+            const cifKRW=cifUSD*fx, dutyRate=v('lc-duty-rate')/100, vatRate=v('lc-vat-rate')/100;
+            const dutyKRW=cifKRW*dutyRate, vatKRW=(cifKRW+dutyKRW)*vatRate;
+            if(el('lc-duty-display')) el('lc-duty-display').textContent='₩'+fmt2(dutyKRW,0);
+            if(el('lc-vat-display'))  el('lc-vat-display').textContent='₩'+fmt2(vatKRW,0);
+            const purchaseKRW=invoiceUSD*fx, freightKRW=freightUSD*fx+inlandDestKRW;
+            const customsKRW=dutyKRW+vatKRW+brokerKRW;
+            const grandKRW=purchaseKRW+freightKRW+customsKRW+otherKRW;
+            const grandUSD=grandKRW/fx;
+            if(el('lc-grand-total-krw')) el('lc-grand-total-krw').textContent='₩ '+fmt2(grandKRW,0);
+            if(el('lc-grand-total-usd')) el('lc-grand-total-usd').textContent='≈ $'+fmt2(grandUSD,0);
+            const qty=v('lc-total-qty'), wt=v('lc-weight');
+            if(el('lc-unit-cost')) el('lc-unit-cost').textContent=qty>0?'₩'+fmt2(grandKRW/qty,0):'—';
+            if(el('lc-cost-kg'))   el('lc-cost-kg').textContent  =wt>0?'₩'+fmt2(grandKRW/wt,0):'—';
+            if(el('lc-markup')) { const m=invoiceUSD>0?((grandUSD-invoiceUSD)/invoiceUSD*100):0; el('lc-markup').textContent=m>0?'+'+fmt2(m,1)+'%':'—'; }
+            const sections=[
+                {label:'Purchase Cost',krw:purchaseKRW,color:LC_COLORS[0]},
+                {label:'Freight & Logistics',krw:freightKRW,color:LC_COLORS[1]},
+                {label:'Customs Duty',krw:dutyKRW,color:LC_COLORS[2]},
+                {label:'VAT',krw:vatKRW,color:LC_COLORS[3]},
+                {label:'Brokerage',krw:brokerKRW,color:LC_COLORS[4]},
+                {label:'Other',krw:otherKRW,color:LC_COLORS[5]},
+            ].filter(s=>s.krw>0);
+            const bkEl=el('lc-breakdown-rows');
+            if(bkEl&&grandKRW>0) bkEl.innerHTML=sections.map(s=>{const pct=(s.krw/grandKRW*100).toFixed(1);return `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid var(--bd)"><div style="width:10px;height:10px;border-radius:2px;background:${s.color};flex-shrink:0"></div><div style="flex:1;font-size:11px;color:var(--t2)">${s.label}</div><div style="font-family:var(--fm);font-size:11px">₩${fmt2(s.krw,0)}</div><div style="font-size:10px;color:var(--t3);min-width:36px;text-align:right">${pct}%</div></div>`;}).join('');
+            const barEl=el('lc-bar-stack');
+            if(barEl&&grandKRW>0) barEl.innerHTML=sections.map(s=>`<div style="width:${(s.krw/grandKRW*100).toFixed(2)}%;background:${s.color}" title="${s.label}: ₩${fmt2(s.krw,0)}"></div>`).join('');
+        }
+
+        async function loadLCShipment() {
+            const no=document.getElementById('lc-filter-shipment')?.value; if(!no) return;
+            const trades=await DB.get('hqtrade'); const trade=trades.find(t=>t.shipment_no===no); if(!trade) return;
+            const set=(id,val)=>{const el=document.getElementById(id);if(el)el.value=val??'';};
+            set('lc-shipment-no',trade.shipment_no); set('lc-vendor',trade.vendor_code);
+            set('lc-invoice-no',trade.doc_invoice_no||''); set('lc-invoice-date',trade.doc_invoice_date||'');
+            set('lc-invoice-amt',trade.invoice_amt||0);
+            calcLandedCost(); toast(`Loaded: ${no}`,'info',2000);
+        }
+
+        async function saveLandedCost() {
+            const v=id=>document.getElementById(id)?.value;
+            const grandTotalKRWText=document.getElementById('lc-grand-total-krw')?.textContent||'';
+            const grandTotalKRW=parseFloat(grandTotalKRWText.replace(/[^\d.-]/g,''))||0;
+            if(grandTotalKRW===0){toast('먼저 계산해주세요','warn');return;}
+            const rec={id:Date.now().toString(),shipment_no:v('lc-shipment-no')||'LC-'+Date.now().toString(36),vendor:v('lc-vendor')||'',invoice_no:v('lc-invoice-no')||'',invoice_amt:parseFloat(v('lc-invoice-amt'))||0,fx_rate:parseFloat(v('lc-fx-rate'))||1380,ocean:parseFloat(v('lc-ocean'))||0,air:parseFloat(v('lc-air'))||0,inland_ori:parseFloat(v('lc-inland-origin'))||0,inland_dest:parseFloat(v('lc-inland-dest'))||0,insurance:parseFloat(v('lc-insurance'))||0,forwarding:parseFloat(v('lc-forwarding'))||0,duty_rate:parseFloat(v('lc-duty-rate'))||0,vat_rate:parseFloat(v('lc-vat-rate'))||10,brokerage:parseFloat(v('lc-brokerage'))||0,other:parseFloat(v('lc-other'))||0,total_qty:parseInt(v('lc-total-qty'))||0,weight:parseFloat(v('lc-weight'))||0,grand_total_krw:grandTotalKRW,calc_date:new Date().toISOString().slice(0,10)};
+            await DB.upsert('landedcost',rec,'id');
+            toast('Landed Cost 저장됨','success'); renderLCHistory();
+        }
+
+        async function renderLCHistory() {
+            const data=await DB.get('landedcost');
+            const trades=await DB.get('hqtrade');
+            const fsel=document.getElementById('lc-filter-shipment');
+            if(fsel){const cur=fsel.value;fsel.innerHTML='<option value="">— Load from Shipment —</option>'+trades.map(t=>`<option value="${t.shipment_no}">${t.shipment_no} / ${t.vendor_code}</option>`).join('');fsel.value=cur;}
+            const listEl=document.getElementById('lc-history-list'); if(!listEl) return;
+            if(!data.length){listEl.innerHTML='<div style="font-size:11px;color:var(--t3);text-align:center;padding:12px">No saved calculations</div>';return;}
+            listEl.innerHTML=[...data].reverse().slice(0,8).map(r=>`<div style="border:1px solid var(--bd);border-radius:var(--r);padding:8px 12px;cursor:pointer;transition:all var(--tr)" onclick="loadSavedLC('${r.id}')" onmouseenter="this.style.borderColor='var(--cyan)'" onmouseleave="this.style.borderColor='var(--bd)'"><div style="display:flex;justify-content:space-between"><span style="font-family:var(--fm);font-size:12px;color:var(--cyan)">${r.shipment_no}</span><span style="font-family:var(--fm);font-size:12px;font-weight:700">₩${fmt2(r.grand_total_krw,0)}</span></div><div style="display:flex;justify-content:space-between;margin-top:3px"><span style="font-size:10px;color:var(--t3)">${r.vendor||'—'} · ${r.calc_date||'—'}</span><span style="font-size:10px;color:var(--t3)">${r.total_qty?fmt2(r.total_qty)+' pcs':''}</span></div></div>`).join('');
+        }
+
+        async function loadSavedLC(id) {
+            const data=await DB.get('landedcost'); const r=data.find(d=>d.id===id); if(!r) return;
+            const set=(elId,val)=>{const el=document.getElementById(elId);if(el)el.value=val??'';};
+            set('lc-shipment-no',r.shipment_no);set('lc-vendor',r.vendor);set('lc-invoice-no',r.invoice_no);
+            set('lc-invoice-amt',r.invoice_amt);set('lc-fx-rate',r.fx_rate);set('lc-ocean',r.ocean);
+            set('lc-air',r.air);set('lc-inland-origin',r.inland_ori);set('lc-inland-dest',r.inland_dest);
+            set('lc-insurance',r.insurance);set('lc-forwarding',r.forwarding);set('lc-duty-rate',r.duty_rate);
+            set('lc-vat-rate',r.vat_rate);set('lc-brokerage',r.brokerage);set('lc-other',r.other);
+            set('lc-total-qty',r.total_qty);set('lc-weight',r.weight);
+            calcLandedCost(); toast(`Loaded: ${r.shipment_no}`,'info',2000);
+        }
+
+        async function exportLandedCost() {
+            const v=id=>document.getElementById(id)?.value;
+            const r={shipment_no:v('lc-shipment-no'),vendor:v('lc-vendor'),invoice_amt:v('lc-invoice-amt'),fx_rate:v('lc-fx-rate'),ocean:v('lc-ocean'),air:v('lc-air'),inland_origin:v('lc-inland-origin'),inland_dest:v('lc-inland-dest'),insurance:v('lc-insurance'),forwarding:v('lc-forwarding'),duty_rate:v('lc-duty-rate'),vat_rate:v('lc-vat-rate'),brokerage:v('lc-brokerage'),other:v('lc-other'),total_qty:v('lc-total-qty'),weight:v('lc-weight'),grand_total_krw:document.getElementById('lc-grand-total-krw')?.textContent,unit_cost:document.getElementById('lc-unit-cost')?.textContent};
+            if(!window.XLSX) await loadXLSX();
+            const ws=XLSX.utils.json_to_sheet([r]);const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Landed_Cost');
+            XLSX.writeFile(wb,`Landed_Cost_${r.shipment_no||'calc'}_${new Date().toISOString().slice(0,10)}.xlsx`);
+            toast('Exported','success');
+        }
+
+        // openDP extension for dp-trade
+        const _openDPOrig = openDP;
+        window.openDP = function(id, mode, data) {
+            if (id === 'dp-trade') {
+                closeDP(); activeDP = id;
+                document.getElementById('dp-overlay').classList.add('open');
+                document.getElementById(id)?.classList.add('open');
+                prepTradePanel(mode, data); return;
+            }
+            _openDPOrig(id, mode, data);
+        };
+
+        console.log('%cSCM Pro — STEP 6 loaded: Settings + HQ Trade + Landed Cost', 'color:#8888FF;font-weight:bold');
     </script>
 </body>
 
