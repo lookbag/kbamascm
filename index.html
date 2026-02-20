@@ -3893,7 +3893,7 @@ do $$ declare t text; begin for t in select unnest(array['vendors','parts','prod
                 </div>
             </div>
         </main>
-    </div>
+    </div><!-- /#app -->
 
     <!-- Sidebar backdrop -->
     <div class="sidebar-backdrop" id="sidebar-backdrop" onclick="closeSidebar()"></div>
@@ -5963,11 +5963,15 @@ do $$ declare t text; begin for t in select unnest(array['vendors','parts','prod
         };
 
 
-        // Hook into nav() to trigger page init
+        // Hook into nav() to trigger page init + mobile sync
         const _navOrig = nav;
         window.nav = function (id) {
             _navOrig(id);
             if (PAGE_INIT[id]) PAGE_INIT[id]();
+            // mobile: close sidebar + sync bottom nav
+            if (window.innerWidth <= 768) closeSidebar();
+            document.querySelectorAll('.mbn-item').forEach(el =>
+                el.classList.toggle('active', el.dataset.page === id));
         };
 
         // ── Vendors page search wiring (ids need adding) ───────
@@ -8130,15 +8134,6 @@ do $$ declare t text; begin for t in select unnest(array['vendors','parts','prod
             document.querySelectorAll('.mbn-item').forEach(el =>
                 el.classList.toggle('active', el.dataset.page === page));
         }
-
-        // Wrap nav() to sync bottom nav + close sidebar
-        const _origNav8c = nav;
-        window.nav = function(id) {
-            _origNav8c(id);
-            if (window.innerWidth <= 768) closeSidebar();
-            document.querySelectorAll('.mbn-item').forEach(el =>
-                el.classList.toggle('active', el.dataset.page === id));
-        };
 
         // Close sidebar on nav-item click (mobile)
         document.querySelectorAll('.nav-item').forEach(item =>
