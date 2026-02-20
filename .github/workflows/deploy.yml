@@ -1,0 +1,35 @@
+name: Deploy SCM App
+
+on:
+  push:
+    branches: ["main"] # main 브랜치에 코드가 올라올 때마다 실행
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Secrets에 등록한 URL과 KEY를 사용하여 config.js 파일을 만드는 핵심 단계입니다.
+      - name: Create config.js from Secrets
+        run: |
+          echo "const CONFIG = {" > config.js
+          echo "    SUPABASE_URL: '${{ secrets.SUPABASE_URL }}'," >> config.js
+          echo "    SUPABASE_ANON_KEY: '${{ secrets.SUPABASE_ANON_KEY }}'" >> config.js
+          echo "};" >> config.js
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
