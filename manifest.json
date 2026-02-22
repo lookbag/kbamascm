@@ -21,10 +21,25 @@
       "purpose": "any maskable"
     }
   ],
-  "categories": ["business", "productivity"],
+  "categories": [
+    "business",
+    "productivity"
+  ],
   "shortcuts": [
-    { "name": "Dashboard",  "url": "/index.html#dashboard", "description": "SCM Dashboard" },
-    { "name": "MRP",        "url": "/index.html#mrp",       "description": "MRP Shortage Analysis" },
-    { "name": "PO List",    "url": "/index.html#polist",    "description": "Purchase Orders" }
+    {
+      "name": "Dashboard",
+      "url": "/index.html#dashboard",
+      "description": "SCM Dashboard"
+    },
+    {
+      "name": "MRP",
+      "url": "/index.html#mrp",
+      "description": "MRP Shortage Analysis"
+    },
+    {
+      "name": "PO List",
+      "url": "/index.html#polist",
+      "description": "Purchase Orders"
+    }
   ]
 }

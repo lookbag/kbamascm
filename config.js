@@ -22,25 +22,25 @@ const CONFIG = {
 
   // Supabase 테이블 이름 매핑
   TABLES: {
-    vendors:        'scm_vendors',
-    parts:          'scm_parts',
-    products:       'scm_products',
-    bom:            'scm_bom',
-    inventory:      'scm_inventory',
-    forecast:       'scm_forecast',
-    polist:         'scm_po',
+    vendors: 'scm_vendors',
+    parts: 'scm_parts',
+    products: 'scm_products',
+    bom: 'scm_bom',
+    inventory: 'scm_inventory',
+    forecast: 'scm_forecast',
+    polist: 'scm_po',
     import_history: 'scm_import_history',
   },
 
   // 각 테이블의 primary key (upsert 충돌 해소용)
   PRIMARY_KEYS: {
-    vendors:        'vendor_code',
-    parts:          'part_no',
-    products:       'part_no',
-    bom:            'id',
-    inventory:      'id',
-    forecast:       'id',
-    polist:         'po_number',
+    vendors: 'vendor_code',
+    parts: 'part_no',
+    products: 'part_no',
+    bom: 'id',
+    inventory: 'id',
+    forecast: 'id',
+    polist: 'po_number',
     import_history: 'id',
   },
 };
