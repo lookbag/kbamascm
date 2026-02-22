@@ -1,5 +1,5 @@
-// SCM Pro — Service Worker v2
-const CACHE = 'scmpro-v2';
+// SCM Pro — Service Worker v3
+const CACHE = 'scmpro-v3';
 const PRECACHE = [
   '/',
   '/index.html',
