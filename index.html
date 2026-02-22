@@ -9584,7 +9584,14 @@ do $$ declare t text; begin for t in select unnest(array['vendors','parts','prod
             list.innerHTML = '<div style="font-size:11px;color:var(--t3)">로딩 중...</div>';
             const rows = [];
             for (const [table, pk] of Object.entries(TABLE_PK)) {
-                const local = JSON.parse(localStorage.getItem(`scm_${table}`) || '[]');
+                let local = [];
+                try {
+                    local = JSON.parse(localStorage.getItem(`scm_${table}`) || '[]');
+                } catch (e) {
+                    console.error(`[Settings] ${table}의 오염된 데이터 발견. 자동 삭제합니다.`);
+                    localStorage.removeItem(`scm_${table}`);
+                    local = [];
+                }
                 let sbCount = '—';
                 if (SB_READY && sbClient) {
                     try { const { count } = await sbClient.from(table).select('*', { count: 'exact', head: true }); sbCount = count ?? '—'; } catch { sbCount = 'err'; }
