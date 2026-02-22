@@ -12,7 +12,7 @@ self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE).then(c => {
       return Promise.allSettled(PRECACHE.map(url =>
-        c.add(url).catch(() => {}) // ignore fetch failures for CDN
+        c.add(url).catch(() => { }) // ignore fetch failures for CDN
       ));
     }).then(() => self.skipWaiting())
   );
@@ -50,6 +50,9 @@ self.addEventListener('fetch', e => {
     );
     return;
   }
+
+  // chrome-extension:// 등 캐시 불가 스킴 제외
+  if (!e.request.url.startsWith('http')) return;
 
   // App shell (index.html, config.js) — network-first with cache fallback
   e.respondWith(
