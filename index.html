@@ -6431,7 +6431,7 @@ do $$ declare t text; begin for t in select unnest(array['vendors','parts','prod
                 }
                 const r = localStorage.getItem(`scm_${table}`);
                 try { return r ? JSON.parse(r) : []; }
-                catch (err) { console.warn(`[DB.get:${table}] localStorage parse error, clearing`, err); localStorage.removeItem(`scm_${table}`); return []; }
+                catch (err) { console.error(`[DB.get:${table}] 오염된 로컬 데이터 발견. 자동 초기화합니다.`); localStorage.removeItem(`scm_${table}`); return []; }
             },
             async save(table, data) {
                 localStorage.setItem(`scm_${table}`, JSON.stringify(data));
