@@ -6430,7 +6430,8 @@ do $$ declare t text; begin for t in select unnest(array['vendors','parts','prod
                     } catch (e) { console.warn(`[DB.get:${table}]`, e.message); }
                 }
                 const r = localStorage.getItem(`scm_${table}`);
-                return r ? JSON.parse(r) : [];
+                try { return r ? JSON.parse(r) : []; }
+                catch (err) { console.warn(`[DB.get:${table}] localStorage parse error, clearing`, err); localStorage.removeItem(`scm_${table}`); return []; }
             },
             async save(table, data) {
                 localStorage.setItem(`scm_${table}`, JSON.stringify(data));
