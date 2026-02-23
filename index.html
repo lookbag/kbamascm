@@ -2409,6 +2409,62 @@
             flex-shrink: 0;
         }
 
+        /* ── DRAG & DROP ZONE ─────────────────────────────── */
+        .doc-check-item { align-items: flex-start !important; }
+        .dci-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+        .dci-inputs { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; margin-top: 4px; }
+        .doc-drop-zone {
+            width: 76px;
+            min-height: 70px;
+            border: 1.5px dashed var(--bd);
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all var(--tr);
+            flex-shrink: 0;
+            text-align: center;
+            background: var(--bg0);
+            padding: 5px 3px;
+            gap: 2px;
+            user-select: none;
+        }
+        .doc-drop-zone:hover { border-color: var(--cyan); background: rgba(0,212,255,.06); }
+        .doc-drop-zone.drag-over {
+            border-color: var(--cyan) !important;
+            background: rgba(0,212,255,.18) !important;
+            border-style: solid !important;
+            transform: scale(1.05);
+            box-shadow: 0 0 0 2px rgba(0,212,255,.2);
+        }
+        .doc-drop-zone.has-file { border-color: var(--green); background: rgba(0,229,160,.07); border-style: solid; }
+        .doc-drop-zone.parsing { border-color: var(--cyan); border-style: solid; background: rgba(0,212,255,.05); }
+        .doc-drop-zone.ocr-error { border-color: var(--amber); border-style: solid; }
+        .ddz-icon { font-size: 22px; line-height: 1; transition: transform var(--tr); }
+        .doc-drop-zone.parsing .ddz-icon { animation: ddz-spin 0.7s linear infinite; display: inline-block; }
+        @keyframes ddz-spin { to { transform: rotate(360deg); } }
+        .ddz-label { font-size: 9px; color: var(--t3); line-height: 1.4; }
+        .doc-drop-zone.has-file .ddz-label { color: var(--green); font-weight: 600; }
+        .doc-drop-zone.parsing .ddz-label { color: var(--cyan); }
+        .doc-drop-zone.ocr-error .ddz-label { color: var(--amber); }
+        .ddz-ocr-hint {
+            font-size: 8.5px; color: var(--cyan); font-family: var(--fm);
+            text-align: center; min-height: 10px; line-height: 1.3;
+            max-width: 72px; word-break: break-all;
+            overflow: hidden; display: -webkit-box;
+            -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+        }
+        .doc-drop-zone.has-file .ddz-ocr-hint { color: var(--green); }
+        .dci-auto-label {
+            font-size: 9px; font-weight: 700; padding: 1px 5px;
+            border-radius: 3px; margin-left: 4px; vertical-align: middle; letter-spacing: .3px;
+        }
+        .dci-auto-label.transit { background: rgba(0,212,255,.15); color: var(--cyan); }
+        .dci-auto-label.customs { background: rgba(255,176,32,.15); color: var(--amber); }
+        .dci-auto-label.complete { background: rgba(0,229,160,.15); color: var(--green); }
+
         .doc-check-icon {
             font-size: 16px;
             flex-shrink: 0
@@ -6230,139 +6286,195 @@ do $$ declare t text; begin for t in select unnest(array['vendors','parts','prod
                     </select>
                 </div>
             </div>
-            <div class="f-ptitle">Document Checklist</div>
+            <div class="f-ptitle">Document Checklist
+                <span style="font-size:10px;color:var(--t3);font-weight:400;margin-left:8px">PDF 드래그 또는 클릭 → OCR 자동 입력</span>
+            </div>
             <div id="dtrade-docs" style="margin-bottom:16px">
 
                 <!-- ① Commercial Invoice -->
                 <div class="doc-check-item" id="doc-invoice">
                     <div class="doc-check-icon">🧾</div>
-                    <div style="flex:1;min-width:0">
+                    <div class="dci-body">
                         <div class="doc-check-name">Commercial Invoice</div>
-                        <input class="f-inp" id="doc-invoice-no" placeholder="Invoice No" style="margin-top:4px;font-size:11px">
+                        <div class="dci-inputs">
+                            <input class="f-inp" id="doc-invoice-no" placeholder="Invoice No" style="flex:1;min-width:80px;font-size:11px">
+                            <input class="f-inp" id="doc-invoice-date" type="date" style="width:120px;font-size:11px">
+                            <select class="doc-check-sel" id="doc-invoice-status" onchange="updateDocStyle('invoice')">
+                                <option value="pending">Pending</option><option value="received">Received</option>
+                                <option value="approved">Approved</option><option value="issues">Issues</option>
+                            </select>
+                        </div>
                         <div class="doc-file-badge" id="file-badge-invoice" style="display:none">
                             <span class="doc-file-name" id="file-name-invoice" onclick="previewDocFile('invoice')" title="클릭하여 미리보기"></span>
                             <button class="doc-file-del" onclick="removeDocFile('invoice')" title="파일 삭제">✕</button>
                         </div>
                     </div>
-                    <input class="f-inp" id="doc-invoice-date" type="date" style="width:130px;font-size:11px">
-                    <select class="doc-check-sel" id="doc-invoice-status" onchange="updateDocStyle('invoice')">
-                        <option value="pending">Pending</option>
-                        <option value="received">Received</option>
-                        <option value="approved">Approved</option>
-                        <option value="issues">Issues</option>
-                    </select>
+                    <div class="doc-drop-zone" id="drop-zone-invoice"
+                         ondragover="event.preventDefault();this.classList.add('drag-over')"
+                         ondragleave="this.classList.remove('drag-over')"
+                         ondrop="onDocDrop(event,'invoice')"
+                         onclick="document.getElementById('file-input-invoice').click()"
+                         title="PDF 드래그하거나 클릭하여 업로드 · OCR 자동 추출">
+                        <div class="ddz-icon" id="ddz-icon-invoice">📄</div>
+                        <div class="ddz-label" id="ddz-label-invoice">드래그<br>또는 클릭</div>
+                        <div class="ddz-ocr-hint" id="ddz-hint-invoice"></div>
+                    </div>
                     <input type="file" id="file-input-invoice" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="handleDocUpload('invoice',this)">
-                    <button class="doc-upload-btn" id="file-btn-invoice" onclick="document.getElementById('file-input-invoice').click()" title="파일 첨부">📎</button>
                 </div>
 
                 <!-- ② Packing List -->
                 <div class="doc-check-item" id="doc-packing">
                     <div class="doc-check-icon">📦</div>
-                    <div style="flex:1;min-width:0">
+                    <div class="dci-body">
                         <div class="doc-check-name">Packing List</div>
-                        <input class="f-inp" id="doc-packing-no" placeholder="Packing List No" style="margin-top:4px;font-size:11px">
+                        <div class="dci-inputs">
+                            <input class="f-inp" id="doc-packing-no" placeholder="Packing List No" style="flex:1;min-width:80px;font-size:11px">
+                            <input class="f-inp" id="doc-packing-date" type="date" style="width:120px;font-size:11px">
+                            <select class="doc-check-sel" id="doc-packing-status" onchange="updateDocStyle('packing')">
+                                <option value="pending">Pending</option><option value="received">Received</option>
+                                <option value="approved">Approved</option><option value="issues">Issues</option>
+                            </select>
+                        </div>
                         <div class="doc-file-badge" id="file-badge-packing" style="display:none">
                             <span class="doc-file-name" id="file-name-packing" onclick="previewDocFile('packing')" title="클릭하여 미리보기"></span>
                             <button class="doc-file-del" onclick="removeDocFile('packing')" title="파일 삭제">✕</button>
                         </div>
                     </div>
-                    <input class="f-inp" id="doc-packing-date" type="date" style="width:130px;font-size:11px">
-                    <select class="doc-check-sel" id="doc-packing-status" onchange="updateDocStyle('packing')">
-                        <option value="pending">Pending</option>
-                        <option value="received">Received</option>
-                        <option value="approved">Approved</option>
-                        <option value="issues">Issues</option>
-                    </select>
+                    <div class="doc-drop-zone" id="drop-zone-packing"
+                         ondragover="event.preventDefault();this.classList.add('drag-over')"
+                         ondragleave="this.classList.remove('drag-over')"
+                         ondrop="onDocDrop(event,'packing')"
+                         onclick="document.getElementById('file-input-packing').click()"
+                         title="PDF 드래그하거나 클릭하여 업로드">
+                        <div class="ddz-icon" id="ddz-icon-packing">📄</div>
+                        <div class="ddz-label" id="ddz-label-packing">드래그<br>또는 클릭</div>
+                        <div class="ddz-ocr-hint" id="ddz-hint-packing"></div>
+                    </div>
                     <input type="file" id="file-input-packing" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="handleDocUpload('packing',this)">
-                    <button class="doc-upload-btn" id="file-btn-packing" onclick="document.getElementById('file-input-packing').click()" title="파일 첨부">📎</button>
                 </div>
 
                 <!-- ③ B/L — 업로드 시 In Transit 자동전환 -->
                 <div class="doc-check-item" id="doc-bl">
                     <div class="doc-check-icon">🚢</div>
-                    <div style="flex:1;min-width:0">
-                        <div class="doc-check-name">Bill of Lading (B/L) <span style="font-size:9px;color:var(--cyan);font-weight:600">→ IN TRANSIT</span></div>
-                        <input class="f-inp" id="doc-bl-no" placeholder="B/L Number" style="margin-top:4px;font-size:11px">
+                    <div class="dci-body">
+                        <div class="doc-check-name">Bill of Lading (B/L) <span class="dci-auto-label transit">→ IN TRANSIT</span></div>
+                        <div class="dci-inputs">
+                            <input class="f-inp" id="doc-bl-no" placeholder="B/L / Pro Number" style="flex:1;min-width:80px;font-size:11px">
+                            <input class="f-inp" id="doc-bl-date" type="date" style="width:120px;font-size:11px">
+                            <select class="doc-check-sel" id="doc-bl-status" onchange="updateDocStyle('bl')">
+                                <option value="pending">Pending</option><option value="received">Received</option>
+                                <option value="approved">Approved</option><option value="issues">Issues</option>
+                            </select>
+                        </div>
                         <div class="doc-file-badge" id="file-badge-bl" style="display:none">
                             <span class="doc-file-name" id="file-name-bl" onclick="previewDocFile('bl')" title="클릭하여 미리보기"></span>
                             <button class="doc-file-del" onclick="removeDocFile('bl')" title="파일 삭제">✕</button>
                         </div>
                     </div>
-                    <input class="f-inp" id="doc-bl-date" type="date" style="width:130px;font-size:11px">
-                    <select class="doc-check-sel" id="doc-bl-status" onchange="updateDocStyle('bl')">
-                        <option value="pending">Pending</option>
-                        <option value="received">Received</option>
-                        <option value="approved">Approved</option>
-                        <option value="issues">Issues</option>
-                    </select>
+                    <div class="doc-drop-zone" id="drop-zone-bl"
+                         ondragover="event.preventDefault();this.classList.add('drag-over')"
+                         ondragleave="this.classList.remove('drag-over')"
+                         ondrop="onDocDrop(event,'bl')"
+                         onclick="document.getElementById('file-input-bl').click()"
+                         title="B/L PDF 드래그 → In Transit 자동전환 + OCR 추출">
+                        <div class="ddz-icon" id="ddz-icon-bl">📄</div>
+                        <div class="ddz-label" id="ddz-label-bl">드래그<br>또는 클릭</div>
+                        <div class="ddz-ocr-hint" id="ddz-hint-bl"></div>
+                    </div>
                     <input type="file" id="file-input-bl" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="handleDocUpload('bl',this)">
-                    <button class="doc-upload-btn" id="file-btn-bl" onclick="document.getElementById('file-input-bl').click()" title="파일 첨부 → In Transit 자동전환">📎</button>
                 </div>
 
                 <!-- ④ Certificate of Origin -->
                 <div class="doc-check-item" id="doc-co">
                     <div class="doc-check-icon">🏳️</div>
-                    <div style="flex:1;min-width:0">
+                    <div class="dci-body">
                         <div class="doc-check-name">Certificate of Origin</div>
-                        <input class="f-inp" id="doc-co-no" placeholder="C/O Number" style="margin-top:4px;font-size:11px">
+                        <div class="dci-inputs">
+                            <input class="f-inp" id="doc-co-no" placeholder="C/O Number" style="flex:1;min-width:80px;font-size:11px">
+                            <input class="f-inp" id="doc-co-date" type="date" style="width:120px;font-size:11px">
+                            <select class="doc-check-sel" id="doc-co-status" onchange="updateDocStyle('co')">
+                                <option value="pending">Pending</option><option value="received">Received</option>
+                                <option value="approved">Approved</option><option value="issues">Issues</option>
+                            </select>
+                        </div>
                         <div class="doc-file-badge" id="file-badge-co" style="display:none">
                             <span class="doc-file-name" id="file-name-co" onclick="previewDocFile('co')" title="클릭하여 미리보기"></span>
                             <button class="doc-file-del" onclick="removeDocFile('co')" title="파일 삭제">✕</button>
                         </div>
                     </div>
-                    <input class="f-inp" id="doc-co-date" type="date" style="width:130px;font-size:11px">
-                    <select class="doc-check-sel" id="doc-co-status" onchange="updateDocStyle('co')">
-                        <option value="pending">Pending</option>
-                        <option value="received">Received</option>
-                        <option value="approved">Approved</option>
-                        <option value="issues">Issues</option>
-                    </select>
+                    <div class="doc-drop-zone" id="drop-zone-co"
+                         ondragover="event.preventDefault();this.classList.add('drag-over')"
+                         ondragleave="this.classList.remove('drag-over')"
+                         ondrop="onDocDrop(event,'co')"
+                         onclick="document.getElementById('file-input-co').click()"
+                         title="C/O PDF 드래그하거나 클릭하여 업로드">
+                        <div class="ddz-icon" id="ddz-icon-co">📄</div>
+                        <div class="ddz-label" id="ddz-label-co">드래그<br>또는 클릭</div>
+                        <div class="ddz-ocr-hint" id="ddz-hint-co"></div>
+                    </div>
                     <input type="file" id="file-input-co" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="handleDocUpload('co',this)">
-                    <button class="doc-upload-btn" id="file-btn-co" onclick="document.getElementById('file-input-co').click()" title="파일 첨부">📎</button>
                 </div>
 
                 <!-- ⑤ Entry Summary — 업로드 시 At Customs 자동전환 -->
                 <div class="doc-check-item" id="doc-entry">
                     <div class="doc-check-icon">🏛️</div>
-                    <div style="flex:1;min-width:0">
-                        <div class="doc-check-name">Entry Summary / Customs <span style="font-size:9px;color:var(--amber);font-weight:600">→ AT CUSTOMS</span></div>
-                        <input class="f-inp" id="doc-entry-no" placeholder="Entry Number" style="margin-top:4px;font-size:11px">
+                    <div class="dci-body">
+                        <div class="doc-check-name">Entry Summary / Customs <span class="dci-auto-label customs">→ AT CUSTOMS</span></div>
+                        <div class="dci-inputs">
+                            <input class="f-inp" id="doc-entry-no" placeholder="Entry Number" style="flex:1;min-width:80px;font-size:11px">
+                            <input class="f-inp" id="doc-entry-date" type="date" style="width:120px;font-size:11px">
+                            <select class="doc-check-sel" id="doc-entry-status" onchange="updateDocStyle('entry')">
+                                <option value="pending">Pending</option><option value="filed">Filed</option>
+                                <option value="approved">Approved</option><option value="issues">Issues</option>
+                            </select>
+                        </div>
                         <div class="doc-file-badge" id="file-badge-entry" style="display:none">
                             <span class="doc-file-name" id="file-name-entry" onclick="previewDocFile('entry')" title="클릭하여 미리보기"></span>
                             <button class="doc-file-del" onclick="removeDocFile('entry')" title="파일 삭제">✕</button>
                         </div>
                     </div>
-                    <input class="f-inp" id="doc-entry-date" type="date" style="width:130px;font-size:11px">
-                    <select class="doc-check-sel" id="doc-entry-status" onchange="updateDocStyle('entry')">
-                        <option value="pending">Pending</option>
-                        <option value="filed">Filed</option>
-                        <option value="approved">Approved</option>
-                        <option value="issues">Issues</option>
-                    </select>
+                    <div class="doc-drop-zone" id="drop-zone-entry"
+                         ondragover="event.preventDefault();this.classList.add('drag-over')"
+                         ondragleave="this.classList.remove('drag-over')"
+                         ondrop="onDocDrop(event,'entry')"
+                         onclick="document.getElementById('file-input-entry').click()"
+                         title="Entry PDF 드래그 → At Customs 자동전환 + OCR 추출">
+                        <div class="ddz-icon" id="ddz-icon-entry">📄</div>
+                        <div class="ddz-label" id="ddz-label-entry">드래그<br>또는 클릭</div>
+                        <div class="ddz-ocr-hint" id="ddz-hint-entry"></div>
+                    </div>
                     <input type="file" id="file-input-entry" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="handleDocUpload('entry',this)">
-                    <button class="doc-upload-btn" id="file-btn-entry" onclick="document.getElementById('file-input-entry').click()" title="파일 첨부 → At Customs 자동전환">📎</button>
                 </div>
 
                 <!-- ⑥ POD — 업로드 시 Complete 자동전환 -->
                 <div class="doc-check-item" id="doc-pod">
                     <div class="doc-check-icon">✅</div>
-                    <div style="flex:1;min-width:0">
-                        <div class="doc-check-name">Proof of Delivery (POD) <span style="font-size:9px;color:var(--green);font-weight:600">→ COMPLETE</span></div>
-                        <input class="f-inp" id="doc-pod-no" placeholder="POD / Delivery Note No" style="margin-top:4px;font-size:11px">
+                    <div class="dci-body">
+                        <div class="doc-check-name">Proof of Delivery (POD) <span class="dci-auto-label complete">→ COMPLETE</span></div>
+                        <div class="dci-inputs">
+                            <input class="f-inp" id="doc-pod-no" placeholder="POD / Pro / Delivery No" style="flex:1;min-width:80px;font-size:11px">
+                            <input class="f-inp" id="doc-pod-date" type="date" style="width:120px;font-size:11px">
+                            <select class="doc-check-sel" id="doc-pod-status" onchange="updateDocStyle('pod')">
+                                <option value="pending">Pending</option><option value="received">Received</option>
+                                <option value="approved">Approved</option><option value="issues">Issues</option>
+                            </select>
+                        </div>
                         <div class="doc-file-badge" id="file-badge-pod" style="display:none">
                             <span class="doc-file-name" id="file-name-pod" onclick="previewDocFile('pod')" title="클릭하여 미리보기"></span>
                             <button class="doc-file-del" onclick="removeDocFile('pod')" title="파일 삭제">✕</button>
                         </div>
                     </div>
-                    <input class="f-inp" id="doc-pod-date" type="date" style="width:130px;font-size:11px">
-                    <select class="doc-check-sel" id="doc-pod-status" onchange="updateDocStyle('pod')">
-                        <option value="pending">Pending</option>
-                        <option value="received">Received</option>
-                        <option value="approved">Approved</option>
-                        <option value="issues">Issues</option>
-                    </select>
+                    <div class="doc-drop-zone" id="drop-zone-pod"
+                         ondragover="event.preventDefault();this.classList.add('drag-over')"
+                         ondragleave="this.classList.remove('drag-over')"
+                         ondrop="onDocDrop(event,'pod')"
+                         onclick="document.getElementById('file-input-pod').click()"
+                         title="POD PDF 드래그 → Complete 자동전환 + OCR 추출">
+                        <div class="ddz-icon" id="ddz-icon-pod">📄</div>
+                        <div class="ddz-label" id="ddz-label-pod">드래그<br>또는 클릭</div>
+                        <div class="ddz-ocr-hint" id="ddz-hint-pod"></div>
+                    </div>
                     <input type="file" id="file-input-pod" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="handleDocUpload('pod',this)">
-                    <button class="doc-upload-btn" id="file-btn-pod" onclick="document.getElementById('file-input-pod').click()" title="파일 첨부 → Complete 자동전환">📎</button>
                 </div>
 
             </div>
@@ -9970,7 +10082,7 @@ do $$ declare t text; begin for t in select unnest(array['vendors','parts','prod
         }
 
         // ══════════════════════════════════════════════════════
-        //  STEP 8A-EXT — FILE STORE (IndexedDB) + DOC UPLOAD
+        //  STEP 8A-EXT — FILE STORE + DRAG-DROP + OCR ENGINE
         // ══════════════════════════════════════════════════════
 
         /** IndexedDB wrapper for document file storage */
@@ -10030,34 +10142,255 @@ do $$ declare t text; begin for t in select unnest(array['vendors','parts','prod
             }
         };
 
-        /**
-         * Auto-status transition map for each doc type.
-         * docStatus  : the value set on the doc's <select>
-         * shipStatus : new shipment status (null = no change)
-         * msg        : toast message (null = silent for shipStatus change)
-         * priority   : lower = earlier in the shipment lifecycle
-         */
         const DOC_TRANSITIONS = {
-            invoice: { docStatus: 'received', shipStatus: null,        priority: 1 },
-            packing: { docStatus: 'received', shipStatus: null,        priority: 1 },
-            bl:      { docStatus: 'received', shipStatus: 'in_transit',priority: 2 },
-            co:      { docStatus: 'received', shipStatus: null,        priority: 2 },
-            entry:   { docStatus: 'filed',    shipStatus: 'customs',   priority: 3 },
-            pod:     { docStatus: 'received', shipStatus: 'complete',  priority: 4 },
+            invoice: { docStatus: 'received', shipStatus: null },
+            packing: { docStatus: 'received', shipStatus: null },
+            bl:      { docStatus: 'received', shipStatus: 'in_transit' },
+            co:      { docStatus: 'received', shipStatus: null },
+            entry:   { docStatus: 'filed',    shipStatus: 'customs' },
+            pod:     { docStatus: 'received', shipStatus: 'complete' },
         };
         const SHIP_STATUS_ORDER = ['open','in_transit','customs','delivered','complete','closed'];
 
-        /** Called when a file <input> fires 'change' */
+        // ── PDF.js lazy loader ─────────────────────────────────
+        let _pdfjsLib = null;
+        async function loadPDFJS() {
+            if (_pdfjsLib) return _pdfjsLib;
+            if (window.pdfjsLib) {
+                window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+                    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+                _pdfjsLib = window.pdfjsLib; return _pdfjsLib;
+            }
+            return new Promise((res, rej) => {
+                const s = document.createElement('script');
+                s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+                s.onload = () => {
+                    window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+                        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+                    _pdfjsLib = window.pdfjsLib; res(_pdfjsLib);
+                };
+                s.onerror = () => rej(new Error('PDF.js CDN 로드 실패'));
+                document.head.appendChild(s);
+            });
+        }
+
+        async function extractTextFromFile(file) {
+            const isPDF = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+            if (!isPDF) return '';
+            try {
+                const pdfjs = await loadPDFJS();
+                const buf = await file.arrayBuffer();
+                const pdf = await pdfjs.getDocument({ data: buf }).promise;
+                let text = '';
+                const pages = Math.min(pdf.numPages, 4);
+                for (let i = 1; i <= pages; i++) {
+                    const page = await pdf.getPage(i);
+                    const content = await page.getTextContent();
+                    text += content.items.map(item => item.str).join(' ') + '\n';
+                }
+                return text.trim();
+            } catch (e) { console.warn('PDF text extract failed:', e); return ''; }
+        }
+
+        function _normDate(s) {
+            if (!s) return '';
+            const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+            if (m) return `${m[3]}-${m[1].padStart(2,'0')}-${m[2].padStart(2,'0')}`;
+            if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+            return s;
+        }
+
+        // ── Smart OCR field parser (tailored to KB Autosys doc formats) ──
+        function parseDocFields(docType, text, fileName) {
+            const r = {};
+            if (!text) return r;
+            const t = text;
+
+            if (docType === 'invoice') {
+                // KB format: "KB20260202-108-MCA" in header
+                const kb = t.match(/\b(KB\d{8}-\d{3}-[\w]+)\b/);
+                if (kb) r.no = kb[1];
+                // Vendor invoice number (numeric like "90336677")
+                if (!r.no) {
+                    const inv = t.match(/Invoice\s+(?:Number|No\.?)\s*[:/]?\s*(\S+)/i);
+                    if (inv && inv[1].length >= 4 && !/^(USD|KRW|EUR)$/i.test(inv[1]))
+                        r.no = inv[1].replace(/[,;]$/, '');
+                }
+                // Date: YYYY-MM-DD first (KB invoices), then MM/DD/YYYY (vendor)
+                const dy = t.match(/\b(\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01]))\b/);
+                if (dy) r.date = dy[1];
+                else {
+                    const dm = t.match(/\b(\d{1,2}\/\d{2}\/\d{4})\b/);
+                    if (dm) r.date = _normDate(dm[1]);
+                }
+                // Amount: largest dollar value
+                const amts = [...t.matchAll(/\$\s*([\d,]+\.?\d{0,2})/g)].map(m => parseFloat(m[1].replace(/,/g,'')));
+                if (amts.length) r.amount = Math.max(...amts);
+                if (!r.amount) {
+                    const tm = t.match(/TOTAL\s+AMOUNT\s+(?:USD\s+)?([\d,]+\.?\d{0,2})/i);
+                    if (tm) r.amount = parseFloat(tm[1].replace(/,/g,''));
+                }
+                // Qty
+                const qm = t.match(/([\d,]+)\s+PCS/i);
+                if (qm) r.qty = parseInt(qm[1].replace(/,/g,''));
+                // Currency
+                if (/\bUSD\b/.test(t)) r.currency = 'USD';
+                else if (/\bEUR\b/.test(t)) r.currency = 'EUR';
+                else if (/\bKRW\b/.test(t)) r.currency = 'KRW';
+
+            } else if (docType === 'packing') {
+                const kb = t.match(/\b(KB\d{8}-\d{3}-[\w]+)\b/);
+                if (kb) r.no = kb[1];
+                const dy = t.match(/\b(\d{4}-(?:0[1-9]|1[0-2])-\d{2})\b/);
+                if (dy) r.date = dy[1];
+                const qm = t.match(/TOTAL.*?([\d,]+)\s+PCS/i) || t.match(/([\d,]+)\s+PCS/i);
+                if (qm) r.qty = parseInt(qm[1].replace(/,/g,''));
+                const wm = t.match(/([\d,]+\.?\d*)\s*(?:KGS?|LBS?)\b/i);
+                if (wm) r.weight = parseFloat(wm[1].replace(/,/g,''));
+
+            } else if (docType === 'bl') {
+                // XPO Pro Number format: "303-701145" or "Pro Number 303-701145"
+                const pro = t.match(/Pro\s+Number\s+([\d-]+)/i) || t.match(/\b(\d{3}-\d{6,7})\b/);
+                if (pro) r.no = pro[1];
+                // Also check B/L Number field
+                if (!r.no) {
+                    const bl = t.match(/B\/L\s*(?:No\.?|Number)\s*[:/]?\s*([\w\d-]+)/i);
+                    if (bl && bl[1].length > 3) r.no = bl[1];
+                }
+                // KB PO reference embedded in B/L
+                const po = t.match(/\b(KB\d{8,10}-\d{3}-[\w]+)\b/);
+                if (po) r.po_ref = po[1];
+                // Ship date / ETD
+                const dates = [...t.matchAll(/\b(\d{1,2}\/\d{1,2}\/\d{4})\b/g)].map(m => _normDate(m[1]));
+                if (dates[0]) r.etd = dates[0];
+                // Weight
+                const wm = t.match(/([\d,]+)\s*(?:LBS?|KGS?)/i);
+                if (wm) r.weight = parseInt(wm[1].replace(/,/g,''));
+
+            } else if (docType === 'entry') {
+                // CBP Entry format: "111-XXXXXXXX-X"
+                const em = t.match(/\b(\d{3}-\d{8}-\d)\b/) || t.match(/Entry\s*(?:No\.?|#)\s*[:/]?\s*([\w\d-]+)/i);
+                if (em) r.no = em[1];
+                const dy = t.match(/\b(\d{4}-\d{2}-\d{2})\b/) || t.match(/\b(\d{1,2}\/\d{1,2}\/\d{4})\b/);
+                if (dy) r.date = _normDate(dy[1]);
+
+            } else if (docType === 'pod') {
+                // XPO Delivery Receipt: Pro Number
+                const pro = t.match(/Pro\s+Number\s+([\d-]+)/i) || t.match(/\b(\d{3}-\d{6,7})\b/);
+                if (pro) r.no = pro[1];
+                // KB PO reference
+                const po = t.match(/PO#?\s*(KB[\w-]+)/i) || t.match(/\b(KB[\d]{8,10}-\d{3}-[\w]+)\b/);
+                if (po) r.po_ref = po[1];
+                // Delivery date = last date in document (near signature/consignee)
+                const dates = [...t.matchAll(/\b(\d{2}\/\d{2}\/\d{4})\b/g)].map(m => _normDate(m[1]));
+                if (dates.length) r.date = dates[dates.length - 1];
+                // Consignee name
+                const cn = t.match(/Consignee\s+Name\s+(.+?)(?:\n|$)/i);
+                if (cn) r.consignee = cn[1].trim();
+            }
+            return r;
+        }
+
+        // ── Auto-fill form fields from OCR result ─────────────
+        function autoFillFromOCR(docType, fields) {
+            const set = (id, val) => {
+                if (val === undefined || val === null || val === '') return;
+                const e = document.getElementById(id); if (e && !e.value) e.value = val;
+            };
+            const hints = [];
+            if (docType === 'invoice') {
+                if (fields.no)       { set('doc-invoice-no', fields.no);    hints.push(fields.no); }
+                if (fields.date)     { set('doc-invoice-date', fields.date); hints.push(fields.date); }
+                if (fields.amount)   { set('dtrade-invoice-amt', fields.amount); hints.push('$' + Number(fields.amount).toLocaleString()); }
+                if (fields.qty)      set('dtrade-qty', fields.qty);
+                if (fields.currency) set('dtrade-currency', fields.currency);
+            } else if (docType === 'packing') {
+                if (fields.no)   { set('doc-packing-no', fields.no);   hints.push(fields.no); }
+                if (fields.date) { set('doc-packing-date', fields.date); hints.push(fields.date); }
+                if (fields.qty)  set('dtrade-qty', fields.qty);
+            } else if (docType === 'bl') {
+                if (fields.no)  { set('doc-bl-no', fields.no); hints.push(fields.no); }
+                if (fields.etd) { set('dtrade-etd', fields.etd); set('doc-bl-date', fields.etd); hints.push('ETD:' + fields.etd); }
+                if (fields.po_ref) {
+                    const psel = document.getElementById('dtrade-po');
+                    if (psel) {
+                        const opt = [...psel.options].find(o => o.value && fields.po_ref.includes(o.value.split('/')[0].trim()));
+                        if (opt) { psel.value = opt.value; hints.push('PO:' + opt.value); }
+                    }
+                }
+            } else if (docType === 'entry') {
+                if (fields.no)   { set('doc-entry-no', fields.no);   hints.push(fields.no); }
+                if (fields.date) { set('doc-entry-date', fields.date); hints.push(fields.date); }
+            } else if (docType === 'pod') {
+                if (fields.no)   { set('doc-pod-no', fields.no);   hints.push(fields.no); }
+                if (fields.date) { set('doc-pod-date', fields.date); hints.push(fields.date); }
+                if (fields.po_ref) {
+                    const psel = document.getElementById('dtrade-po');
+                    if (psel) {
+                        const opt = [...psel.options].find(o => o.value && fields.po_ref.includes(o.value.split('/')[0].trim()));
+                        if (opt) { psel.value = opt.value; hints.push('PO:' + opt.value); }
+                    }
+                }
+            }
+            return hints;
+        }
+
+        // ── Drop Zone UI helpers ───────────────────────────────
+        function _setDropZone(docType, state, hintText) {
+            const zone  = document.getElementById(`drop-zone-${docType}`);
+            const icon  = document.getElementById(`ddz-icon-${docType}`);
+            const lbl   = document.getElementById(`ddz-label-${docType}`);
+            const hint  = document.getElementById(`ddz-hint-${docType}`);
+            if (!zone) return;
+            zone.classList.remove('has-file', 'parsing', 'drag-over', 'ocr-error');
+            if (state === 'parsing') {
+                zone.classList.add('parsing');
+                if (icon) icon.textContent = '⚙️';
+                if (lbl) lbl.textContent = 'OCR 분석중...';
+                if (hint) hint.textContent = '';
+            } else if (state === 'done') {
+                zone.classList.add('has-file');
+                if (icon) icon.textContent = '✅';
+                if (lbl) lbl.textContent = '업로드됨';
+                if (hint) hint.textContent = hintText || '';
+            } else if (state === 'error') {
+                zone.classList.add('ocr-error');
+                if (icon) icon.textContent = '⚠️';
+                if (lbl) lbl.textContent = '오류';
+                if (hint) hint.textContent = hintText || '';
+            } else {
+                if (icon) icon.textContent = '📄';
+                if (lbl) lbl.textContent = '드래그\n또는 클릭';
+                if (hint) hint.textContent = '';
+            }
+        }
+
+        // ── Drag-and-drop drop handler ─────────────────────────
+        async function onDocDrop(event, docType) {
+            event.preventDefault();
+            const zone = document.getElementById(`drop-zone-${docType}`);
+            if (zone) zone.classList.remove('drag-over');
+            const file = event.dataTransfer?.files?.[0];
+            if (!file) return;
+            await handleDocUpload(docType, { files: [file], value: '' });
+        }
+
+        // ── Main upload handler (with OCR) ─────────────────────
         async function handleDocUpload(docType, input) {
             const file = input.files[0];
             if (!file) return;
-            const MAX_MB = 20;
-            if (file.size > MAX_MB * 1024 * 1024) {
-                toast(`파일 크기 초과 (최대 ${MAX_MB}MB)`, 'error'); input.value = ''; return;
+            if (file.size > 20 * 1024 * 1024) {
+                toast('파일 크기 초과 (최대 20MB)', 'error');
+                if (input.value !== undefined) input.value = ''; return;
             }
             const shipNo = document.getElementById('dtrade-no')?.value.trim() || 'unknown';
             const key = `${shipNo}__${docType}`;
+
+            // Show parsing spinner immediately
+            _setDropZone(docType, 'parsing');
+
             try {
+                // Save to IndexedDB
                 await FileStore.save(key, file);
                 _showFileBadge(docType, file.name);
 
@@ -10070,62 +10403,74 @@ do $$ declare t text; begin for t in select unnest(array['vendors','parts','prod
                 if (statusEl) { statusEl.value = t.docStatus; updateDocStyle(docType); }
                 if (dateEl && !dateEl.value) dateEl.value = today;
 
-                // Special: POD — auto-fill pod-no if empty
-                if (docType === 'pod') {
-                    const podNoEl = document.getElementById('doc-pod-no');
-                    if (podNoEl && !podNoEl.value.trim()) {
-                        podNoEl.value = file.name.replace(/\.[^/.]+$/, '');
-                    }
+                // Advance shipment status (forward only)
+                let shipAdvanced = false;
+                if (t.shipStatus) {
+                    const sd = document.getElementById('dtrade-status');
+                    const curIdx = SHIP_STATUS_ORDER.indexOf(sd?.value || 'open');
+                    const newIdx = SHIP_STATUS_ORDER.indexOf(t.shipStatus);
+                    if (sd && newIdx > curIdx) { sd.value = t.shipStatus; shipAdvanced = true; }
                 }
-                // Special: B/L — auto-fill ETD if empty
+
+                // B/L: auto-fill ETD if empty
                 if (docType === 'bl') {
                     const etdEl = document.getElementById('dtrade-etd');
                     if (etdEl && !etdEl.value) etdEl.value = today;
                 }
 
-                // Advance shipment status only forward (never backward)
-                if (t.shipStatus) {
-                    const statusDropdown = document.getElementById('dtrade-status');
-                    const curIdx = SHIP_STATUS_ORDER.indexOf(statusDropdown?.value || 'open');
-                    const newIdx = SHIP_STATUS_ORDER.indexOf(t.shipStatus);
-                    if (statusDropdown && newIdx > curIdx) {
-                        statusDropdown.value = t.shipStatus;
-                        const labels = { in_transit:'🚢 In Transit', customs:'🏛 At Customs', complete:'✅ Complete' };
-                        toast(`📄 ${file.name} 첨부 완료 → Shipment: ${labels[t.shipStatus] || t.shipStatus} 자동전환`, 'success', 5000);
-                    } else {
-                        toast(`📄 ${file.name} 첨부 완료`, 'success', 3000);
+                // ── OCR: extract text from PDF then parse fields ──
+                let ocrHints = [];
+                try {
+                    const rawText = await extractTextFromFile(file);
+                    if (rawText) {
+                        const fields = parseDocFields(docType, rawText, file.name);
+                        ocrHints = autoFillFromOCR(docType, fields);
                     }
-                } else {
-                    toast(`📄 ${file.name} 첨부 완료`, 'success', 3000);
+                } catch (ocrErr) { console.warn('OCR extract error:', ocrErr); }
+
+                // POD: fallback pod-no from filename if still empty after OCR
+                if (docType === 'pod') {
+                    const podNoEl = document.getElementById('doc-pod-no');
+                    if (podNoEl && !podNoEl.value.trim())
+                        podNoEl.value = file.name.replace(/\.[^/.]+$/, '');
                 }
+
+                // Update drop zone to "done" state with OCR summary
+                const ocrSummary = ocrHints.length ? ocrHints.slice(0,2).join(' · ') : '';
+                _setDropZone(docType, 'done', ocrSummary);
+
+                // Toast
+                const shipLabels = { in_transit:'🚢 In Transit', customs:'🏛 At Customs', complete:'✅ Complete' };
+                let msg = `📄 ${file.name}`;
+                if (ocrHints.length) msg += ` · OCR: ${ocrHints.join(', ')}`;
+                if (shipAdvanced) msg += ` → ${shipLabels[t.shipStatus] || t.shipStatus} 자동전환`;
+                toast(msg, 'success', 6000);
+
             } catch (e) {
-                console.error('FileStore.save error:', e);
+                console.error('handleDocUpload error:', e);
+                _setDropZone(docType, 'error', '저장 실패');
                 toast('파일 저장 실패: ' + (e.message || e), 'error');
             }
-            input.value = ''; // reset so same file can be re-selected
+            if (input.value !== undefined) input.value = '';
         }
 
         function _showFileBadge(docType, fileName) {
             const badge = document.getElementById(`file-badge-${docType}`);
             const nameEl = document.getElementById(`file-name-${docType}`);
-            const btn    = document.getElementById(`file-btn-${docType}`);
             if (badge && nameEl) { nameEl.textContent = fileName; badge.style.display = 'flex'; }
-            if (btn) btn.classList.add('has-file');
         }
 
         function _hideFileBadge(docType) {
             const badge = document.getElementById(`file-badge-${docType}`);
-            const btn   = document.getElementById(`file-btn-${docType}`);
             if (badge) badge.style.display = 'none';
-            if (btn) btn.classList.remove('has-file');
         }
 
         async function removeDocFile(docType) {
             const shipNo = document.getElementById('dtrade-no')?.value.trim() || 'unknown';
-            const key = `${shipNo}__${docType}`;
             try {
-                await FileStore.del(key);
+                await FileStore.del(`${shipNo}__${docType}`);
                 _hideFileBadge(docType);
+                _setDropZone(docType, 'reset');
                 toast(`${docType.toUpperCase()} 파일 삭제됨`, 'warn', 2500);
             } catch (e) { toast('파일 삭제 오류', 'error'); }
         }
@@ -10133,9 +10478,8 @@ do $$ declare t text; begin for t in select unnest(array['vendors','parts','prod
         let _previewBlobUrl = null;
         async function previewDocFile(docType) {
             const shipNo = document.getElementById('dtrade-no')?.value.trim() || 'unknown';
-            const key = `${shipNo}__${docType}`;
             try {
-                const rec = await FileStore.get(key);
+                const rec = await FileStore.get(`${shipNo}__${docType}`);
                 if (!rec) { toast('첨부 파일이 없습니다', 'warn'); return; }
                 if (_previewBlobUrl) { URL.revokeObjectURL(_previewBlobUrl); _previewBlobUrl = null; }
                 const blob = new Blob([rec.data], { type: rec.type || 'application/octet-stream' });
@@ -10143,8 +10487,7 @@ do $$ declare t text; begin for t in select unnest(array['vendors','parts','prod
                 const modal  = document.getElementById('file-preview-modal');
                 const iframe = document.getElementById('file-preview-iframe');
                 const img    = document.getElementById('file-preview-img');
-                const title  = document.getElementById('file-preview-title');
-                title.textContent = rec.name;
+                document.getElementById('file-preview-title').textContent = rec.name;
                 if (rec.type && rec.type.startsWith('image/')) {
                     iframe.style.display = 'none'; img.style.display = 'block'; img.src = _previewBlobUrl;
                 } else {
@@ -10156,11 +10499,11 @@ do $$ declare t text; begin for t in select unnest(array['vendors','parts','prod
 
         function closeFilePreview() {
             const modal = document.getElementById('file-preview-modal');
+            if (modal) modal.style.display = 'none';
             const iframe = document.getElementById('file-preview-iframe');
             const img    = document.getElementById('file-preview-img');
-            if (modal) modal.style.display = 'none';
-            if (iframe) { iframe.src = ''; }
-            if (img)    { img.src = ''; }
+            if (iframe) iframe.src = '';
+            if (img)    img.src = '';
             if (_previewBlobUrl) { URL.revokeObjectURL(_previewBlobUrl); _previewBlobUrl = null; }
         }
 
@@ -10171,14 +10514,13 @@ do $$ declare t text; begin for t in select unnest(array['vendors','parts','prod
             document.body.appendChild(a); a.click(); document.body.removeChild(a);
         }
 
-        /** Load file badges for all doc types when the panel opens */
         async function loadDocFileBadges(shipNo) {
-            DOC_TYPES.forEach(d => _hideFileBadge(d));
+            DOC_TYPES.forEach(d => { _hideFileBadge(d); _setDropZone(d, 'reset'); });
             if (!shipNo) return;
             for (const docType of DOC_TYPES) {
                 try {
                     const rec = await FileStore.get(`${shipNo}__${docType}`);
-                    if (rec) _showFileBadge(docType, rec.name);
+                    if (rec) { _showFileBadge(docType, rec.name); _setDropZone(docType, 'done'); }
                 } catch (e) { /* ignore */ }
             }
         }
