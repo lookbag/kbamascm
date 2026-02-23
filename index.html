@@ -6228,15 +6228,22 @@ do $$ declare t text; begin for t in select unnest(array['vendors','parts','prod
             <div class="f-ptitle">Shipment Info</div>
             <div class="fg fg2" style="margin-bottom:16px">
                 <div class="field">
-                    <div class="f-lbl">Shipment No<span class="req">*</span></div><input class="f-inp" id="dtrade-no"
-                        style="font-family:var(--fm)">
+                    <div class="f-lbl">Shipment No<span class="req">*</span>
+                        <span style="font-size:9px;color:var(--t3);font-weight:400;margin-left:4px">← Invoice No 기준</span>
+                    </div>
+                    <input class="f-inp" id="dtrade-no" style="font-family:var(--fm)"
+                        placeholder="KB20260202-108-MCA"
+                        title="PO 선택 또는 Invoice PDF 드롭 시 자동입력">
                 </div>
                 <div class="field">
                     <div class="f-lbl">Vendor<span class="req">*</span></div><select class="f-inp"
                         id="dtrade-vendor"></select>
                 </div>
                 <div class="field">
-                    <div class="f-lbl">PO Reference</div><select class="f-inp" id="dtrade-po"></select>
+                    <div class="f-lbl">PO Reference
+                        <span style="font-size:9px;color:var(--t3);font-weight:400;margin-left:4px">선택 시 Shipment No 자동입력</span>
+                    </div>
+                    <select class="f-inp" id="dtrade-po" onchange="syncShipNoFromPO(this.value)"></select>
                 </div>
                 <div class="field">
                     <div class="f-lbl">Incoterms</div><select class="f-inp" id="dtrade-incoterms">
@@ -9996,7 +10003,7 @@ do $$ declare t text; begin for t in select unnest(array['vendors','parts','prod
         async function saveTrade() {
             const no = document.getElementById('dtrade-no')?.value.trim();
             const vendor = document.getElementById('dtrade-vendor')?.value;
-            if (!no || !vendor) { toast('Shipment No와 Vendor는 필수입니다', 'error'); return; }
+            if (!no || !vendor) { toast('Shipment No(Invoice No)와 Vendor는 필수입니다\n예: KB20260202-108-MCA', 'error'); return; }
 
             const podNo = document.getElementById('doc-pod-no')?.value.trim();
             const podDate = document.getElementById('doc-pod-date')?.value;
@@ -10077,8 +10084,26 @@ do $$ declare t text; begin for t in select unnest(array['vendors','parts','prod
         }
 
         function genShipNo() {
-            const d = new Date();
-            return `SHP-${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}-${String(Math.floor(Math.random() * 900) + 100)}`;
+            // Shipment No = Invoice No가 기준이므로 자동생성 안 함
+            // Invoice PDF 드롭 또는 PO 선택 시 자동입력됨
+            return '';
+        }
+
+        /**
+         * PO 드롭다운 선택 시 PO번호를 Shipment No로 자동 동기화.
+         * PO 번호가 이미 KB 형식(KB20260202-108-MCA)이면 그대로 사용.
+         * Shipment No가 이미 입력된 경우에는 덮어쓰지 않음.
+         */
+        function syncShipNoFromPO(poNo) {
+            if (!poNo) return;
+            const shipNoEl = document.getElementById('dtrade-no');
+            if (!shipNoEl || shipNoEl.value.trim()) return; // 이미 입력된 경우 유지
+            // KBU YYMMDD-NNN 형식 (KBA 인터컴퍼니) 우선
+            const kbuMatch = poNo.match(/\b(KBU\d{6}-\d{3})\b/);
+            if (kbuMatch) { shipNoEl.value = kbuMatch[1]; return; }
+            // KB YYYYMMDD-NNN-VendorCode 형식 (외부 구매)
+            const kbMatch = poNo.match(/\b(KB\d{8}-\d{3}-[\w]+)\b/);
+            shipNoEl.value = kbMatch ? kbMatch[1] : poNo.split('/')[0].trim();
         }
 
         // ══════════════════════════════════════════════════════
@@ -10200,93 +10225,169 @@ do $$ declare t text; begin for t in select unnest(array['vendors','parts','prod
             return s;
         }
 
-        // ── Smart OCR field parser (tailored to KB Autosys doc formats) ──
+        // ── Smart OCR field parser — KBAutosys 실제 문서 형식 기준 ──
+        // 지원 형식:
+        //   Invoice: KBU{YYMMDD}-{NNN}  (KBA 인터컴퍼니)
+        //            KB{YYYYMMDD}-{NNN}-{VendorCode}  (외부 구매)
+        //            숫자형 (Zeon 등 벤더 인보이스)
+        //   B/L:     GLVSKR{7자리} (Hyundai Glovis), 기타 선사
+        //   Entry:   B8Q-{7자리}-{1자리} (CBP 형식)
+        //   POD:     XPO Pro No 303-{6자리}, 기타
+
+        function _extractKbuNo(t) {
+            // Priority 1: KBU YYMMDD-NNN (KBA intercompany)
+            const kbu = t.match(/\b(KBU\d{6}-\d{3})\b/);
+            if (kbu) return kbu[1];
+            // Priority 2: KB YYYYMMDD-NNN-VendorCode (external vendor)
+            const kb8 = t.match(/\b(KB\d{8}-\d{3}-[\w]+)\b/);
+            if (kb8) return kb8[1];
+            return null;
+        }
+
         function parseDocFields(docType, text, fileName) {
             const r = {};
             if (!text) return r;
             const t = text;
 
             if (docType === 'invoice') {
-                // KB format: "KB20260202-108-MCA" in header
-                const kb = t.match(/\b(KB\d{8}-\d{3}-[\w]+)\b/);
-                if (kb) r.no = kb[1];
-                // Vendor invoice number (numeric like "90336677")
+                // ① Invoice No: KBU 또는 KB 형식 우선
+                r.no = _extractKbuNo(t);
+                // ② 벤더 인보이스 번호 (숫자형, Zeon 등)
                 if (!r.no) {
-                    const inv = t.match(/Invoice\s+(?:Number|No\.?)\s*[:/]?\s*(\S+)/i);
-                    if (inv && inv[1].length >= 4 && !/^(USD|KRW|EUR)$/i.test(inv[1]))
-                        r.no = inv[1].replace(/[,;]$/, '');
+                    const inv = t.match(/Invoice\s+(?:Number|No\.?|No\.\s+and\s+date)\s*[:/]?\s*(\S+)/i);
+                    if (inv && inv[1].length >= 4 && !/^(USD|KRW|EUR|date|and)$/i.test(inv[1]))
+                        r.no = inv[1].replace(/[,;:]$/, '');
                 }
-                // Date: YYYY-MM-DD first (KB invoices), then MM/DD/YYYY (vendor)
-                const dy = t.match(/\b(\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01]))\b/);
+                // ③ 날짜: YYYY-MM-DD (KBA Excel), MM/DD/YYYY (벤더 PDF)
+                const dy = t.match(/\b(20\d{2}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01]))\b/);
                 if (dy) r.date = dy[1];
                 else {
                     const dm = t.match(/\b(\d{1,2}\/\d{2}\/\d{4})\b/);
                     if (dm) r.date = _normDate(dm[1]);
                 }
-                // Amount: largest dollar value
-                const amts = [...t.matchAll(/\$\s*([\d,]+\.?\d{0,2})/g)].map(m => parseFloat(m[1].replace(/,/g,'')));
-                if (amts.length) r.amount = Math.max(...amts);
+                // ④ 금액: $ 기호 있는 것 → 없는 총계 순서
+                const dollarAmts = [...t.matchAll(/\$\s*([\d,]+\.?\d{0,2})/g)]
+                    .map(m => parseFloat(m[1].replace(/,/g,'')))
+                    .filter(v => v > 0);
+                if (dollarAmts.length) r.amount = Math.max(...dollarAmts);
                 if (!r.amount) {
-                    const tm = t.match(/TOTAL\s+AMOUNT\s+(?:USD\s+)?([\d,]+\.?\d{0,2})/i);
-                    if (tm) r.amount = parseFloat(tm[1].replace(/,/g,''));
+                    // KBA Excel 형식: 마지막 큰 숫자 (단가×수량 합계)
+                    const allNums = [...t.matchAll(/\b(\d{4,}\.?\d{0,2})\b/g)]
+                        .map(m => parseFloat(m[1])).filter(v => v > 0 && v < 999999999);
+                    if (allNums.length) r.amount = Math.max(...allNums);
                 }
-                // Qty
-                const qm = t.match(/([\d,]+)\s+PCS/i);
-                if (qm) r.qty = parseInt(qm[1].replace(/,/g,''));
-                // Currency
+                // ⑤ Qty: PCS 또는 KG
+                const qPcs = t.match(/([\d,]+)\s+PCS/i);
+                const qKg  = t.match(/([\d,]+)\s+[Kk][Gg]/);
+                if (qPcs) r.qty = parseInt(qPcs[1].replace(/,/g,''));
+                else if (qKg) r.qty = parseInt(qKg[1].replace(/,/g,''));
+                // ⑥ Departure date (KBA Excel 필드명) → ETD
+                const dep = t.match(/Departure\s+date\s+(\d{4}-\d{2}-\d{2})/i);
+                if (dep) r.etd = dep[1];
+                // ⑦ ETA
+                const eta = t.match(/\bETA\b\s+(\d{4}-\d{2}-\d{2})/i);
+                if (eta) r.eta = eta[1];
+                // ⑧ 통화
                 if (/\bUSD\b/.test(t)) r.currency = 'USD';
                 else if (/\bEUR\b/.test(t)) r.currency = 'EUR';
                 else if (/\bKRW\b/.test(t)) r.currency = 'KRW';
+                // ⑨ Vessel (Shipment 정보 보조)
+                const vsl = t.match(/(?:Vessel\s*\/\s*Flight|Vessel)\s+([\w\s]+\d{4}-\d{3}[A-Z]?)/i);
+                if (vsl) r.vessel = vsl[1].trim();
+                // ⑩ Incoterms
+                const inc = t.match(/\b(FOB|CIF|CFR|EXW|DDP|DAP|FCA)\b/i);
+                if (inc) r.incoterms = inc[1].toUpperCase();
 
             } else if (docType === 'packing') {
-                const kb = t.match(/\b(KB\d{8}-\d{3}-[\w]+)\b/);
-                if (kb) r.no = kb[1];
-                const dy = t.match(/\b(\d{4}-(?:0[1-9]|1[0-2])-\d{2})\b/);
+                r.no = _extractKbuNo(t);
+                const dy = t.match(/\b(20\d{2}-\d{2}-\d{2})\b/);
                 if (dy) r.date = dy[1];
-                const qm = t.match(/TOTAL.*?([\d,]+)\s+PCS/i) || t.match(/([\d,]+)\s+PCS/i);
+                const qm = t.match(/([\d,]+)\s+PCS/i);
                 if (qm) r.qty = parseInt(qm[1].replace(/,/g,''));
-                const wm = t.match(/([\d,]+\.?\d*)\s*(?:KGS?|LBS?)\b/i);
-                if (wm) r.weight = parseFloat(wm[1].replace(/,/g,''));
+                // KBA Packing List: G/W 총중량
+                const gwm = t.match(/G\/W\s+([\d,]+\.?\d*)/i) || t.match(/([\d,.]+)\s*(?:KGS?|LBS?)\b/i);
+                if (gwm) r.weight = parseFloat(gwm[1].replace(/,/g,''));
 
             } else if (docType === 'bl') {
-                // XPO Pro Number format: "303-701145" or "Pro Number 303-701145"
-                const pro = t.match(/Pro\s+Number\s+([\d-]+)/i) || t.match(/\b(\d{3}-\d{6,7})\b/);
-                if (pro) r.no = pro[1];
-                // Also check B/L Number field
+                // ① Hyundai Glovis B/L: GLVSKR + 7자리
+                const glovis = t.match(/\b(GLVSKR\d{7,})\b/i);
+                if (glovis) r.no = glovis[1].toUpperCase();
+                // ② 기타 선사 B/L 번호 (EGLV, HLCU, COSU 등)
+                if (!r.no) {
+                    const carrier = t.match(/\b([A-Z]{4}\d{10,12})\b/);
+                    if (carrier) r.no = carrier[1];
+                }
+                // ③ XPO Pro Number (국내 운송)
+                if (!r.no) {
+                    const pro = t.match(/Pro\s+Number\s+([\d-]+)/i) || t.match(/\b(\d{3}-\d{6,7})\b/);
+                    if (pro) r.no = pro[1];
+                }
+                // ④ 일반 B/L No 필드
                 if (!r.no) {
                     const bl = t.match(/B\/L\s*(?:No\.?|Number)\s*[:/]?\s*([\w\d-]+)/i);
-                    if (bl && bl[1].length > 3) r.no = bl[1];
+                    if (bl && bl[1].length > 4) r.no = bl[1];
                 }
-                // KB PO reference embedded in B/L
-                const po = t.match(/\b(KB\d{8,10}-\d{3}-[\w]+)\b/);
-                if (po) r.po_ref = po[1];
-                // Ship date / ETD
-                const dates = [...t.matchAll(/\b(\d{1,2}\/\d{1,2}\/\d{4})\b/g)].map(m => _normDate(m[1]));
-                if (dates[0]) r.etd = dates[0];
-                // Weight
-                const wm = t.match(/([\d,]+)\s*(?:LBS?|KGS?)/i);
-                if (wm) r.weight = parseInt(wm[1].replace(/,/g,''));
+                // ⑤ KBU/KB 인보이스 번호 (B/L에 포함된 경우)
+                const invRef = _extractKbuNo(t);
+                if (invRef) r.po_ref = invRef;
+                // ⑥ ETD: "Laden on Board" or "On Board Date" or 첫 번째 날짜
+                const lob = t.match(/(?:Laden\s+on\s+Board|On\s+Board\s+Date)[.:,\s]+([\w.]+\s+\d{1,2}[.,]\s*\d{4})/i)
+                         || t.match(/(?:Laden\s+on\s+Board|On\s+Board\s+Date)[.:,\s]+(\d{1,2}\/\d{1,2}\/\d{4})/i);
+                if (lob) r.etd = _normDate(lob[1].replace(/[.,]/g, '/').replace(/\s+/g, '/').replace(/\/\//g, '/'));
+                if (!r.etd) {
+                    const dates = [...t.matchAll(/\b(\d{1,2}\/\d{1,2}\/\d{4})\b/g)].map(m => _normDate(m[1]));
+                    if (dates[0]) r.etd = dates[0];
+                }
+                // ⑦ Vessel
+                const vsl = t.match(/(?:Vessel|V\/N)[:\s]+(.+?)(?:\s{2,}|\n|VOYAGE)/i);
+                if (vsl) r.vessel = vsl[1].trim();
+                // ⑧ Weight
+                const wm = t.match(/([\d,.]+)\s*(?:KGS?|LBS?)/i);
+                if (wm) r.weight = parseFloat(wm[1].replace(/,/g,''));
+                // ⑨ Pieces / Cases
+                const cs = t.match(/(\d+)\s+(?:CASES?|PKGS?|CTNS?)/i);
+                if (cs) r.cases = parseInt(cs[1]);
 
             } else if (docType === 'entry') {
-                // CBP Entry format: "111-XXXXXXXX-X"
-                const em = t.match(/\b(\d{3}-\d{8}-\d)\b/) || t.match(/Entry\s*(?:No\.?|#)\s*[:/]?\s*([\w\d-]+)/i);
-                if (em) r.no = em[1];
-                const dy = t.match(/\b(\d{4}-\d{2}-\d{2})\b/) || t.match(/\b(\d{1,2}\/\d{1,2}\/\d{4})\b/);
-                if (dy) r.date = _normDate(dy[1]);
+                // ① CBP Entry No: B8Q-XXXXXXX-X (포트 코드-번호-체크디지트)
+                const cbp = t.match(/\b([A-Z0-9]{3}-\d{7}-\d)\b/);
+                if (cbp) r.no = cbp[1];
+                // ② 일반 Entry No 필드
+                if (!r.no) {
+                    const em = t.match(/Entry\s*(?:No\.?|Number|#)\s*[:/]?\s*([\w\d-]+)/i);
+                    if (em && em[1].length > 3) r.no = em[1];
+                }
+                // ③ Arrival / Entry Date
+                const ad = t.match(/(?:Arrival|Entry)\s+Date[:\s]+(\d{2}\/\d{2}\/\d{2,4})/i);
+                if (ad) r.date = _normDate(ad[1].replace(/(\d{2})\/(\d{2})\/(\d{2})$/, '20$3/$1/$2'));
+                else {
+                    const dy = t.match(/\b(\d{1,2}\/\d{1,2}\/\d{4})\b/) || t.match(/\b(20\d{2}-\d{2}-\d{2})\b/);
+                    if (dy) r.date = _normDate(dy[1]);
+                }
+                // ④ Duties Amount (참고용)
+                const duty = t.match(/(?:Duties?|Total)[:\s]+\$?([\d,]+\.?\d{0,2})/i);
+                if (duty) r.duties = parseFloat(duty[1].replace(/,/g,''));
+                // ⑤ Master B/L
+                const mbl = t.match(/(?:Master\s+B\/L|MBL)\s+(?:No\.?\s*)?([\w\d]+)/i);
+                if (mbl) r.mbl = mbl[1];
 
             } else if (docType === 'pod') {
-                // XPO Delivery Receipt: Pro Number
+                // ① XPO Delivery Receipt: Pro Number
                 const pro = t.match(/Pro\s+Number\s+([\d-]+)/i) || t.match(/\b(\d{3}-\d{6,7})\b/);
                 if (pro) r.no = pro[1];
-                // KB PO reference
-                const po = t.match(/PO#?\s*(KB[\w-]+)/i) || t.match(/\b(KB[\d]{8,10}-\d{3}-[\w]+)\b/);
-                if (po) r.po_ref = po[1];
-                // Delivery date = last date in document (near signature/consignee)
+                // ② KBU/KB PO reference
+                const po = _extractKbuNo(t) || (t.match(/PO#?\s*(KBU[\w-]+)/i) || [])[1];
+                if (po) r.po_ref = po;
+                // ③ Delivery date = 문서 내 마지막 날짜 (배송 완료일)
                 const dates = [...t.matchAll(/\b(\d{2}\/\d{2}\/\d{4})\b/g)].map(m => _normDate(m[1]));
                 if (dates.length) r.date = dates[dates.length - 1];
-                // Consignee name
-                const cn = t.match(/Consignee\s+Name\s+(.+?)(?:\n|$)/i);
-                if (cn) r.consignee = cn[1].trim();
+                else {
+                    const yd = t.match(/\b(20\d{2}-\d{2}-\d{2})\b/);
+                    if (yd) r.date = yd[1];
+                }
+                // ④ Consignee
+                const cn = t.match(/Consignee\s*(?:Name)?\s*[:/]?\s*(.+?)(?:\n|$)/i);
+                if (cn) r.consignee = cn[1].trim().replace(/\s+/g,' ');
             }
             return r;
         }
@@ -10299,23 +10400,46 @@ do $$ declare t text; begin for t in select unnest(array['vendors','parts','prod
             };
             const hints = [];
             if (docType === 'invoice') {
-                if (fields.no)       { set('doc-invoice-no', fields.no);    hints.push(fields.no); }
-                if (fields.date)     { set('doc-invoice-date', fields.date); hints.push(fields.date); }
-                if (fields.amount)   { set('dtrade-invoice-amt', fields.amount); hints.push('$' + Number(fields.amount).toLocaleString()); }
-                if (fields.qty)      set('dtrade-qty', fields.qty);
-                if (fields.currency) set('dtrade-currency', fields.currency);
+                if (fields.no)         { set('doc-invoice-no', fields.no);        hints.push(fields.no); }
+                if (fields.date)       { set('doc-invoice-date', fields.date);    hints.push(fields.date); }
+                if (fields.amount)     { set('dtrade-invoice-amt', fields.amount);hints.push('$' + Number(fields.amount).toLocaleString()); }
+                if (fields.qty)        set('dtrade-qty', fields.qty);
+                if (fields.currency)   set('dtrade-currency', fields.currency);
+                if (fields.incoterms)  set('dtrade-incoterms', fields.incoterms);
+                // ETD/ETA from KBA Excel invoice
+                if (fields.etd)  { set('dtrade-etd', fields.etd); hints.push('ETD:' + fields.etd); }
+                if (fields.eta)  { set('dtrade-eta', fields.eta); hints.push('ETA:' + fields.eta); }
+                // ★ Invoice No → Shipment No 자동입력 (KBU251222-084 등)
+                if (fields.no) {
+                    const shipNoEl = document.getElementById('dtrade-no');
+                    if (shipNoEl && !shipNoEl.value.trim()) {
+                        shipNoEl.value = fields.no;
+                        hints.push('ShipNo:' + fields.no);
+                    }
+                }
             } else if (docType === 'packing') {
-                if (fields.no)   { set('doc-packing-no', fields.no);   hints.push(fields.no); }
-                if (fields.date) { set('doc-packing-date', fields.date); hints.push(fields.date); }
-                if (fields.qty)  set('dtrade-qty', fields.qty);
+                if (fields.no)     { set('doc-packing-no', fields.no);   hints.push(fields.no); }
+                if (fields.date)   { set('doc-packing-date', fields.date); hints.push(fields.date); }
+                if (fields.qty)    set('dtrade-qty', fields.qty);
+                if (fields.weight) set('dtrade-weight', fields.weight); // 패킹리스트 총중량
             } else if (docType === 'bl') {
-                if (fields.no)  { set('doc-bl-no', fields.no); hints.push(fields.no); }
+                if (fields.no)  { set('doc-bl-no', fields.no);  hints.push(fields.no); }
                 if (fields.etd) { set('dtrade-etd', fields.etd); set('doc-bl-date', fields.etd); hints.push('ETD:' + fields.etd); }
+                if (fields.vessel) set('dtrade-vessel', fields.vessel);
+                // B/L에 포함된 KBU Invoice 번호 → PO ref 매핑 시도
                 if (fields.po_ref) {
                     const psel = document.getElementById('dtrade-po');
                     if (psel) {
-                        const opt = [...psel.options].find(o => o.value && fields.po_ref.includes(o.value.split('/')[0].trim()));
+                        const opt = [...psel.options].find(o => o.value && o.value.includes(fields.po_ref.split('-').slice(0,2).join('-')));
                         if (opt) { psel.value = opt.value; hints.push('PO:' + opt.value); }
+                    }
+                }
+                // ★ B/L에서 Shipment No 추출 가능한 경우 → 자동입력
+                if (fields.po_ref) {
+                    const shipNoEl = document.getElementById('dtrade-no');
+                    if (shipNoEl && !shipNoEl.value.trim()) {
+                        shipNoEl.value = fields.po_ref;
+                        hints.push('ShipNo:' + fields.po_ref);
                     }
                 }
             } else if (docType === 'entry') {
